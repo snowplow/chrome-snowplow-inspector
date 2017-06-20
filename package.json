@@ -1,0 +1,29 @@
+{
+  "name": "snowflake-chrome-extension",
+  "version": "0.1.3",
+  "description": "Add a panel to DevTools to show Snowplow analytics beacon information.",
+  "main": "src/extension.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -r dist || true",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/devtools.js ../src/style.css ../src/popup.html ../src/options.html ../src/options.js dist/ && webpack -p --watch",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/devtools.js src/style.css src/popup.html src/options.html src/options.js dist/ && webpack -p",
+    "zip": "npm run build && zip -r snowflake-chrome-extension.zip dist/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snowflake-analytics/snowflake-chrome-extension.git"
+  },
+  "author": "Snowflake Analytics",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/snowflake-analytics/snowflake-chrome-extension/issues"
+  },
+  "homepage": "https://github.com/snowflake-analytics/snowflake-chrome-extension#readme",
+  "dependencies": {
+    "mithril": "^1.1.1"
+  },
+  "devDependencies": {
+    "webpack": "^2.5.1"
+  }
+}
