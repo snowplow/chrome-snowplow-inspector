@@ -7,7 +7,7 @@ var seenCollectors = {};
 function trackerAnalytics(collector, pageUrl, appId) {
     collector = collector.toLowerCase();
     pageUrl = (new URL(pageUrl)).host.toLowerCase();
-    appId = appId.toLowerCase();
+    appId = (appId || '').toLowerCase();
 
     var appKey = pageUrl + ':' + appId;
 
