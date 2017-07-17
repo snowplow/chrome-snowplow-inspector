@@ -3,7 +3,7 @@
 
   "name": "Snowplow Inspector",
   "description": "Add a new tab in Developer Tools to show Snowplow Analytics beacon information.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "browser_action": {
     "default_title": "Snowplow Inspector",
     "default_popup": "popup.html",

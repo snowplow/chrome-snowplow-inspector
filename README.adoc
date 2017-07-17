@@ -5,7 +5,9 @@ Snowflake Chrome Extension
 Run `npm install` to install required dependencies, then `npm run build` to build the extension in the `dist/` directory.
 
 == Install
-Instructions to install the extension and test are over at the link:https://developer.chrome.com/extensions/getstarted#unpacked[extension development documentation].
+For regular users, you can find the extension at the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
+
+Instructions to install a local development version of the extension to test are over at the link:https://developer.chrome.com/extensions/getstarted#unpacked[extension development documentation].
 
 == Develop
 You can also use `npm start` to start webpack in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
