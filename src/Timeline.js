@@ -64,9 +64,20 @@ var TimeEntry = function(){
 
 module.exports = {
     view: function(vnode){
-        var url = vnode.attrs.entries[0];
-        if (url) url = url.request.headers.filter(function(x){return x.name === 'Referer'})[0];
-        if (url) url = new URL(url.value);
+        var urls = vnode.attrs.entries.reduce(function(ac, cv){
+            var url = cv.request.headers.filter(function(x){return x.name === 'Referer'})[0].value;
+            ac[url] = (ac[url] || 0) + 1;
+            return ac;
+        }, {});
+
+        var url = '';
+        var max = -1;
+        for (var p in urls) {
+            if (urls[p] >= max) url = p, max = urls[p];
+        }
+
+        if (url) url = new URL(url);
+
         return m('ol.navigationview', {'data-url':  url ? url.pathname :'New Page', title: url && url.href}, Array.prototype.concat.apply([], vnode.attrs.entries.map(function(x, i){
 
             var summary = summariseBeacons(x, i);
