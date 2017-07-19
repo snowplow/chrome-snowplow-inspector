@@ -65,7 +65,8 @@ var TimeEntry = function(){
 module.exports = {
     view: function(vnode){
         var urls = vnode.attrs.entries.reduce(function(ac, cv){
-            var url = cv.request.headers.filter(function(x){return x.name === 'Referer'})[0];
+            var url = cv.request.headers.filter(function(x){return /referr?er/i.test(x.name)})[0];
+            console.log(url);
             if (url) {
                 url = url.value;
                 ac[url] = (ac[url] || 0) + 1;
