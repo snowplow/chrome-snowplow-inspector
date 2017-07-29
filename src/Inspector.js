@@ -8,6 +8,6 @@ sp.setPlatform('app');
 
 module.exports = {
     view: function(vnode){
-        return m('div.inspector-beacons', m(Beacon, vnode.attrs));
+        if (vnode.attrs.beacon) return m('div.inspector-beacons', m(Beacon, vnode.attrs));
     }
 };

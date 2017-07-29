@@ -192,7 +192,7 @@ function formatBeacons(d) {
 
 module.exports = {
     view: function(vnode) {
-        return m('div.request', vnode.attrs.entries.map(extractRequests).map(parseBeacons).map(formatBeacons));
+        return m('div.request', vnode.attrs.beacon.entries.map(extractRequests).map(parseBeacons).map(formatBeacons));
     },
     extractRequests: extractRequests
 };

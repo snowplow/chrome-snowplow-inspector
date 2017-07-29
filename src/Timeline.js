@@ -57,16 +57,15 @@ var TimeEntry = function(){
     var sentinel = {};
     return {
         view: function(vnode){
-            return m('a', {onclick: function(){activeLock = sentinel;}, href: vnode.attrs.reqId, class: [activeLock === sentinel ? 'selected' : '', vnode.attrs.vendor || ''].join(' ')}, vnode.children);
+            return m('a', {href: vnode.attrs.reqId, onclick: function(){vnode.attrs.setActive();activeLock = sentinel;}, class: [activeLock === sentinel ? 'selected' : '', vnode.attrs.vendor || ''].join(' ')}, vnode.children);
     }};
 };
 
 
 module.exports = {
     view: function(vnode){
-        var urls = vnode.attrs.entries.reduce(function(ac, cv){
+        var urls = vnode.attrs.request.entries.reduce(function(ac, cv){
             var url = cv.request.headers.filter(function(x){return /referr?er/i.test(x.name)})[0];
-            console.log(url);
             if (url) {
                 url = url.value;
                 ac[url] = (ac[url] || 0) + 1;
@@ -82,7 +81,7 @@ module.exports = {
 
         if (url) url = new URL(url);
 
-        return m('ol.navigationview', {'data-url':  url ? url.pathname :'New Page', title: url && url.href}, Array.prototype.concat.apply([], vnode.attrs.entries.map(function(x, i){
+        return m('ol.navigationview', {'data-url':  url ? url.pathname :'New Page', title: url && url.href}, Array.prototype.concat.apply([], vnode.attrs.request.entries.map(function(x, i){
 
             var summary = summariseBeacons(x, i);
             return summary.map(function(x) {
@@ -90,6 +89,7 @@ module.exports = {
                          m(TimeEntry, {
                              reqId: x.id,
                              vendor: x.filterTag,
+                             setActive: vnode.attrs.setActive
                          }, [x.eventName,
                              m('time', {datetime: x.time, title: x.time}, 'T')
                          ])

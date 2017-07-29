@@ -6,6 +6,7 @@ var Toolbar = require('./Toolbar');
 
 var BeaconInspector = function() {
     var requests = [],
+        active,
         filters = {
             'snowplow': /^[^:]+:\/\/[^/?#;]+\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i
         },
@@ -39,7 +40,9 @@ var BeaconInspector = function() {
             chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
         },
         view: function() {
-            return m('div#container', [m('div.toolbar', m(Toolbar, {clearRequests: function(){requests = [];}})), m('div.timeline', requests.map(function(x){return m(Timeline, x);})), m('div.inspector', requests.map(function(x){return m(Inspector, x);}))]);
+            return m('div#container', [m('div.toolbar', m(Toolbar, {clearRequests: function(){requests = [];}})),
+                     m('div.timeline', requests.map(function(x){return m(Timeline, {setActive: function(){active = x;}, request: x});})),
+                     m('div.inspector', m(Inspector, {beacon: active}))]);
         }
     };
 };
