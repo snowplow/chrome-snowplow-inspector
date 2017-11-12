@@ -1,6 +1,6 @@
 chrome.devtools.panels.create(
     'Snowplow',
-    null,
+    'snowflake-16.png',
     'panel.html',
     null // no callback needed
 );
