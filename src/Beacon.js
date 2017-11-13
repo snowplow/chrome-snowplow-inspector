@@ -158,6 +158,8 @@ function printableValue(val, finfo) {
         return new Date(parseInt(val, 10)).toISOString();
     case 'numb':
         return parseInt(val, 10);
+    case 'doub':
+        return parseFloat(val);
     case 'bool':
         return val === '1';
     case 'uuid':
