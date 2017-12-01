@@ -1,7 +1,7 @@
 function hash(bytes) {
-    var hash = 5381;
+    let hash = 5381;
 
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
         hash = ((hash << 5) + hash) + bytes.charCodeAt(i);
     }
 

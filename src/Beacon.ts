@@ -1,9 +1,9 @@
-var m = require('mithril');
-var protocol = require('./protocol');
-var util = require('./util');
+const m = require('mithril');
+const protocol = require('./protocol');
+const util = require('./util');
 
 function genClasses(val, finfo) {
-    var classes = [];
+    const classes = [];
 
     if (finfo.deprecated) classes.push('deprecated');
 
@@ -11,21 +11,21 @@ function genClasses(val, finfo) {
 }
 
 function extractRequests(entry, index) {
-    var req = entry.request;
-    var id = entry.pageref + util.hash(entry.startedDateTime.toJSON() + req.url + index);
-    var collector = new URL(req.url).hostname;
-    var method = req.method;
-    var beacons = [];
+    const req = entry.request;
+    const id = entry.pageref + util.hash(entry.startedDateTime.toJSON() + req.url + index);
+    const collector = new URL(req.url).hostname;
+    const method = req.method;
+    const beacons = [];
 
-    var nuid = entry.request.cookies.filter(function(x){return x.name === 'sp';})[0];
-    var ua = entry.request.headers.filter(function(x){return x.name === 'User-Agent';})[0];
+    const nuid = entry.request.cookies.filter((x) => x.name === 'sp')[0];
+    const ua = entry.request.headers.filter((x) => x.name === 'User-Agent')[0];
 
     if (req.method === 'POST') {
         try {
-            var payload = JSON.parse(req.postData.text);
+            const payload = JSON.parse(req.postData.text);
 
-            for (var i = 0; i < payload.data.length; i++) {
-                beacons.push(new Map(Object.keys(payload.data[i]).map(function(x): [string, any] {return [x, payload.data[i][x]];})));
+            for (const pl of payload.data) {
+                beacons.push(new Map(Object.keys(pl).map((x): [string, any] => ([x, pl[x]]))));
                 if (nuid) beacons[beacons.length -1].set('nuid', nuid.value);
                 if (ua) beacons[beacons.length -1].set('ua', ua.value);
             }
@@ -47,28 +47,27 @@ function extractRequests(entry, index) {
 }
 
 function parseBeacons(bl) {
-    var meta = bl[0];
-    bl = bl[1];
+    const [meta, blist] = bl;
 
-    var results = [];
+    const results = [];
 
-    for (var i = 0; i < bl.length; i++) {
-        var result = {
-            name: printableValue(bl[i].get('e'), protocol.paramMap['e']),
-            appId: printableValue(bl[i].get('aid'), protocol.paramMap['aid']),
-            time: printableValue(bl[i].get('stm') || bl[i].get('dtm'), protocol.paramMap['stm']),
+    for (const b of blist) {
+        const result = {
+            name: printableValue(b.get('e'), protocol.paramMap['e']),
+            appId: printableValue(b.get('aid'), protocol.paramMap['aid']),
+            time: printableValue(b.get('stm') || b.get('dtm'), protocol.paramMap['stm']),
             data: [],
         };
 
-        for (var j = 0; j < protocol.groupPriorities.length; j++) {
-            var name = protocol.groupPriorities[j].name;
-            var fields = protocol.groupPriorities[j].fields;
-            var rows = [];
+        for (const gp of protocol.groupPriorities) {
+            const name = gp.name,
+                  fields = gp.fields,
+                  rows = [];
 
-            for (var k = 0; k < fields.length; k++) {
-                var finfo = protocol.paramMap[fields[k]];
+            for (const field of fields) {
+                const finfo = protocol.paramMap[field];
 
-                var val = bl[i].get(fields[k]);// || req.headers[finfo.header];
+                let val = b.get(field);// || req.headers[finfo.header];
 
                 val = printableValue(val, finfo);
 
@@ -76,7 +75,7 @@ function parseBeacons(bl) {
                     rows.push([finfo.name, val, genClasses(val, finfo)]);
                 }
 
-                bl[i].delete(fields[k]);
+                b.delete(field);
             }
 
 
@@ -86,9 +85,9 @@ function parseBeacons(bl) {
 
         }
 
-        var unknownRows = [];
-        for (j = 0; j < bl[i].length; j++) {
-            unknownRows.push([bl[i][j][0], bl[i][j][1], '']);
+        const unknownRows = [];
+        for (const field of b) {
+            unknownRows.push([field[0], field[1], '']);
         }
 
         if (unknownRows.length) result['data'].push(['Unrecognised Fields', unknownRows]);
@@ -102,8 +101,8 @@ function parseBeacons(bl) {
 function contextToTable(obj) {
     if (typeof obj !== 'object' || obj === null) return JSON.stringify(obj).replace(/^"|"$/g, '');
 
-    var rows = [];
-    var p;
+    const rows = [];
+    let p;
 
     if ('schema' in obj && 'data' in obj) {
 
@@ -132,21 +131,19 @@ function contextToTable(obj) {
 }
 
 var RowSet = function() {
-    var visible = true;
+    let visible = true;
     return {
-        view: function(vnode) {
-            return m('tbody', {class: visible ? 'show-rows' : 'hide-rows'}, [m('tr.header', {onclick: function(){visible = !visible;}}, m('th', {colspan: 2}, vnode.attrs.setName))].concat(vnode.children));
-        }
+        view: (vnode) => 
+            m('tbody', {class: visible ? 'show-rows' : 'hide-rows'}, [m('tr.header', {onclick: () => {visible = !visible;}}, m('th', {colspan: 2}, vnode.attrs.setName))].concat(vnode.children))
     };
 };
 
 function toTable(rowset) {
-    var setName = rowset[0];
-    var rows = rowset[1];
+    var [setName, rows] = rowset;
 
-    return m(RowSet, {setName: setName}, rows.map(function(x){
-        return m('tr', [m('th', x[0]), m('td', contextToTable(x[1]))]);
-    }));
+    return m(RowSet, {setName: setName}, rows.map((x) => 
+        m('tr', [m('th', x[0]), m('td', contextToTable(x[1]))])
+    ));
 }
 
 function printableValue(val, finfo) {
@@ -178,24 +175,22 @@ function printableValue(val, finfo) {
     }
 }
 
-function formatBeacons(d) {
-    var meta = d[0];
-    d = d[1];
+function formatBeacons(dlist) {
+    const [meta, d] = dlist;
 
-    return d.map(function(x, i){
-        return m('table', {id: meta[0] + '-' + i},
+    return d.map((x, i) => 
+        m('table', {id: meta[0] + '-' + i},
             [
                 m('col.field'),
                 m('col.val'),
                 m('thead',
                     m('tr', [m('th',x.time + ' | ' + meta[2] + ' | ' + meta[1]), m('th', x.appId + ': ' + x.name)]))
-            ].concat(x.data.map(toTable)));
-    });
+            ].concat(x.data.map(toTable)))
+    );
 }
 
 export = {
-    view: function(vnode) {
-        return m('div.request', vnode.attrs.beacon.entries.map(extractRequests).map(parseBeacons).map(formatBeacons));
-    },
+    view: (vnode) =>
+        m('div.request', vnode.attrs.beacon.entries.map(extractRequests).map(parseBeacons).map(formatBeacons)),
     extractRequests: extractRequests
 };

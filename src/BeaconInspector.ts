@@ -1,17 +1,18 @@
-var m = require('mithril');
-var Timeline = require('./Timeline');
-var Inspector = require('./Inspector');
-var Toolbar = require('./Toolbar');
+const m = require('mithril');
+const Timeline = require('./Timeline');
+const Inspector = require('./Inspector');
+const Toolbar = require('./Toolbar');
 
-declare var Snowplow: any;
+declare const Snowplow: any;
 
 
-var BeaconInspector = function() {
-    var requests = [],
+const BeaconInspector = function() {
+    let requests = [],
         active,
         filters = {
             'snowplow': /^[^:]+:\/\/[^/?#;]+\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i
-        }, sp;
+        },
+        sp;
 
     /* global Snowplow:false */
     sp = Snowplow.getTrackerUrl('d.snowflake-analytics.com');
@@ -20,7 +21,7 @@ var BeaconInspector = function() {
 
 
     function checkFilters(request) {
-        for (var p in filters) {
+        for (const p in filters) {
             if (filters.hasOwnProperty(p)) {
                 if (filters[p].test(request.url)) return p;
             }
@@ -29,7 +30,7 @@ var BeaconInspector = function() {
     }
 
     function handleNewRequest(req) {
-        var filter = checkFilters(req.request);
+        const filter = checkFilters(req.request);
         if (filter === null || req.request.method === 'OPTIONS') return;
 
         req.filterTag = filter;
@@ -43,14 +44,13 @@ var BeaconInspector = function() {
 
 
     return {
-        oninit: function() {
-            chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
-        },
-        view: function() {
-            return m('div#container', [m('div.toolbar', m(Toolbar, {clearRequests: function(){requests = [];}})),
-                m('div.timeline', requests.map(function(x){return m(Timeline, {setActive: function(){active = x;}, request: x, tracker: sp});})),
-                m('div.inspector', m(Inspector, {beacon: active}))]);
-        }
+        oninit: () => chrome.devtools.network.onRequestFinished.addListener(handleNewRequest),
+        view: () => (m('div#container',
+                      [
+                          m('div.toolbar', m(Toolbar, {clearRequests: () => {requests = [];}})),
+                          m('div.timeline', requests.map((x) => (m(Timeline, {setActive: () => {active = x;}, request: x, tracker: sp})))),
+                          m('div.inspector', m(Inspector, {beacon: active}))
+                      ]))
     };
 };
 
