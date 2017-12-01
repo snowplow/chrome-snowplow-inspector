@@ -17,8 +17,8 @@ function extractRequests(entry, index) {
     var method = req.method;
     var beacons = [];
 
-    var nuid = entry.request.cookies.filter(function(x){return x.name === 'sp'})[0];
-    var ua = entry.request.headers.filter(function(x){return x.name === 'User-Agent'})[0];
+    var nuid = entry.request.cookies.filter(function(x){return x.name === 'sp';})[0];
+    var ua = entry.request.headers.filter(function(x){return x.name === 'User-Agent';})[0];
 
     if (req.method === 'POST') {
         try {
@@ -134,9 +134,9 @@ var RowSet = function() {
     var visible = true;
     return {
         view: function(vnode) {
-            return m('tbody', {class: visible ? 'show-rows' : 'hide-rows'}, [m('tr.header', {onclick: function(){visible = !visible}}, m('th', {colspan: 2}, vnode.attrs.setName))].concat(vnode.children));
+            return m('tbody', {class: visible ? 'show-rows' : 'hide-rows'}, [m('tr.header', {onclick: function(){visible = !visible;}}, m('th', {colspan: 2}, vnode.attrs.setName))].concat(vnode.children));
         }
-    }
+    };
 };
 
 function toTable(rowset) {

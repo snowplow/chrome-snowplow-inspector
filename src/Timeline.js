@@ -19,6 +19,7 @@ function trackerAnalytics(collector, pageUrl, appId) {
         seenCollectors[collector].push(appKey);
 
         chrome.storage.sync.get({enableTracking: true}, function(settings) {
+            /* globals sp:false */
             if (settings.enableTracking && typeof sp !== 'undefined') sp.trackStructEvent('New Tracker', collector, pageUrl, appId);
         });
     }
@@ -58,14 +59,14 @@ var TimeEntry = function(){
     return {
         view: function(vnode){
             return m('a', {href: vnode.attrs.reqId, onclick: function(){vnode.attrs.setActive();activeLock = sentinel;}, class: [activeLock === sentinel ? 'selected' : '', vnode.attrs.vendor || ''].join(' ')}, vnode.children);
-    }};
+        }};
 };
 
 
 module.exports = {
     view: function(vnode){
         var urls = vnode.attrs.request.entries.reduce(function(ac, cv){
-            var url = cv.request.headers.filter(function(x){return /referr?er/i.test(x.name)})[0];
+            var url = cv.request.headers.filter(function(x){return /referr?er/i.test(x.name);})[0];
             if (url) {
                 url = url.value;
                 ac[url] = (ac[url] || 0) + 1;

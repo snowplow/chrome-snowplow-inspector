@@ -9,8 +9,7 @@ var BeaconInspector = function() {
         active,
         filters = {
             'snowplow': /^[^:]+:\/\/[^/?#;]+\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i
-        },
-        activeFilters = ['snowplow'];
+        };
 
 
     function checkFilters(request) {
@@ -41,8 +40,8 @@ var BeaconInspector = function() {
         },
         view: function() {
             return m('div#container', [m('div.toolbar', m(Toolbar, {clearRequests: function(){requests = [];}})),
-                     m('div.timeline', requests.map(function(x){return m(Timeline, {setActive: function(){active = x;}, request: x});})),
-                     m('div.inspector', m(Inspector, {beacon: active}))]);
+                m('div.timeline', requests.map(function(x){return m(Timeline, {setActive: function(){active = x;}, request: x});})),
+                m('div.inspector', m(Inspector, {beacon: active}))]);
         }
     };
 };

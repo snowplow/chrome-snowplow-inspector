@@ -1,7 +1,7 @@
 var m = require('mithril');
 var Beacon = require('./Beacon');
 
-
+/* global sp, Snowplow:false */
 window.sp = Snowplow.getTrackerUrl('d.snowflake-analytics.com');
 sp.setAppId('snowplow-chrome-extension');
 sp.setPlatform('app');
