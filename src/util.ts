@@ -8,4 +8,4 @@ function hash(bytes) {
     return String(hash);
 }
 
-module.exports = {hash: hash};
+export = {hash: hash};

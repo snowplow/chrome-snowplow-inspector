@@ -1,5 +1,5 @@
 var m = require('mithril');
-var protocol = require('./protocol.js');
+var protocol = require('./protocol');
 var util = require('./util');
 
 function genClasses(val, finfo) {

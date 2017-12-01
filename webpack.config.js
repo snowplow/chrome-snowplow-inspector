@@ -2,8 +2,9 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        extension: './src/extension.js',
-        options: './src/options.ts'
+        extension: './src/extension.ts',
+        options: './src/options.ts',
+        devtools: './src/devtools.ts',
     },
     output: {
         filename: '[name].js',

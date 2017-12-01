@@ -1,4 +1,4 @@
-module.exports = {
+export = {
     groupPriorities: [
         {'name': 'Beacon',
             'fields': ['evn', 'e', 'aid', 'eid', 'ttm', 'dtm', 'stm', 'p', 'u', 'tid', 'tna', 'tv', ]},

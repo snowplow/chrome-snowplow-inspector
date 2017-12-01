@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/devtools.js ../src/style.css ../src/popup.html ../src/options.html dist/ && webpack -p --watch",
-    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/devtools.js src/style.css src/popup.html src/options.html dist/ && webpack -p",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/style.css ../src/popup.html ../src/options.html dist/ && webpack -p --watch",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/style.css src/popup.html src/options.html dist/ && webpack -p",
     "zip": "npm run build && zip -r snowflake-chrome-extension.zip dist/"
   },
   "repository": {
