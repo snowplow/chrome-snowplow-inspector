@@ -1,11 +1,11 @@
 function showStoredSettings() {
     chrome.storage.sync.get({enableTracking: true}, function(settings){
-        document.getElementById('track').checked = settings.enableTracking;
+        (<HTMLInputElement>document.getElementById('track')).checked = settings.enableTracking;
     });
 }
 
 function updateStoredSettings() {
-    chrome.storage.sync.set({enableTracking: document.getElementById('track').checked}, function(){
+    chrome.storage.sync.set({enableTracking: (<HTMLInputElement>document.getElementById('track')).checked}, function(){
         document.getElementById('status').textContent = 'Preferences Saved';
         setTimeout(function(){document.getElementById('status').textContent = '';}, 1800);
     });

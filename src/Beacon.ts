@@ -25,7 +25,7 @@ function extractRequests(entry, index) {
             var payload = JSON.parse(req.postData.text);
 
             for (var i = 0; i < payload.data.length; i++) {
-                beacons.push(new Map(Object.keys(payload.data[i]).map(function(x){return [x, payload.data[i][x]];})));
+                beacons.push(new Map(Object.keys(payload.data[i]).map(function(x): [string, any] {return [x, payload.data[i][x]];})));
                 if (nuid) beacons[beacons.length -1].set('nuid', nuid.value);
                 if (ua) beacons[beacons.length -1].set('ua', ua.value);
             }
@@ -53,11 +53,12 @@ function parseBeacons(bl) {
     var results = [];
 
     for (var i = 0; i < bl.length; i++) {
-        var result = {};
-        result.name = printableValue(bl[i].get('e'), protocol.paramMap['e']);
-        result.appId = printableValue(bl[i].get('aid'), protocol.paramMap['aid']);
-        result.time = printableValue(bl[i].get('stm') || bl[i].get('dtm'), protocol.paramMap['stm']);
-        result['data'] = [];
+        var result = {
+            name: printableValue(bl[i].get('e'), protocol.paramMap['e']),
+            appId: printableValue(bl[i].get('aid'), protocol.paramMap['aid']),
+            time: printableValue(bl[i].get('stm') || bl[i].get('dtm'), protocol.paramMap['stm']),
+            data: [],
+        };
 
         for (var j = 0; j < protocol.groupPriorities.length; j++) {
             var name = protocol.groupPriorities[j].name;
@@ -192,7 +193,7 @@ function formatBeacons(d) {
     });
 }
 
-module.exports = {
+export = {
     view: function(vnode) {
         return m('div.request', vnode.attrs.beacon.entries.map(extractRequests).map(parseBeacons).map(formatBeacons));
     },

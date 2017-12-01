@@ -3,13 +3,20 @@ var Timeline = require('./Timeline');
 var Inspector = require('./Inspector');
 var Toolbar = require('./Toolbar');
 
+declare var Snowplow: any;
+
 
 var BeaconInspector = function() {
     var requests = [],
         active,
         filters = {
             'snowplow': /^[^:]+:\/\/[^/?#;]+\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i
-        };
+        }, sp;
+
+    /* global Snowplow:false */
+    sp = Snowplow.getTrackerUrl('d.snowflake-analytics.com');
+    sp.setAppId('snowplow-chrome-extension');
+    sp.setPlatform('app');
 
 
     function checkFilters(request) {
@@ -34,16 +41,17 @@ var BeaconInspector = function() {
         m.redraw();
     }
 
+
     return {
         oninit: function() {
             chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
         },
         view: function() {
             return m('div#container', [m('div.toolbar', m(Toolbar, {clearRequests: function(){requests = [];}})),
-                m('div.timeline', requests.map(function(x){return m(Timeline, {setActive: function(){active = x;}, request: x});})),
+                m('div.timeline', requests.map(function(x){return m(Timeline, {setActive: function(){active = x;}, request: x, tracker: sp});})),
                 m('div.inspector', m(Inspector, {beacon: active}))]);
         }
     };
 };
 
-module.exports = BeaconInspector;
+export = BeaconInspector;

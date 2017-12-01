@@ -4,7 +4,7 @@ var Beacon = require('./Beacon');
 
 var seenCollectors = {};
 
-function trackerAnalytics(collector, pageUrl, appId) {
+function trackerAnalytics(tracker, collector, pageUrl, appId) {
     collector = collector.toLowerCase();
     pageUrl = (new URL(pageUrl)).host.toLowerCase();
     appId = (appId || '').toLowerCase();
@@ -19,13 +19,12 @@ function trackerAnalytics(collector, pageUrl, appId) {
         seenCollectors[collector].push(appKey);
 
         chrome.storage.sync.get({enableTracking: true}, function(settings) {
-            /* globals sp:false */
-            if (settings.enableTracking && typeof sp !== 'undefined') sp.trackStructEvent('New Tracker', collector, pageUrl, appId);
+            if (settings.enableTracking && tracker) tracker.trackStructEvent('New Tracker', collector, pageUrl, appId);
         });
     }
 }
 
-function summariseBeacons(entry, index) {
+function summariseBeacons(entry, index, tracker) {
     var requests = Beacon.extractRequests(entry, index);
     var groupId = requests[0];
     requests = requests[1];
@@ -33,18 +32,18 @@ function summariseBeacons(entry, index) {
     var results = [];
 
     for (var i = 0; i < requests.length; i++) {
-        var result = {};
+        var result = {
+            id: '#' + groupId[0] + '-' + i,
+            eventName: protocol.paramMap['e'].values[requests[i].get('e')] || requests[i].get('e'),
+            appId: requests[i].get('aid'),
+            collector: groupId[1],
+            page: requests[i].get('url'),
+            time: (new Date(parseInt(requests[i].get('stm') || requests[i].get('dtm'), 10) || +new Date)).toJSON(),
+            filterTag: entry.filterTag,
+        };
 
-        result.id = '#' + groupId[0] + '-' + i;
-        result.eventName = protocol.paramMap['e'].values[requests[i].get('e')] || requests[i].get('e');
-        result.appId = requests[i].get('aid');
-        result.collector = groupId[1];
-        result.page = requests[i].get('url');
-        result.time = (new Date(parseInt(requests[i].get('stm') || requests[i].get('dtm'), 10) || +new Date)).toJSON();
-        result.filterTag = entry.filterTag;
 
-
-        trackerAnalytics(result.collector, result.page, result.appId);
+        trackerAnalytics(tracker, result.collector, result.page, result.appId);
 
         results.push(result);
     }
@@ -63,7 +62,7 @@ var TimeEntry = function(){
 };
 
 
-module.exports = {
+export = {
     view: function(vnode){
         var urls = vnode.attrs.request.entries.reduce(function(ac, cv){
             var url = cv.request.headers.filter(function(x){return /referr?er/i.test(x.name);})[0];
@@ -74,17 +73,17 @@ module.exports = {
             return ac;
         }, {});
 
-        var url = '';
+        var url = '', parsedUrl;
         var max = -1;
         for (var p in urls) {
             if (urls[p] >= max) url = p, max = urls[p];
         }
 
-        if (url) url = new URL(url);
+        if (url) parsedUrl = new URL(url);
 
-        return m('ol.navigationview', {'data-url':  url ? url.pathname :'New Page', title: url && url.href}, Array.prototype.concat.apply([], vnode.attrs.request.entries.map(function(x, i){
+        return m('ol.navigationview', {'data-url':  url ? parsedUrl.pathname :'New Page', title: url && parsedUrl.href}, Array.prototype.concat.apply([], vnode.attrs.request.entries.map(function(x, i){
 
-            var summary = summariseBeacons(x, i);
+            var summary = summariseBeacons(x, i, vnode.attrs.tracker);
             return summary.map(function(x) {
                 return m('li', {title: 'Collector: ' + x.collector + '\nApp ID: ' + x.appId},
                          m(TimeEntry, {

@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/devtools.js ../src/style.css ../src/popup.html ../src/options.html ../src/options.js dist/ && webpack -p --watch",
-    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/devtools.js src/style.css src/popup.html src/options.html src/options.js dist/ && webpack -p",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/devtools.js ../src/style.css ../src/popup.html ../src/options.html dist/ && webpack -p --watch",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/devtools.js src/style.css src/popup.html src/options.html dist/ && webpack -p",
     "zip": "npm run build && zip -r snowflake-chrome-extension.zip dist/"
   },
   "repository": {
@@ -24,6 +24,11 @@
     "mithril": "^1.1.1"
   },
   "devDependencies": {
+    "@types/chrome": "~0.0.54",
+    "@types/mithril": "^1.1.12",
+    "@types/node": "^8.0.53",
+    "ts-loader": "^3.2.0",
+    "typescript": "^2.6.2",
     "webpack": "^2.5.1"
   }
 }

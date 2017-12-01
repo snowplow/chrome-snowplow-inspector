@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "inlineSourceMap": true,
+        "newLine": "lf",
+        "pretty": true,
+        "target": "ES3",
+        "lib": ["es5", "es6", "dom"],
+        "module": "commonjs"
+    },
+    "include": [
+        "src/*"
+    ]
+}
