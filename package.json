@@ -5,6 +5,7 @@
   "main": "src/extension.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "tslint src/*.ts",
     "clean": "rm -r dist || true",
     "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/style.css ../src/popup.html ../src/options.html dist/ && webpack -p --watch",
     "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/style.css src/popup.html src/options.html dist/ && webpack -p",
@@ -28,6 +29,8 @@
     "@types/mithril": "^1.1.12",
     "@types/node": "^8.0.53",
     "ts-loader": "^3.2.0",
+    "tslint": "^5.8.0",
+    "tslint-eslint-rules": "^4.1.1",
     "typescript": "^2.6.2",
     "webpack": "^2.5.1"
   }
