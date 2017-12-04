@@ -1,16 +1,18 @@
-const m = require('mithril');
-const protocol = require('./protocol');
-const util = require('./util');
+import m = require('mithril');
+import protocol = require('./protocol');
+import util = require('./util');
 
 function genClasses(val, finfo) {
     const classes = [];
 
-    if (finfo.deprecated) classes.push('deprecated');
+    if (finfo.deprecated) {
+        classes.push('deprecated');
+    }
 
     return classes.join(' ');
 }
 
-function extractRequests(entry, index) {
+function extractRequests(entry, index: number) {
     const req = entry.request;
     const id = entry.pageref + util.hash(entry.startedDateTime.toJSON() + req.url + index);
     const collector = new URL(req.url).hostname;
@@ -26,8 +28,12 @@ function extractRequests(entry, index) {
 
             for (const pl of payload.data) {
                 beacons.push(new Map(Object.keys(pl).map((x): [string, any] => ([x, pl[x]]))));
-                if (nuid) beacons[beacons.length -1].set('nuid', nuid.value);
-                if (ua) beacons[beacons.length -1].set('ua', ua.value);
+                if (nuid) {
+                    beacons[beacons.length - 1].set('nuid', nuid.value);
+                }
+                if (ua) {
+                    beacons[beacons.length - 1].set('ua', ua.value);
+                }
             }
 
         } catch (e) {
@@ -39,8 +45,12 @@ function extractRequests(entry, index) {
 
     } else {
         beacons.push(new URL(req.url).searchParams);
-        if (nuid) beacons[beacons.length -1].set('nuid', nuid.value);
-        if (ua) beacons[beacons.length -1].set('ua', ua.value);
+        if (nuid) {
+            beacons[beacons.length - 1].set('nuid', nuid.value);
+        }
+        if (ua) {
+            beacons[beacons.length - 1].set('ua', ua.value);
+        }
     }
 
     return [[id, collector, method], beacons];
@@ -53,21 +63,21 @@ function parseBeacons(bl) {
 
     for (const b of blist) {
         const result = {
-            name: printableValue(b.get('e'), protocol.paramMap['e']),
-            appId: printableValue(b.get('aid'), protocol.paramMap['aid']),
-            time: printableValue(b.get('stm') || b.get('dtm'), protocol.paramMap['stm']),
+            appId: printableValue(b.get('aid'), protocol.paramMap.aid),
             data: [],
+            name: printableValue(b.get('e'), protocol.paramMap.e),
+            time: printableValue(b.get('stm') || b.get('dtm'), protocol.paramMap.stm),
         };
 
         for (const gp of protocol.groupPriorities) {
-            const name = gp.name,
-                  fields = gp.fields,
-                  rows = [];
+            const name = gp.name;
+            const fields = gp.fields;
+            const rows = [];
 
             for (const field of fields) {
                 const finfo = protocol.paramMap[field];
 
-                let val = b.get(field);// || req.headers[finfo.header];
+                let val = b.get(field);
 
                 val = printableValue(val, finfo);
 
@@ -78,11 +88,9 @@ function parseBeacons(bl) {
                 b.delete(field);
             }
 
-
             if (rows.length) {
-                result['data'].push([name, rows]);
+                result.data.push([name, rows]);
             }
-
         }
 
         const unknownRows = [];
@@ -90,7 +98,9 @@ function parseBeacons(bl) {
             unknownRows.push([field[0], field[1], '']);
         }
 
-        if (unknownRows.length) result['data'].push(['Unrecognised Fields', unknownRows]);
+        if (unknownRows.length) {
+            result.data.push(['Unrecognised Fields', unknownRows]);
+        }
 
         results.push(result);
     }
@@ -98,8 +108,10 @@ function parseBeacons(bl) {
     return [meta, results];
 }
 
-function contextToTable(obj) {
-    if (typeof obj !== 'object' || obj === null) return JSON.stringify(obj).replace(/^"|"$/g, '');
+const contextToTable = (obj) => {
+    if (typeof obj !== 'object' || obj === null) {
+        return JSON.stringify(obj).replace(/^"|"$/g, '');
+    }
 
     const rows = [];
     let p;
@@ -128,26 +140,30 @@ function contextToTable(obj) {
 
         return m('table', rows);
     }
-}
+};
 
-var RowSet = function() {
+const RowSet = () => {
     let visible = true;
     return {
-        view: (vnode) => 
-            m('tbody', {class: visible ? 'show-rows' : 'hide-rows'}, [m('tr.header', {onclick: () => {visible = !visible;}}, m('th', {colspan: 2}, vnode.attrs.setName))].concat(vnode.children))
+        view: (vnode) =>
+            m('tbody', {class: visible ? 'show-rows' : 'hide-rows'},
+               [
+                   m('tr.header', {onclick: () => visible = !visible},
+                   m('th', {colspan: 2}, vnode.attrs.setName)),
+               ].concat(vnode.children)),
     };
 };
 
-function toTable(rowset) {
-    var [setName, rows] = rowset;
+const toTable = (rowset) => {
+    const [setName, rows] = rowset;
 
-    return m(RowSet, {setName: setName}, rows.map((x) => 
-        m('tr', [m('th', x[0]), m('td', contextToTable(x[1]))])
-    ));
-}
+    return m(RowSet, {setName}, rows.map((x) => m('tr', [m('th', x[0]), m('td', contextToTable(x[1]))])));
+};
 
-function printableValue(val, finfo) {
-    if (val === undefined || val === null || val === '') return null;
+const printableValue = (val, finfo) => {
+    if (val === undefined || val === null || val === '') {
+        return null;
+    }
 
     switch (finfo.type) {
     case 'text':
@@ -173,24 +189,26 @@ function printableValue(val, finfo) {
     default:
         return val;
     }
-}
+};
 
-function formatBeacons(dlist) {
-    const [meta, d] = dlist;
+const formatBeacons = (dlist) => {
+    const [[id, collector, method], d] = dlist;
 
-    return d.map((x, i) => 
-        m('table', {id: meta[0] + '-' + i},
+    return d.map((x, i) =>
+        m('table', {id: `${id}-${i}`},
             [
                 m('col.field'),
                 m('col.val'),
                 m('thead',
-                    m('tr', [m('th',x.time + ' | ' + meta[2] + ' | ' + meta[1]), m('th', x.appId + ': ' + x.name)]))
-            ].concat(x.data.map(toTable)))
+                    m('tr', [m('th', `${x.time} | ${method} | ${collector}`), m('th', `${x.appId}: ${x.name}`)])),
+            ].concat(x.data.map(toTable))),
     );
-}
+};
 
 export = {
-    view: (vnode) =>
-        m('div.request', vnode.attrs.beacon.entries.map(extractRequests).map(parseBeacons).map(formatBeacons)),
-    extractRequests: extractRequests
+    extractRequests,
+    view: (vnode) => m('div.request', vnode.attrs.beacon.entries
+              .map(extractRequests)
+              .map(parseBeacons)
+              .map(formatBeacons)),
 };

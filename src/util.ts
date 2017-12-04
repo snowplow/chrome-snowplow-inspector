@@ -1,4 +1,4 @@
-function hash(bytes) {
+const h = (bytes) => {
     let hash = 5381;
 
     for (let i = 0; i < bytes.length; i++) {
@@ -6,6 +6,6 @@ function hash(bytes) {
     }
 
     return String(hash);
-}
+};
 
-export = {hash: hash};
+export = {hash: h};

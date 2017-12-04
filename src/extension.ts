@@ -1,13 +1,11 @@
-var m = require('mithril');
-var BeaconInspector = require('./BeaconInspector');
-
+import m = require('mithril');
+import BeaconInspector = require('./BeaconInspector');
 
 // Roughly, we want to:
 // 1. get all previous beacons in this devtools session
 // 2. add them to the table
 // 3. set a chrome.devtools.network.onRequestFinished listener for future events
 // 4. set up a chrome.devtools.network.onNavigated listener to collapse the previous tree
-
 
 /*
 Component structure
