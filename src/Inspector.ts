@@ -4,5 +4,5 @@ import Beacon = require('./Beacon');
 
 export = {
     view: (vnode) =>
-        (vnode.attrs.beacon && m('div.inspector-beacons', m(Beacon, vnode.attrs))),
+        (vnode.attrs.activeBeacon && m('div.inspector-beacons', m(Beacon, vnode.attrs))),
 };

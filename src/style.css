@@ -179,11 +179,6 @@ table {
   font-size: 10px;
   text-align: left;
   border-collapse: collapse;
-  display: none;
-}
-
-table:target, table table {
-  display: table;
   width: 100%;
 }
 

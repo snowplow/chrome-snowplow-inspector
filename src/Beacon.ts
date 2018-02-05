@@ -56,56 +56,49 @@ function extractRequests(entry, index: number) {
     return [[id, collector, method], beacons];
 }
 
-function parseBeacons(bl) {
-    const [meta, blist] = bl;
+function parseBeacon(beacon) {
+    const {collector, method, payload} = beacon;
+    const result = {
+        appId: printableValue(payload.get('aid'), protocol.paramMap.aid),
+        collector,
+        data: [],
+        method,
+        name: printableValue(payload.get('e'), protocol.paramMap.e),
+        time: printableValue(payload.get('stm') || payload.get('dtm'), protocol.paramMap.stm),
+    };
 
-    const results = [];
+    for (const gp of protocol.groupPriorities) {
+        const name = gp.name;
+        const fields = gp.fields;
+        const rows = [];
 
-    for (const b of blist) {
-        const result = {
-            appId: printableValue(b.get('aid'), protocol.paramMap.aid),
-            data: [],
-            name: printableValue(b.get('e'), protocol.paramMap.e),
-            time: printableValue(b.get('stm') || b.get('dtm'), protocol.paramMap.stm),
-        };
+        for (const field of fields) {
+            const finfo = protocol.paramMap[field];
 
-        for (const gp of protocol.groupPriorities) {
-            const name = gp.name;
-            const fields = gp.fields;
-            const rows = [];
+            let val = payload.get(field);
 
-            for (const field of fields) {
-                const finfo = protocol.paramMap[field];
+            val = printableValue(val, finfo);
 
-                let val = b.get(field);
-
-                val = printableValue(val, finfo);
-
-                if (val !== null) {
-                    rows.push([finfo.name, val, genClasses(val, finfo)]);
-                }
-
-                b.delete(field);
-            }
-
-            if (rows.length) {
-                result.data.push([name, rows]);
+            if (val !== null) {
+                rows.push([finfo.name, val, genClasses(val, finfo)]);
             }
         }
 
-        const unknownRows = [];
-        for (const field of b) {
-            unknownRows.push([field[0], field[1], '']);
+        if (rows.length) {
+            result.data.push([name, rows]);
         }
-
-        if (unknownRows.length) {
-            result.data.push(['Unrecognised Fields', unknownRows]);
-        }
-
-        results.push(result);
     }
 
-    return [meta, results];
+    const unknownRows = [];
+    for (const field of payload) {
+        unknownRows.push([field[0], field[1], '']);
+    }
+
+    if (unknownRows.length) {
+        result.data.push(['Unrecognised Fields', unknownRows]);
+    }
+
+    return result;
 }
 
 const contextToTable = (obj) => {
@@ -191,24 +184,16 @@ const printableValue = (val, finfo) => {
     }
 };
 
-const formatBeacons = (dlist) => {
-    const [[id, collector, method], d] = dlist;
-
-    return d.map((x, i) =>
-        m('table', {id: `${id}-${i}`},
+const formatBeacon = (d) => m('table',
             [
                 m('col.field'),
                 m('col.val'),
                 m('thead',
-                    m('tr', [m('th', `${x.time} | ${method} | ${collector}`), m('th', `${x.appId}: ${x.name}`)])),
-            ].concat(x.data.map(toTable))),
-    );
-};
+                    m('tr', [m('th', `${d.time} | ${d.method} | ${d.collector}`), m('th', `${d.appId}: ${d.name}`)])),
+            ].concat(d.data.map(toTable)),
+);
 
 export = {
     extractRequests,
-    view: (vnode) => m('div.request', vnode.attrs.beacon.entries
-              .map(extractRequests)
-              .map(parseBeacons)
-              .map(formatBeacons)),
+    view: (vnode) => m('div.request', [formatBeacon(parseBeacon(vnode.attrs.activeBeacon))]),
 };
