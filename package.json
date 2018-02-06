@@ -22,12 +22,15 @@
   },
   "homepage": "https://github.com/snowflake-analytics/snowflake-chrome-extension#readme",
   "dependencies": {
+    "bulma": "^0.6.2",
     "mithril": "^1.1.1"
   },
   "devDependencies": {
     "@types/chrome": "~0.0.54",
     "@types/mithril": "^1.1.12",
     "@types/node": "^8.0.53",
+    "css-loader": "^0.28.9",
+    "style-loader": "^0.20.1",
     "ts-loader": "^3.2.0",
     "tslint": "^5.8.0",
     "tslint-eslint-rules": "^4.1.1",

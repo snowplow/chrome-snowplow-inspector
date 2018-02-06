@@ -1,6 +1,9 @@
 import m = require('mithril');
 import BeaconInspector = require('./BeaconInspector');
 
+// tslint:disable-next-line
+const bulma = require('bulma/css/bulma.css');
+
 // Roughly, we want to:
 // 1. get all previous beacons in this devtools session
 // 2. add them to the table

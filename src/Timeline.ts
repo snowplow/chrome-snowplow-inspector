@@ -1,6 +1,6 @@
 import m = require('mithril');
-import Beacon = require('./Beacon');
 import protocol = require('./protocol');
+import util = require('./util');
 
 const seenCollectors = {};
 
@@ -18,7 +18,7 @@ const trackerAnalytics = (tracker, collector, pageUrl, appId) => {
     if (!seenCollectors[collector].includes(appKey)) {
         seenCollectors[collector].push(appKey);
 
-        chrome.storage.sync.get({enableTracking: true}, (settings) => {
+        chrome.storage.sync.get({ enableTracking: true }, (settings) => {
             if (settings.enableTracking && tracker) {
                 tracker.trackStructEvent('New Tracker', collector, pageUrl, appId);
             }
@@ -27,7 +27,7 @@ const trackerAnalytics = (tracker, collector, pageUrl, appId) => {
 };
 
 const summariseBeacons = (entry, index, tracker) => {
-    const reqs = Beacon.extractRequests(entry, index);
+    const reqs = extractRequests(entry, index);
     const [[id, collector, method], requests] = reqs;
 
     const results = [];
@@ -78,23 +78,65 @@ const getPageUrl = (entries) => {
     return parsedUrl || url;
 };
 
+const extractRequests = (entry, index: number) => {
+    const req = entry.request;
+    const id = entry.pageref + util.hash(entry.startedDateTime.toJSON() + req.url + index);
+    const collector = new URL(req.url).hostname;
+    const method = req.method;
+    const beacons = [];
+
+    const nuid = entry.request.cookies.filter((x) => x.name === 'sp')[0];
+    const ua = entry.request.headers.filter((x) => x.name === 'User-Agent')[0];
+
+    if (req.method === 'POST') {
+        try {
+            const payload = JSON.parse(req.postData.text);
+
+            for (const pl of payload.data) {
+                beacons.push(new Map(Object.keys(pl).map((x): [string, any] => ([x, pl[x]]))));
+                if (nuid) {
+                    beacons[beacons.length - 1].set('nuid', nuid.value);
+                }
+                if (ua) {
+                    beacons[beacons.length - 1].set('ua', ua.value);
+                }
+            }
+
+        } catch (e) {
+            console.log('=================');
+            console.log(e);
+            console.log(JSON.stringify(req));
+            console.log('=================');
+        }
+
+    } else {
+        beacons.push(new URL(req.url).searchParams);
+        if (nuid) {
+            beacons[beacons.length - 1].set('nuid', nuid.value);
+        }
+        if (ua) {
+            beacons[beacons.length - 1].set('ua', ua.value);
+        }
+    }
+
+    return [[id, collector, method], beacons];
+};
+
 export = {
     view: (vnode) => {
         const url = getPageUrl(vnode.attrs.request.entries);
-        return m('ol.navigationview', {
-            'data-url':  url ? url.pathname : 'New Page',
-            'title': url && url.href || '',
-        }, Array.prototype.concat.apply([], vnode.attrs.request.entries.map((x, i) => {
-            const summary = summariseBeacons(x, i, vnode.attrs.tracker);
-            return summary.map((y) => m('li', {title: `Collector: ${y.collector}\nApp ID: ${y.appId}`},
-                         m('a', {
-                             href: y.id,
-                             onclick: vnode.attrs.setActive.bind(null, y),
-                         }, [y.eventName,
-                             m('time', {datetime: y.time, title: y.time}, 'T'),
-                         ]),
-                    ),
+        return m('div.panel',
+            m('p.panel-heading', { title: url && url.href }, url ? url.pathname : 'New Page'),
+            Array.prototype.concat.apply([], vnode.attrs.request.entries.map((x, i) => {
+                const summary = summariseBeacons(x, i, vnode.attrs.tracker);
+                return summary.map((y) => m('a.panel-block', {
+                    onclick: vnode.attrs.setActive.bind(this, y),
+                    title: `Time: ${y.time}\nCollector: ${y.collector}\nApp ID: ${y.appId}`,
+                },
+                    y.eventName,
+                ),
                 );
-        })));
+            })),
+        );
     },
 };

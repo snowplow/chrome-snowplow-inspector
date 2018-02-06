@@ -1,5 +1,5 @@
 import m = require('mithril');
-import Inspector = require('./Inspector');
+import Beacon = require('./Beacon');
 import Timeline = require('./Timeline');
 import Toolbar = require('./Toolbar');
 
@@ -26,10 +26,10 @@ const BeaconInspector = () => {
         }
 
         if (!requests.length) {
-            requests.push({page: req.pageref, entries: []});
+            requests.push({ page: req.pageref, entries: [] });
         }
         if (requests[requests.length - 1].page !== req.pageref) {
-            requests.push({page: req.pageref, entries: []});
+            requests.push({ page: req.pageref, entries: [] });
         }
         requests[requests.length - 1].entries.push(req);
 
@@ -42,13 +42,16 @@ const BeaconInspector = () => {
 
     return {
         oninit: () => chrome.devtools.network.onRequestFinished.addListener(handleNewRequest),
-        view: () => m('div#container',
-            [
-                m('div.toolbar', m(Toolbar, {clearRequests: () => requests = []})),
-                m('div.timeline', requests.map((x) => (m(Timeline,
-                    {setActive, request: x, tracker: sp})))),
-                m('div.inspector', m(Inspector, {activeBeacon: active})),
+        view: () => ([
+            m(Toolbar, { clearRequests: () => requests = [] }),
+            m('section.columns.section', [
+                m('div.column.is-2.timeline', requests.map((x) => (
+                    m(Timeline, { setActive, request: x, tracker: sp })),
+                )),
+                m('div.column.tile.is-ancestor.is-vertical.inspector',
+                    m(Beacon, { activeBeacon: active })),
             ]),
+        ]),
     };
 };
 

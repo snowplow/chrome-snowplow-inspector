@@ -15,7 +15,8 @@ module.exports = {
     },
     module: {
         rules: [
-            { exclude: /node_modules/, test: /\.[jt]sx?$/, loader: 'ts-loader' }
+            { exclude: /node_modules/, test: /\.[jt]sx?$/, loader: 'ts-loader' },
+            { test: /\.css$/, use: [{ loader: 'style-loader' }, { loader: 'css-loader' }]},
         ]
     }
 };
