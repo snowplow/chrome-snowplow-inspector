@@ -98,7 +98,7 @@ const RowSet = () => {
             m('div.card.tile.is-child', { class: visible ? 'show-rows' : 'hide-rows' },
                 m('header.card-header', { onclick: () => visible = !visible },
                     m('p.card-header-title', vnode.attrs.setName),
-                    m('a.card-header-icon')),
+                    m('a.card-header-icon', visible ? '-' : '+')),
                 m('div.card-content', m('table.table.is-fullwidth', vnode.children))),
     };
 };
