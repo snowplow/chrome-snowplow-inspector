@@ -45,7 +45,7 @@ const BeaconInspector = () => {
         view: () => ([
             m(Toolbar, { clearRequests: () => requests = [] }),
             m('section.columns.section', [
-                m('div.column.is-2.timeline', requests.map((x) => (
+                m('div.column.is-narrow.timeline', requests.map((x) => (
                     m(Timeline, { setActive, request: x, tracker: sp })),
                 )),
                 m('div.column.tile.is-ancestor.is-vertical.inspector',
