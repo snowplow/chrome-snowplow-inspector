@@ -126,7 +126,7 @@ export = {
     view: (vnode) => {
         const url = getPageUrl(vnode.attrs.request.entries);
         return m('div.panel',
-            m('p.panel-heading', { title: url && url.href }, url ? url.pathname : 'New Page'),
+            m('p.panel-heading', { title: url && url.href }, url ? url.pathname.slice(0, 34) : 'New Page'),
             Array.prototype.concat.apply([], vnode.attrs.request.entries.map((x, i) => {
                 const summary = summariseBeacons(x, i, vnode.attrs.tracker);
                 return summary.map((y) => m('a.panel-block', {
