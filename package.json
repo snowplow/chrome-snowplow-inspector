@@ -23,6 +23,7 @@
   "homepage": "https://github.com/snowflake-analytics/snowflake-chrome-extension#readme",
   "dependencies": {
     "bulma": "^0.6.2",
+    "jsonschema": "^1.2.2",
     "mithril": "^1.1.1"
   },
   "devDependencies": {
