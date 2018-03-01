@@ -39,7 +39,6 @@ const persistCache = (key, value, url) => {
 };
 
 chrome.storage.local.get({schemacache: {}, schemastatus: {}}, (settings) => {
-    console.log('loading local settings:', settings);
     for (const key in settings.schemacache) {
         if (settings.schemacache.hasOwnProperty(key)) {
             cache[key] = settings.schemacache[key];
@@ -50,8 +49,6 @@ chrome.storage.local.get({schemacache: {}, schemastatus: {}}, (settings) => {
             status[key] = settings.schemastatus[key];
         }
     }
-    console.log('schema cache:', cache);
-    console.log('schema status:', status);
 });
 
 export = {
@@ -70,24 +67,21 @@ export = {
         const [evendor, ename, eformat, eversion] = match.slice(1);
 
         if (!(schema in status)) {
-            console.log('attempting to fetch', schema, status, cache);
             status[schema] = null;
 
             for (const repo of Array.from(repositories)) {
                 const url = [repo, 'schemas', evendor, ename, eformat, eversion].join('/');
 
                 m.request(url).then((schemaJson) => {
-                    console.log('got schema', schema, 'from URL:', url, schemaJson);
                     if (schemaJson.hasOwnProperty('self')) {
                         const {vendor, name, format, version} = (schemaJson as any).self;
                         if (evendor === vendor && ename === name && eformat === format && eversion === version) {
-                            console.log('found schema for', schema, schemaJson);
                             persistCache(schema, schemaJson, url);
                         } else {
                             console.log('received schema does not match expected values:', `${evendor}:${vendor}, ${ename}:${name}, ${eformat}:${format}, ${eversion}:${version}, `);
                         }
                     }
-                }).catch(function() {console.log('fetch caught:', this, arguments); });
+                }).catch(null);
             }
         }
 
