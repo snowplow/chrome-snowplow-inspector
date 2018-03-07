@@ -40,13 +40,17 @@ const BeaconInspector = () => {
         active = beacon;
     }
 
+    function isActive(beacon) {
+        return !!(active && active.id === beacon.id);
+    }
+
     return {
         oninit: () => chrome.devtools.network.onRequestFinished.addListener(handleNewRequest),
         view: () => ([
             m(Toolbar, { clearRequests: () => requests = [] }),
             m('section.columns.section', [
                 m('div.column.is-narrow.timeline', requests.map((x) => (
-                    m(Timeline, { setActive, request: x, tracker: sp })),
+                    m(Timeline, { setActive, isActive, request: x, tracker: sp })),
                 )),
                 m('div.column.tile.is-ancestor.is-vertical.inspector',
                     m(Beacon, { activeBeacon: active })),

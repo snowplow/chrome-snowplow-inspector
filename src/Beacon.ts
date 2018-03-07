@@ -1,6 +1,7 @@
 import m = require('mithril');
 import protocol = require('./protocol');
 import util = require('./util');
+import validator = require('./validator');
 
 function genClasses(val, finfo) {
     const classes = [];
@@ -67,10 +68,12 @@ const contextToTable = (obj) => {
 
     if ('schema' in obj && 'data' in obj) {
 
-        rows.push(m('tr', [m('th', 'Schema'), m('td', obj.schema)]));
+        const validation = validator.validate(obj.schema, obj.data);
+        const validity = validation.valid ? 'Valid' : validation.location === null ? 'Unrecognised' : 'Invalid';
+        const errorText = validation.errors.join('\n') || validation.location;
 
         if ('schema' in obj.data) {
-            rows.push(m('tr', [m('th', 'Data'), contextToTable(obj.data)]));
+            rows.push(contextToTable(obj.data));
         } else {
             for (p in obj.data) {
                 if (obj.data.hasOwnProperty(p)) {
@@ -79,7 +82,19 @@ const contextToTable = (obj) => {
             }
         }
 
-        return m('table.is-fullwidth', rows);
+        return m('div.card.iglu', {class: validity.toLowerCase()},
+            m('header.card-header',
+                m('a.card-header-title',
+                    {target: '_blank', href: validation.location || 'javascript:void(0);'},
+                    obj.schema),
+            m('span.card-header-icon', ''),
+            ),
+            m('div.card-content', m('table.table.is-fullwidth', rows)),
+            m('footer.card-footer',
+                m('abbr.card-footer-item.validation', {title: errorText}, validity),
+                m('textarea.card-footer-item[disabled]', {value: JSON.stringify(obj)}),
+            ),
+        );
     } else {
         for (p in obj) {
             if (obj.hasOwnProperty(p)) {
@@ -87,7 +102,7 @@ const contextToTable = (obj) => {
             }
         }
 
-        return m('table', rows);
+        return m('table.table.is-fullwidth', rows);
     }
 };
 
@@ -98,7 +113,7 @@ const RowSet = () => {
             m('div.card.tile.is-child', { class: visible ? 'show-rows' : 'hide-rows' },
                 m('header.card-header', { onclick: () => visible = !visible },
                     m('p.card-header-title', vnode.attrs.setName),
-                    m('a.card-header-icon', visible ? '-' : '+')),
+                    m('a.card-header-icon', visible ? '[ - ]' : '[ + ]')),
                 m('div.card-content', m('table.table.is-fullwidth', vnode.children))),
     };
 };
@@ -106,7 +121,14 @@ const RowSet = () => {
 const toTable = (rowset) => {
     const [setName, rows] = rowset;
 
-    return m(RowSet, { setName }, rows.map((x) => m('tr', [m('th', x[0]), m('td', contextToTable(x[1]))])));
+    return m(RowSet, { setName },
+                rows.map((x) => {
+                    if (!/Custom Context|Unstructured Event/.test(x[0])) {
+                        return m('tr', [m('th', x[0]), m('td', contextToTable(x[1]))]);
+                    } else {
+                        return contextToTable(x[1]);
+                    }
+                }));
 };
 
 const printableValue = (val, finfo) => {
