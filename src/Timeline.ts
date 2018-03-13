@@ -80,7 +80,7 @@ const getPageUrl = (entries) => {
 
 const extractRequests = (entry, index: number) => {
     const req = entry.request;
-    const id = entry.pageref + util.hash(entry.startedDateTime.toJSON() + req.url + index);
+    const id = entry.pageref + util.hash(new Date(entry.startedDateTime).toJSON() + req.url + index);
     const collector = new URL(req.url).hostname;
     const method = req.method;
     const beacons = [];
