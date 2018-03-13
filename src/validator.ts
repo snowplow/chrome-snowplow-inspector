@@ -7,7 +7,7 @@ const jsv = new jsonschema.Validator();
 const repositories = new Set();
 
 /* tslint:disable:max-line-length */
-const SCHEMA_PATTERN = /^iglu:([a-zA-Z0-9\\-_.]+)\/([a-zA-Z0-9\\-_]+)\/([a-zA-Z0-9\\-_]+)\/([1-9][0-9]*(?:-(?:0|[1-9][0-9]*)){2})$/;
+const SCHEMA_PATTERN = /^iglu:([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([1-9][0-9]*(?:-(?:0|[1-9][0-9]*)){2})$/;
 
 const syncRepos = () => {
     repositories.clear();
