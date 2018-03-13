@@ -91,7 +91,25 @@ const contextToTable = (obj) => {
             ),
             m('div.card-content', m('table.table.is-fullwidth', rows)),
             m('footer.card-footer',
-                m('abbr.card-footer-item.validation', {title: errorText}, validity),
+                m('abbr.card-footer-item.validation', {onclick: () => {
+                    if (validity === 'Unrecognised') {
+                        chrome.runtime.openOptionsPage();
+                    } else {
+                        let cb = document.getElementById('clipboard') as HTMLInputElement;
+                        if (cb === null) {
+                            cb = document.createElement('input') as HTMLInputElement;
+                            cb.type = 'text';
+                            cb.id = 'clipboard';
+                            cb.style.position = 'relative';
+                            cb.style.left = '-10000px';
+                            document.body.appendChild(cb);
+                        }
+
+                        cb.value = errorText;
+                        cb.select();
+                        document.execCommand('copy');
+                    }
+                }, title: errorText}, validity),
                 m('textarea.card-footer-item[disabled]', {value: JSON.stringify(obj)}),
             ),
         );
