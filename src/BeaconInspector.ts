@@ -47,7 +47,7 @@ const BeaconInspector = () => {
     return {
         oninit: () => chrome.devtools.network.onRequestFinished.addListener(handleNewRequest),
         view: () => ([
-            m(Toolbar, { clearRequests: () => requests = [] }),
+            m(Toolbar, { clearRequests: () => (requests = [], active = undefined) }),
             m('section.columns.section', [
                 m('div.column.is-narrow.timeline', requests.map((x) => (
                     m(Timeline, { setActive, isActive, request: x, tracker: sp })),
