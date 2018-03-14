@@ -58,6 +58,31 @@ function parseBeacon(beacon) {
     return result;
 }
 
+const nameType = (val) => {
+    if (val === null) {
+        return 'null';
+    }
+    if (Array.isArray(val)) {
+        return 'array';
+    }
+    if (typeof val === 'number' && isNaN(val)) {
+        return 'number (NaN)';
+    }
+    if (typeof val === 'number' && !isFinite(val)) {
+        return 'number (Infinite)';
+    }
+    if (val instanceof RegExp) {
+        return 'RegExp';
+    }
+    if (val instanceof Date) {
+        return 'Date'
+    }
+    if (val instanceof Promise) {
+        return 'Promise';
+    }
+    return typeof val;
+};
+
 const contextToTable = (obj) => {
     if (typeof obj !== 'object' || obj === null) {
         return JSON.stringify(obj).replace(/^"|"$/g, '');
@@ -77,7 +102,7 @@ const contextToTable = (obj) => {
         } else {
             for (p in obj.data) {
                 if (obj.data.hasOwnProperty(p)) {
-                    rows.push(m('tr', [m('th', p), m('td', contextToTable(obj.data[p]))]));
+                    rows.push(m('tr', [m('th', p), m('td', {title: nameType(obj.data[p])}, contextToTable(obj.data[p]))]));
                 }
             }
         }
@@ -116,7 +141,7 @@ const contextToTable = (obj) => {
     } else {
         for (p in obj) {
             if (obj.hasOwnProperty(p)) {
-                rows.push(m('tr', [m('th', p), m('td', contextToTable(obj[p]))]));
+                rows.push(m('tr', [m('th', p), m('td', {title: nameType(obj[p])}, contextToTable(obj[p]))]));
             }
         }
 
@@ -142,7 +167,7 @@ const toTable = (rowset) => {
     return m(RowSet, { setName },
                 rows.map((x) => {
                     if (!/Custom Context|Unstructured Event/.test(x[0])) {
-                        return m('tr', [m('th', x[0]), m('td', contextToTable(x[1]))]);
+                        return m('tr', [m('th', x[0]), m('td', {title: nameType(x[1])}, contextToTable(x[1]))]);
                     } else {
                         return contextToTable(x[1]);
                     }
