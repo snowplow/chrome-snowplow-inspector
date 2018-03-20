@@ -1,15 +1,50 @@
-Snowflake Chrome Extension
-==========================
+Snowplow Inspector Chrome Extension
+===================================
+:Author: Snowflake Analytics
+:Email: <contact@snowflake-analytics.com>
 
-== Build
-Run `npm install` to install required dependencies, then `npm run build` to build the extension in the `dist/` directory.
+A debugging tool to help you examine and debug your link:https://snowplowanalytics.com[Snowplow] tracking implementation.
+
+.Features
+- List all your tracking events
+- See tracking parameters in human-friendly format
+- GET and POST tracking support
+- Automatically decode and parse link:https://snowplowanalytics.com/blog/2014/05/15/introducing-self-describing-jsons/[Self-Describing Events and Custom Contexts]
+- Validate your Contexts and Events against the schemas in your link:https://github.com/snowplow/iglu[Iglu Repository]
+
+At the moment, only Chrome/Chromium are supported, but we hope to add support for Firefox starting link:https://wiki.mozilla.org/RapidRelease/Calendar[v60] (link:https://bugzilla.mozilla.org/show_bug.cgi?id=1311171[pending this API]).
+
+Feedback, feature requests, pull requests, and bug reports are welcome! Please link:chrome-snowplow-inspector/issues[file an issue].
 
 == Install
-For regular users, you can find the extension at the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
+To install the extension, visit the page on the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
+
+=== Schema Validation
+At the moment, only link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories] are supported.
+Repository servers like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini]) support will come at a later date.
+
+==== Adding a repository
+. Right-click the extension icon in the main browser toolbar
+. Select Options
+. Paste the URL to your repository in the Iglu Repositories field
+. Repository URLs can be separated by spaces, lines, or commas
+
+By default we include the URL for link:https://github.com/snowplow/iglu-central[Iglu Central], which includes schemas for the built-in tracking JSONs. You can add as many repositories as you like.
+
+==== Repository Setup
+Make sure you have access to your repository from your browser in order for the extension to find your schemas.
+Typically repositories are hosted on S3, and by default the files may not be publically readable and will result in 403 errors.
+It is important to have your repository website or S3 bucket configured for link:https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS[Cross-Origin Resource Sharing].
+You can find out how to correctly configure an S3 bucket at link:https://docs.aws.amazon.com/AmazonS3/latest/user-guide/add-cors-configuration.html[How Do I Allow Cross-Domain Resource Sharing with CORS?] the default rule should work, the extension only requires GET access.
+If you configure CORS correctly and schemas are still 'Unrecognised', try clearing your browser cache.
+
+== Develop
+=== Build
+Run `npm install` to install required dependencies, then `npm run build` to build the extension in the `dist/` directory.
 
 Instructions to install a local development version of the extension to test are over at the link:https://developer.chrome.com/extensions/getstarted#unpacked[extension development documentation].
 
-== Develop
+=== Hack
 You can also use `npm start` to start webpack in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
 You will still need to reload the extension in Chrome.
 
