@@ -58,6 +58,24 @@ function parseBeacon(beacon) {
     return result;
 }
 
+const hasMembers = (obj) => {
+    if (typeof obj !== 'object' || obj === null) {
+        return false;
+    }
+
+    if (Array.isArray(obj) && obj.length > 0) {
+        return true;
+    }
+
+    for (const p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 const nameType = (val) => {
     if (val === null) {
         return 'null';
@@ -118,7 +136,21 @@ const contextToTable = (obj) => {
         } else {
             for (p in obj.data) {
                 if (obj.data.hasOwnProperty(p)) {
-                    rows.push(m('tr', [m('th', p), m('td', {title: nameType(obj.data[p])}, contextToTable(obj.data[p]))]));
+                    const type = nameType(obj.data[p]);
+                    if ((type === 'object' || type === 'array') && hasMembers(obj.data[p])) {
+                        rows.push(m('tr', [
+                            m('th', p),
+                            m('td', contextToTable(obj.data[p])),
+                        ]));
+                    } else {
+                        rows.push(m('tr', [
+                            m('th', p),
+                            m('td', [
+                                m('button.typeinfo.button.is-pulled-right.is-info[disabled]', type),
+                                contextToTable(obj.data[p]),
+                            ]),
+                        ]));
+                    }
                 }
             }
         }
@@ -145,7 +177,21 @@ const contextToTable = (obj) => {
     } else {
         for (p in obj) {
             if (obj.hasOwnProperty(p)) {
-                rows.push(m('tr', [m('th', p), m('td', {title: nameType(obj[p])}, contextToTable(obj[p]))]));
+                const type = nameType(obj[p]);
+                if ((type === 'object' || type === 'array') && hasMembers(obj[p])) {
+                    rows.push(m('tr', [
+                        m('th', p),
+                        m('td', contextToTable(obj[p])),
+                    ]));
+                } else {
+                    rows.push(m('tr', [
+                        m('th', p),
+                        m('td', [
+                            m('button.typeinfo.button.is-pulled-right.is-info[disabled]', type),
+                            contextToTable(obj[p]),
+                        ]),
+                    ]));
+                }
             }
         }
 
@@ -170,8 +216,11 @@ const toTable = (rowset) => {
 
     return m(RowSet, { setName },
                 rows.map((x) => {
-                    if (!/Custom Context|Unstructured Event/.test(x[0])) {
-                        return m('tr', [m('th', x[0]), m('td', {title: nameType(x[1])}, contextToTable(x[1]))]);
+                    if (!/Custom Context|(Unstructured|Self-Describing) Event/.test(x[0])) {
+                        return m('tr', [m('th', x[0]), m('td', [
+                            m('button.typeinfo.button.is-pulled-right.is-info[disabled]', nameType(x[1])),
+                            contextToTable(x[1]),
+                        ])]);
                     } else {
                         return contextToTable(x[1]);
                     }
