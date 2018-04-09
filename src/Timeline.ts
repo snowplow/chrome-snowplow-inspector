@@ -86,7 +86,8 @@ const extractRequests = (entry, index: number) => {
     const beacons = [];
 
     const nuid = entry.request.cookies.filter((x) => x.name === 'sp')[0];
-    const ua = entry.request.headers.filter((x) => x.name === 'User-Agent')[0];
+    const ua = entry.request.headers.filter((x) => (x.name.toLowerCase() === 'user-agent'))[0];
+    const lang = entry.request.headers.filter((x) => (x.name.toLowerCase() === 'accept-language'))[0];
 
     if (req.method === 'POST') {
         try {
@@ -99,6 +100,9 @@ const extractRequests = (entry, index: number) => {
                 }
                 if (ua) {
                     beacons[beacons.length - 1].set('ua', ua.value);
+                }
+                if (lang) {
+                    beacons[beacons.length - 1].set('lang', lang.value);
                 }
             }
 
@@ -116,6 +120,10 @@ const extractRequests = (entry, index: number) => {
         }
         if (ua) {
             beacons[beacons.length - 1].set('ua', ua.value);
+        }
+        if (lang) {
+            const langval = /^[^;,]+/.exec(lang.value);
+            beacons[beacons.length - 1].set('lang', langval ? langval[0] : lang.value);
         }
     }
 
