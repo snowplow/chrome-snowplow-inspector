@@ -130,9 +130,15 @@ export = {
             Array.prototype.concat.apply([], vnode.attrs.request.entries.map((x, i) => {
                 const summary = summariseBeacons(x, i, vnode.attrs.tracker);
                 return summary.map((y) => m('a.panel-block', {
-                    class: vnode.attrs.isActive(y) ? 'is-active' : '',
+                    class: [vnode.attrs.isActive(y) ? 'is-active' : '',
+                        x.response.status === 200 ? '' : 'not-ok'].join(' '),
                     onclick: vnode.attrs.setActive.bind(this, y),
-                    title: `Time: ${y.time}\nCollector: ${y.collector}\nApp ID: ${y.appId}`,
+                    title: [
+                        `Time: ${y.time}`,
+                        `Collector: ${y.collector}`,
+                        `App ID: ${y.appId}`,
+                        `Status: ${x.response.status} ${x.response.statusText}`,
+                    ].join('\n'),
                 },
                     y.eventName,
                 ),
