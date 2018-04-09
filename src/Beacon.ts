@@ -83,6 +83,22 @@ const nameType = (val) => {
     return typeof val;
 };
 
+const copyToClipboard = (text) => {
+    let cb = document.getElementById('clipboard') as HTMLInputElement;
+    if (cb === null) {
+        cb = document.createElement('input') as HTMLInputElement;
+        cb.type = 'text';
+        cb.id = 'clipboard';
+        cb.style.position = 'relative';
+        cb.style.left = '-10000px';
+        document.body.appendChild(cb);
+    }
+
+    cb.value = text;
+    cb.select();
+    document.execCommand('copy');
+};
+
 const contextToTable = (obj) => {
     if (typeof obj !== 'object' || obj === null) {
         return JSON.stringify(obj).replace(/^"|"$/g, '');
@@ -120,19 +136,7 @@ const contextToTable = (obj) => {
                     if (validity === 'Unrecognised') {
                         chrome.runtime.openOptionsPage();
                     } else {
-                        let cb = document.getElementById('clipboard') as HTMLInputElement;
-                        if (cb === null) {
-                            cb = document.createElement('input') as HTMLInputElement;
-                            cb.type = 'text';
-                            cb.id = 'clipboard';
-                            cb.style.position = 'relative';
-                            cb.style.left = '-10000px';
-                            document.body.appendChild(cb);
-                        }
-
-                        cb.value = errorText;
-                        cb.select();
-                        document.execCommand('copy');
+                        copyToClipboard(errorText);
                     }
                 }, title: errorText}, validity),
                 m('textarea.card-footer-item[disabled]', {value: JSON.stringify(obj)}),
