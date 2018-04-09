@@ -117,6 +117,11 @@ const copyToClipboard = (text) => {
     document.execCommand('copy');
 };
 
+const labelType = (val) => m('button.typeinfo.button.is-pulled-right.is-info',
+        {onclick: () => copyToClipboard(val), title: 'Click to copy'},
+        nameType(val))
+;
+
 const contextToTable = (obj) => {
     if (typeof obj !== 'object' || obj === null) {
         return JSON.stringify(obj).replace(/^"|"$/g, '');
@@ -146,7 +151,7 @@ const contextToTable = (obj) => {
                         rows.push(m('tr', [
                             m('th', p),
                             m('td', [
-                                m('button.typeinfo.button.is-pulled-right.is-info[disabled]', type),
+                                labelType(obj.data[p]),
                                 contextToTable(obj.data[p]),
                             ]),
                         ]));
@@ -187,7 +192,7 @@ const contextToTable = (obj) => {
                     rows.push(m('tr', [
                         m('th', p),
                         m('td', [
-                            m('button.typeinfo.button.is-pulled-right.is-info[disabled]', type),
+                            labelType(obj[p]),
                             contextToTable(obj[p]),
                         ]),
                     ]));
@@ -218,7 +223,7 @@ const toTable = (rowset) => {
                 rows.map((x) => {
                     if (!/Custom Context|(Unstructured|Self-Describing) Event/.test(x[0])) {
                         return m('tr', [m('th', x[0]), m('td', [
-                            m('button.typeinfo.button.is-pulled-right.is-info[disabled]', nameType(x[1])),
+                            labelType(x[1]),
                             contextToTable(x[1]),
                         ])]);
                     } else {
