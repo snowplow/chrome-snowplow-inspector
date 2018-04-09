@@ -112,7 +112,7 @@ const copyToClipboard = (text) => {
         document.body.appendChild(cb);
     }
 
-    cb.value = text;
+    cb.value = typeof text === 'string' ? text : JSON.stringify(text);
     cb.select();
     document.execCommand('copy');
 };
