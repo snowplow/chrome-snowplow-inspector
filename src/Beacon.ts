@@ -75,7 +75,7 @@ const nameType = (val) => {
         return 'RegExp';
     }
     if (val instanceof Date) {
-        return 'Date'
+        return 'Date';
     }
     if (val instanceof Promise) {
         return 'Promise';
