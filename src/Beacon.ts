@@ -271,7 +271,7 @@ const formatBeacon = (d) => [
     m('div.level.box', [
         m('div.level-item.has-text-centered', m('div', [
             m('p.heading', 'Time'),
-            m('p.title', new Date(d.time).toUTCString()),
+            m('time.title', {datetime: d.time}, new Date(d.time).toUTCString()),
         ])),
     ]),
     m('div.level.box', [
