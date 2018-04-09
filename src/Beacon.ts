@@ -260,13 +260,18 @@ const printableValue = (val, finfo) => {
 
 const formatBeacon = (d) => [
     m('div.level.box', [
-        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Time'), m('p.title', d.time)])),
-        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Method'), m('p.title', d.method)])),
+        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'App'), m('p.title', d.appId)])),
         m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Event'), m('p.title', d.name)])),
     ]),
     m('div.level.box', [
-        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'App'), m('p.title', d.appId)])),
+        m('div.level-item.has-text-centered', m('div', [
+            m('p.heading', 'Time'),
+            m('p.title', new Date(d.time).toUTCString()),
+        ])),
+    ]),
+    m('div.level.box', [
         m('div.level-item.has-text-centered', m('div', [m('p.heading', 'collector'), m('p.title', d.collector)])),
+        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Method'), m('p.title', d.method)])),
     ]),
 ].concat(d.data.map(toTable));
 
