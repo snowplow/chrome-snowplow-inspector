@@ -3,18 +3,11 @@ import Beacon = require('./Beacon');
 import Timeline = require('./Timeline');
 import Toolbar = require('./Toolbar');
 
-declare const Snowplow: any;
-
 const spPattern = /^[^:]+:\/\/[^/?#;]+\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
 
 const BeaconInspector = () => {
     let requests = [];
     let active;
-
-    /* global Snowplow:false */
-    const sp = Snowplow.getTrackerUrl('d.snowflake-analytics.com');
-    sp.setAppId('snowplow-chrome-extension');
-    sp.setPlatform('app');
 
     function isSnowplow(request) {
         return spPattern.test(request.url);
@@ -50,11 +43,12 @@ const BeaconInspector = () => {
             m(Toolbar, { clearRequests: () => (requests = [], active = undefined) }),
             m('section.columns.section', [
                 m('div.column.is-narrow.timeline', requests.map((x) => (
-                    m(Timeline, { setActive, isActive, request: x, tracker: sp })),
+                    m(Timeline, { setActive, isActive, request: x})),
                 )),
                 m('div.column.tile.is-ancestor.is-vertical.inspector',
                     m(Beacon, { activeBeacon: active })),
             ]),
+            m('div.jumper', {onclick: () => scrollTo(0, 0), title: 'Jump to Top'}),
         ]),
     };
 };

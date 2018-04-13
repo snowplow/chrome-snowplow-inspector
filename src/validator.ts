@@ -1,5 +1,6 @@
 import jsonschema = require('jsonschema');
 import m = require('mithril');
+import analytics = require('./analytics');
 
 const cache = {};
 const status = {};
@@ -20,6 +21,7 @@ const syncRepos = () => {
     chrome.storage.sync.get({repolist: ['http://iglucentral.com']}, (settings) => {
         for (const repo of settings.repolist) {
             repositories.add(repo);
+            analytics.repoAnalytics(repo);
         }
     });
 };

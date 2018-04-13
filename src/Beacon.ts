@@ -58,30 +58,10 @@ function parseBeacon(beacon) {
     return result;
 }
 
-const nameType = (val) => {
-    if (val === null) {
-        return 'null';
-    }
-    if (Array.isArray(val)) {
-        return 'array';
-    }
-    if (typeof val === 'number' && isNaN(val)) {
-        return 'number (NaN)';
-    }
-    if (typeof val === 'number' && !isFinite(val)) {
-        return 'number (Infinite)';
-    }
-    if (val instanceof RegExp) {
-        return 'RegExp';
-    }
-    if (val instanceof Date) {
-        return 'Date'
-    }
-    if (val instanceof Promise) {
-        return 'Promise';
-    }
-    return typeof val;
-};
+const labelType = (val) => m('button.typeinfo.button.is-pulled-right.is-info',
+        {onclick: () => util.copyToClipboard(val), title: 'Click to copy'},
+        util.nameType(val))
+;
 
 const contextToTable = (obj) => {
     if (typeof obj !== 'object' || obj === null) {
@@ -102,7 +82,21 @@ const contextToTable = (obj) => {
         } else {
             for (p in obj.data) {
                 if (obj.data.hasOwnProperty(p)) {
-                    rows.push(m('tr', [m('th', p), m('td', {title: nameType(obj.data[p])}, contextToTable(obj.data[p]))]));
+                    const type = util.nameType(obj.data[p]);
+                    if ((type === 'object' || type === 'array') && util.hasMembers(obj.data[p])) {
+                        rows.push(m('tr', [
+                            m('th', p),
+                            m('td', contextToTable(obj.data[p])),
+                        ]));
+                    } else {
+                        rows.push(m('tr', [
+                            m('th', p),
+                            m('td', [
+                                labelType(obj.data[p]),
+                                contextToTable(obj.data[p]),
+                            ]),
+                        ]));
+                    }
                 }
             }
         }
@@ -120,19 +114,7 @@ const contextToTable = (obj) => {
                     if (validity === 'Unrecognised') {
                         chrome.runtime.openOptionsPage();
                     } else {
-                        let cb = document.getElementById('clipboard') as HTMLInputElement;
-                        if (cb === null) {
-                            cb = document.createElement('input') as HTMLInputElement;
-                            cb.type = 'text';
-                            cb.id = 'clipboard';
-                            cb.style.position = 'relative';
-                            cb.style.left = '-10000px';
-                            document.body.appendChild(cb);
-                        }
-
-                        cb.value = errorText;
-                        cb.select();
-                        document.execCommand('copy');
+                        util.copyToClipboard(errorText);
                     }
                 }, title: errorText}, validity),
                 m('textarea.card-footer-item[disabled]', {value: JSON.stringify(obj)}),
@@ -141,7 +123,21 @@ const contextToTable = (obj) => {
     } else {
         for (p in obj) {
             if (obj.hasOwnProperty(p)) {
-                rows.push(m('tr', [m('th', p), m('td', {title: nameType(obj[p])}, contextToTable(obj[p]))]));
+                const type = util.nameType(obj[p]);
+                if ((type === 'object' || type === 'array') && util.hasMembers(obj[p])) {
+                    rows.push(m('tr', [
+                        m('th', p),
+                        m('td', contextToTable(obj[p])),
+                    ]));
+                } else {
+                    rows.push(m('tr', [
+                        m('th', p),
+                        m('td', [
+                            labelType(obj[p]),
+                            contextToTable(obj[p]),
+                        ]),
+                    ]));
+                }
             }
         }
 
@@ -166,8 +162,11 @@ const toTable = (rowset) => {
 
     return m(RowSet, { setName },
                 rows.map((x) => {
-                    if (!/Custom Context|Unstructured Event/.test(x[0])) {
-                        return m('tr', [m('th', x[0]), m('td', {title: nameType(x[1])}, contextToTable(x[1]))]);
+                    if (!/Custom Context|(Unstructured|Self-Describing) Event/.test(x[0])) {
+                        return m('tr', [m('th', x[0]), m('td', [
+                            labelType(x[1]),
+                            contextToTable(x[1]),
+                        ])]);
                     } else {
                         return contextToTable(x[1]);
                     }
@@ -207,13 +206,18 @@ const printableValue = (val, finfo) => {
 
 const formatBeacon = (d) => [
     m('div.level.box', [
-        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Time'), m('p.title', d.time)])),
-        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Method'), m('p.title', d.method)])),
+        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'App'), m('p.title', d.appId)])),
         m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Event'), m('p.title', d.name)])),
     ]),
     m('div.level.box', [
-        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'App'), m('p.title', d.appId)])),
+        m('div.level-item.has-text-centered', m('div', [
+            m('p.heading', 'Time'),
+            m('time.title', {datetime: d.time}, new Date(d.time).toUTCString()),
+        ])),
+    ]),
+    m('div.level.box', [
         m('div.level-item.has-text-centered', m('div', [m('p.heading', 'collector'), m('p.title', d.collector)])),
+        m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Method'), m('p.title', d.method)])),
     ]),
 ].concat(d.data.map(toTable));
 

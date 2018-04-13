@@ -1,32 +1,9 @@
 import m = require('mithril');
+import analytics = require('./analytics');
 import protocol = require('./protocol');
 import util = require('./util');
 
-const seenCollectors = {};
-
-const trackerAnalytics = (tracker, collector, pageUrl, appId) => {
-    collector = collector.toLowerCase();
-    pageUrl = (new URL(pageUrl)).host.toLowerCase();
-    appId = (appId || '').toLowerCase();
-
-    const appKey = pageUrl + ':' + appId;
-
-    if (!(collector in seenCollectors)) {
-        seenCollectors[collector] = [];
-    }
-
-    if (!seenCollectors[collector].includes(appKey)) {
-        seenCollectors[collector].push(appKey);
-
-        chrome.storage.sync.get({ enableTracking: true }, (settings) => {
-            if (settings.enableTracking && tracker) {
-                tracker.trackStructEvent('New Tracker', collector, pageUrl, appId);
-            }
-        });
-    }
-};
-
-const summariseBeacons = (entry, index, tracker) => {
+const summariseBeacons = (entry, index) => {
     const reqs = extractRequests(entry, index);
     const [[id, collector, method], requests] = reqs;
 
@@ -44,7 +21,7 @@ const summariseBeacons = (entry, index, tracker) => {
             time: (new Date(parseInt(req.get('stm') || req.get('dtm'), 10) || +new Date())).toJSON(),
         };
 
-        trackerAnalytics(tracker, collector, result.page, result.appId);
+        analytics.trackerAnalytics(collector, result.page, result.appId);
 
         results.push(result);
     }
@@ -86,7 +63,8 @@ const extractRequests = (entry, index: number) => {
     const beacons = [];
 
     const nuid = entry.request.cookies.filter((x) => x.name === 'sp')[0];
-    const ua = entry.request.headers.filter((x) => x.name === 'User-Agent')[0];
+    const ua = entry.request.headers.filter((x) => (x.name.toLowerCase() === 'user-agent'))[0];
+    const lang = entry.request.headers.filter((x) => (x.name.toLowerCase() === 'accept-language'))[0];
 
     if (req.method === 'POST') {
         try {
@@ -99,6 +77,9 @@ const extractRequests = (entry, index: number) => {
                 }
                 if (ua) {
                     beacons[beacons.length - 1].set('ua', ua.value);
+                }
+                if (lang) {
+                    beacons[beacons.length - 1].set('lang', lang.value);
                 }
             }
 
@@ -117,6 +98,10 @@ const extractRequests = (entry, index: number) => {
         if (ua) {
             beacons[beacons.length - 1].set('ua', ua.value);
         }
+        if (lang) {
+            const langval = /^[^;,]+/.exec(lang.value);
+            beacons[beacons.length - 1].set('lang', langval ? langval[0] : lang.value);
+        }
     }
 
     return [[id, collector, method], beacons];
@@ -128,11 +113,17 @@ export = {
         return m('div.panel',
             m('p.panel-heading', { title: url && url.href }, url ? url.pathname.slice(0, 34) : 'New Page'),
             Array.prototype.concat.apply([], vnode.attrs.request.entries.map((x, i) => {
-                const summary = summariseBeacons(x, i, vnode.attrs.tracker);
+                const summary = summariseBeacons(x, i);
                 return summary.map((y) => m('a.panel-block', {
-                    class: vnode.attrs.isActive(y) ? 'is-active' : '',
+                    class: [vnode.attrs.isActive(y) ? 'is-active' : '',
+                        x.response.status === 200 ? '' : 'not-ok'].join(' '),
                     onclick: vnode.attrs.setActive.bind(this, y),
-                    title: `Time: ${y.time}\nCollector: ${y.collector}\nApp ID: ${y.appId}`,
+                    title: [
+                        `Time: ${y.time}`,
+                        `Collector: ${y.collector}`,
+                        `App ID: ${y.appId}`,
+                        `Status: ${x.response.status} ${x.response.statusText}`,
+                    ].join('\n'),
                 },
                     y.eventName,
                 ),
