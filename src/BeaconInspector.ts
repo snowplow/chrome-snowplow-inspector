@@ -3,7 +3,7 @@ import Beacon = require('./Beacon');
 import Timeline = require('./Timeline');
 import Toolbar = require('./Toolbar');
 
-const spPattern = /^[^:]+:\/\/[^/?#;]+\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
+const spPattern = /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
 
 const BeaconInspector = () => {
     let requests = [];
