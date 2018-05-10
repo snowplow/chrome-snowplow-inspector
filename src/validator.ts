@@ -8,7 +8,8 @@ const jsv = new jsonschema.Validator();
 const repositories = new Set();
 
 /* tslint:disable:max-line-length */
-const SCHEMA_PATTERN = /^iglu:([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([1-9][0-9]*(?:-(?:0|[1-9][0-9]*)){2})$/;
+const STRICT_SCHEMA_PATTERN = /^iglu:([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([1-9][0-9]*(?:-(?:0|[1-9][0-9]*)){2})()$/;
+const LAX_SCHEMA_PATTERN = /^iglu:([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([0-9]*(?:-(?:0|[1-9][0-9]*)){2})(.*)$/;
 
 const syncRepos = () => {
     repositories.clear();
@@ -55,29 +56,34 @@ chrome.storage.local.get({schemacache: {}, schemastatus: {}}, (settings) => {
 
 export = {
     validate: (schema, data) => {
-        const match = SCHEMA_PATTERN.exec(schema);
-        if (!match) {
+        const strictMatch = STRICT_SCHEMA_PATTERN.exec(schema);
+        const laxMatch = LAX_SCHEMA_PATTERN.exec(schema);
+
+        if (!strictMatch && !laxMatch) {
             return {valid: false, errors: ['Invalid Iglu URI identifying schema.'], location: null};
         }
 
         if (schema in cache) {
             const result = jsv.validate(data, cache[schema]) as any;
             result.location = status[schema];
+            if (!strictMatch && laxMatch) {
+                result.errors.push('Iglu URI does not match the spec and may not validate during enrichment.', `Iglu URI: ${result.location}`);
+            }
             return result;
         }
 
-        const [evendor, ename, eformat, eversion] = match.slice(1);
+        const [evendor, ename, eformat, eversion, etag] = strictMatch ? strictMatch.slice(1) : laxMatch.slice(1);
 
         if (!(schema in status)) {
             status[schema] = null;
 
             for (const repo of Array.from(repositories)) {
-                const url = [repo, 'schemas', evendor, ename, eformat, eversion].join('/');
+                const url = [repo, 'schemas', evendor, ename, eformat, eversion + etag].join('/');
 
                 m.request(url).then((schemaJson) => {
                     if (schemaJson.hasOwnProperty('self')) {
                         const {vendor, name, format, version} = (schemaJson as any).self;
-                        if (evendor === vendor && ename === name && eformat === format && eversion === version) {
+                        if (evendor === vendor && ename === name && eformat === format && (eversion === version || eversion + etag === version)) {
                             persistCache(schema, schemaJson, url);
                         } else {
                             console.log('received schema does not match expected values:', `${evendor}:${vendor}, ${ename}:${name}, ${eformat}:${format}, ${eversion}:${version}, `);
