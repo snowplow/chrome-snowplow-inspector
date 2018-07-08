@@ -14,7 +14,11 @@ const BeaconInspector = () => {
     }
 
     function handleNewRequest(req) {
-        if (!isSnowplow(req.request) || req.request.method === 'OPTIONS') {
+        if (
+            !isSnowplow(req.request) ||
+            req.request.method === 'OPTIONS' ||
+            req.response.statusText === 'Service Worker Fallback Required'
+        ) {
             return;
         }
 
