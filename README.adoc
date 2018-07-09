@@ -1,4 +1,4 @@
-Snowplow Inspector Chrome Extension
+Snowplow Inspector Web Extension
 ===================================
 :Author: Snowflake Analytics
 :Email: <contact@snowflake-analytics.com>
@@ -6,13 +6,13 @@ Snowplow Inspector Chrome Extension
 A debugging tool to help you examine and debug your link:https://snowplowanalytics.com[Snowplow] tracking implementation.
 
 .Features
-- List all your tracking events
+- List and filter all your tracking events
 - See tracking parameters in human-friendly format
 - GET and POST tracking support
 - Automatically decode and parse link:https://snowplowanalytics.com/blog/2014/05/15/introducing-self-describing-jsons/[Self-Describing Events and Custom Contexts]
 - Validate your Contexts and Events against the schemas in your link:https://github.com/snowplow/iglu[Iglu Repository]
 
-At the moment, only Chrome/Chromium are supported, but we hope to add support for Firefox starting link:https://wiki.mozilla.org/RapidRelease/Calendar[v60] (link:https://bugzilla.mozilla.org/show_bug.cgi?id=1311171[pending this API]).
+At the moment, only Chrome/Chromium are supported via an official app store, but it mostly works if you build for Firefox v60+.
 
 Feedback, feature requests, pull requests, and bug reports are welcome! Please link:chrome-snowplow-inspector/issues[file an issue].
 
@@ -20,8 +20,8 @@ Feedback, feature requests, pull requests, and bug reports are welcome! Please l
 To install the extension, visit the page on the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
 
 === Schema Validation
-At the moment, only link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories] are supported.
-Repository servers like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini]) support will come at a later date.
+Most easily, link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories] are supported.
+Repository servers like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini]) work if you specify e.g. `/iglu-server/api`, but you have to get CORS working first.
 
 ==== Adding a repository
 . Right-click the extension icon in the main browser toolbar
@@ -46,5 +46,5 @@ Instructions to install a local development version of the extension to test are
 
 === Hack
 You can also use `npm start` to start webpack in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
-You will still need to reload the extension in Chrome.
+You will still need to reload the extension in a browser.
 
