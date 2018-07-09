@@ -1,5 +1,5 @@
 Snowplow Inspector Web Extension
-===================================
+================================
 :Author: Snowflake Analytics
 :Email: <contact@snowflake-analytics.com>
 
