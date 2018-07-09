@@ -8,6 +8,7 @@ const spPattern = /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplo
 const BeaconInspector = () => {
     let requests = [];
     let active;
+    let filter;
 
     function isSnowplow(request) {
         return spPattern.test(request.url);
@@ -46,9 +47,23 @@ const BeaconInspector = () => {
         view: () => ([
             m(Toolbar, { clearRequests: () => (requests = [], active = undefined) }),
             m('section.columns.section', [
-                m('div.column.is-narrow.timeline', requests.map((x) => (
-                    m(Timeline, { setActive, isActive, request: x})),
-                )),
+                m('div.column.is-narrow.timeline',
+                    m('div.panel > label',
+                        m('input#filter[type=text][placeholder=Filter]', {
+                            onkeyup: (e) => {
+                                const t = e.currentTarget;
+                                try {
+                                    const f = !!t.value ? new RegExp(t.value, 'i') : undefined;
+                                    filter = f;
+                                    t.className = 'valid';
+                                } catch (x) {
+                                    t.className = 'invalid';
+                                }
+                            },
+                        }),
+                    ),
+                    requests.map((x) => m(Timeline, { setActive, isActive, filter, request: x })),
+                ),
                 m('div.column.tile.is-ancestor.is-vertical.inspector',
                     m(Beacon, { activeBeacon: active })),
             ]),
