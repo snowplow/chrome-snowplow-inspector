@@ -45,7 +45,10 @@ const BeaconInspector = () => {
     return {
         oninit: () => chrome.devtools.network.onRequestFinished.addListener(handleNewRequest),
         view: () => ([
-            m(Toolbar, { clearRequests: () => (requests = [], active = undefined) }),
+            m(Toolbar, {
+                addRequests: (pagename, reqs) => requests.push({ page: pagename, entries: reqs }),
+                clearRequests: () => (requests = [], active = undefined),
+            }),
             m('section.columns.section', [
                 m('div.column.is-narrow.timeline',
                     m('div.panel',
