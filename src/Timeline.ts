@@ -23,7 +23,16 @@ const filterRequest = (beacon, filter) => {
     || filter.test(beacon.eventName)
     || filter.test(beacon.method)
     || filter.test(beacon.page)
-    || Array.from(beacon.payload.values()).filter((x) => filter.test(x)).length > 0
+    || Array.from(beacon.payload.values()).filter((x) => {
+        let decoded;
+        try {
+            decoded = atob(String(x).replace(/-/g, '+').replace(/_/g, '/'));
+        } catch (e) {
+            decoded = null;
+        }
+
+        return filter.test(decoded) || filter.test(x);
+    }).length > 0
     ;
 };
 
