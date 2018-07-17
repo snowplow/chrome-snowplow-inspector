@@ -48,7 +48,7 @@ const BeaconInspector = () => {
             m(Toolbar, { clearRequests: () => (requests = [], active = undefined) }),
             m('section.columns.section', [
                 m('div.column.is-narrow.timeline',
-                    m('div.panel > label',
+                    m('div.panel',
                         m('input#filter[type=text][placeholder=Filter]', {
                             onkeyup: (e) => {
                                 const t = e.currentTarget;
