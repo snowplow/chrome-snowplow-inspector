@@ -4,14 +4,17 @@
     <meta charset="utf-8">
     <title>Snowflake Analytics - Snowplow Beacon Analyser</title>
     <style>
-        body {background-color: ghostwhite; min-height: 100%}
-        html {height: 100%; font-size: 10px}
-        .tile.is-ancestor {margin-top: 0 !important; overflow:auto}
+        :root {height: 100vh; overflow: hidden}
+        body {background-color: ghostwhite; height: 100vh}
+        .tile.is-ancestor {margin-top: 0 !important}
         .panel-block {background-color: white}
-        .section {padding: 1rem 1.5rem 3rem !important}
+        .section {padding: 1rem .75rem 3rem 1.5rem !important; height: 100%}
         .inspector .tile {display:inline-table !important}
         .inspector .card-content {padding-bottom: 0}
         .hide-rows .card-content {display: none}
+        .column.timeline {overflow: auto}
+        #beacon {overflow: auto}
+        .filterPanel {position: sticky; top: 0}
         #filter {display: block; width: 100%}
         .iglu.invalid > footer > .validation, #filter.invalid {background-color: hsl(348, 100%, 61%); color: ghostwhite}
         .iglu.valid > footer > .validation {color: green}
