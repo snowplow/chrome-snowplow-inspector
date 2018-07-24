@@ -71,7 +71,6 @@ const BeaconInspector = () => {
                     m('div.tile.is-ancestor.is-vertical.inspector',
                         m(Beacon, { activeBeacon: active }))),
             ]),
-            m('div.jumper', {onclick: () => scrollTo(0, 0), title: 'Jump to Top'}),
         ]),
     };
 };
