@@ -36,6 +36,36 @@ const filterRequest = (beacon, filter) => {
     ;
 };
 
+const nameEvent = (params: Map<string, string>): string => {
+    const result = protocol.paramMap.e.values[params.get('e')] || params.get('e');
+
+    switch (result) {
+    case 'Self-Describing Event':
+        const payload = params.get('ue_pr') || params.get('ue_px');
+        let sdeName = 'Unstructured';
+        let sde = null;
+
+        try {
+            sde = JSON.parse(util.b64d(payload));
+        } catch (e) {
+            sde = JSON.parse(payload);
+        } finally {
+            if (typeof sde === 'object' && sde !== null && sde.hasOwnProperty('schema') && sde.hasOwnProperty('data')) {
+                sdeName = sde.data.schema || 'Unstructured';
+                if (sdeName.startsWith('iglu:')) {
+                    sdeName = sdeName.split('/')[1];
+                }
+            }
+        }
+
+        return 'SD Event: ' + sdeName;
+    case 'Structured Event':
+        return result + ': ' + params.get('se_ca');
+    default:
+        return result;
+    }
+};
+
 const summariseBeacons = (entry, index, filter) => {
     const reqs = extractRequests(entry, index);
     const [[id, collector, method], requests] = reqs;
@@ -46,7 +76,7 @@ const summariseBeacons = (entry, index, filter) => {
         const result = {
             appId: req.get('aid'),
             collector,
-            eventName: protocol.paramMap.e.values[req.get('e')] || req.get('e'),
+            eventName: nameEvent(req),
             id: `#${id}-${i}`,
             method,
             page: req.get('url'),
