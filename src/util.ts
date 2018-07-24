@@ -1,4 +1,4 @@
-const hash = (bytes) => {
+const hash = (bytes): string => {
     let h = 5381;
 
     for (let i = 0; i < bytes.length; i++) {
@@ -26,7 +26,11 @@ const hasMembers = (obj) => {
     return false;
 };
 
-const nameType = (val) => {
+const b64d = (s: string): string => {
+    return atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+};
+
+const nameType = (val): string => {
     if (val === null) {
         return 'null';
     }
@@ -51,7 +55,7 @@ const nameType = (val) => {
     return typeof val;
 };
 
-const copyToClipboard = (text) => {
+const copyToClipboard = (text: string): void => {
     let cb = document.getElementById('clipboard') as HTMLInputElement;
     if (cb === null) {
         cb = document.createElement('input') as HTMLInputElement;
@@ -67,4 +71,4 @@ const copyToClipboard = (text) => {
     document.execCommand('copy');
 };
 
-export = {hash, hasMembers, nameType, copyToClipboard};
+export = {b64d, hash, hasMembers, nameType, copyToClipboard};

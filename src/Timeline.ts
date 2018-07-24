@@ -23,10 +23,10 @@ const filterRequest = (beacon, filter) => {
     || filter.test(beacon.eventName)
     || filter.test(beacon.method)
     || filter.test(beacon.page)
-    || Array.from(beacon.payload.values()).filter((x) => {
+    || Array.from(beacon.payload.values()).filter((x: string) => {
         let decoded;
         try {
-            decoded = atob(String(x).replace(/-/g, '+').replace(/_/g, '/'));
+            decoded = util.b64d(x);
         } catch (e) {
             decoded = null;
         }
