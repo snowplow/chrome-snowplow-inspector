@@ -67,4 +67,12 @@ const copyToClipboard = (text) => {
     document.execCommand('copy');
 };
 
-export = {hash, hasMembers, nameType, copyToClipboard};
+const tryb64 = (text: string): string => {
+    if (typeof text === 'string' && /^([A-Za-z0-9/_+-]{4})+([A-Za-z0-9/_+=-]{1,4})?$/.test(text)) {
+        return atob(text.replace(/_/g, '/').replace(/-/g, '+'));
+    } else {
+        return text;
+    }
+};
+
+export = {hash, hasMembers, nameType, copyToClipboard, tryb64};
