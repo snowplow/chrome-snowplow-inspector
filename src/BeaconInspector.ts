@@ -57,7 +57,7 @@ const BeaconInspector = () => {
             }),
             m('section.columns.section', [
                 m('div.column.is-narrow.timeline',
-                    m('div.panel',
+                    m('div.panel.filterPanel',
                         m('input#filter[type=text][placeholder=Filter]', {
                             onkeyup: (e) => {
                                 const t = e.currentTarget;
@@ -73,15 +73,15 @@ const BeaconInspector = () => {
                     ),
                     requests.map((x) => m(Timeline, { setActive, isActive, filter, request: x })),
                 ),
-                m('div.column.tile.is-ancestor.is-vertical.inspector',
-                    m(Beacon, { activeBeacon: active })),
+                m('div#beacon.column',
+                    m('div.tile.is-ancestor.is-vertical.inspector',
+                        m(Beacon, { activeBeacon: active }))),
             ]),
             m(BadRowsModal, {
                 addRequests: (pagename, reqs) => requests.push({ page: pagename, entries: reqs }),
                 modal,
                 setModal,
             }),
-            m('div.jumper', {onclick: () => scrollTo(0, 0), title: 'Jump to Top'}),
         ]),
     };
 };

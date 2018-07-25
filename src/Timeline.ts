@@ -23,10 +23,10 @@ const filterRequest = (beacon, filter) => {
     || filter.test(beacon.eventName)
     || filter.test(beacon.method)
     || filter.test(beacon.page)
-    || Array.from(beacon.payload.values()).filter((x) => {
+    || Array.from(beacon.payload.values()).filter((x: string) => {
         let decoded;
         try {
-            decoded = atob(String(x).replace(/-/g, '+').replace(/_/g, '/'));
+            decoded = util.b64d(x);
         } catch (e) {
             decoded = null;
         }
@@ -34,6 +34,36 @@ const filterRequest = (beacon, filter) => {
         return filter.test(decoded) || filter.test(x);
     }).length > 0
     ;
+};
+
+const nameEvent = (params: Map<string, string>): string => {
+    const result = protocol.paramMap.e.values[params.get('e')] || params.get('e');
+
+    switch (result) {
+    case 'Self-Describing Event':
+        const payload = params.get('ue_pr') || params.get('ue_px');
+        let sdeName = 'Unstructured';
+        let sde = null;
+
+        try {
+            sde = JSON.parse(util.b64d(payload));
+        } catch (e) {
+            sde = JSON.parse(payload);
+        } finally {
+            if (typeof sde === 'object' && sde !== null && sde.hasOwnProperty('schema') && sde.hasOwnProperty('data')) {
+                sdeName = sde.data.schema || 'Unstructured';
+                if (sdeName.startsWith('iglu:')) {
+                    sdeName = sdeName.split('/')[1];
+                }
+            }
+        }
+
+        return 'SD Event: ' + sdeName;
+    case 'Structured Event':
+        return result + ': ' + params.get('se_ca');
+    default:
+        return result;
+    }
 };
 
 const summariseBeacons = (entry, index, filter) => {
@@ -46,7 +76,7 @@ const summariseBeacons = (entry, index, filter) => {
         const result = {
             appId: req.get('aid'),
             collector,
-            eventName: protocol.paramMap.e.values[req.get('e')] || req.get('e'),
+            eventName: nameEvent(req),
             id: `#${id}-${i}`,
             method,
             page: req.get('url'),
