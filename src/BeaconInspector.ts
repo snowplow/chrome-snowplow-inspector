@@ -1,4 +1,5 @@
 import m = require('mithril');
+import BadRowsModal = require('./BadRowsModal');
 import Beacon = require('./Beacon');
 import Timeline = require('./Timeline');
 import Toolbar = require('./Toolbar');
@@ -9,6 +10,7 @@ const BeaconInspector = () => {
     let requests = [];
     let active;
     let filter;
+    let modal: string | null = null;
 
     function isSnowplow(request) {
         return spPattern.test(request.url);
@@ -38,6 +40,10 @@ const BeaconInspector = () => {
         active = beacon;
     }
 
+    function setModal(modalName) {
+        modal = modalName;
+    }
+
     function isActive(beacon) {
         return !!(active && active.id === beacon.id);
     }
@@ -46,8 +52,8 @@ const BeaconInspector = () => {
         oninit: () => chrome.devtools.network.onRequestFinished.addListener(handleNewRequest),
         view: () => ([
             m(Toolbar, {
-                addRequests: (pagename, reqs) => requests.push({ page: pagename, entries: reqs }),
                 clearRequests: () => (requests = [], active = undefined),
+                setModal,
             }),
             m('section.columns.section', [
                 m('div.column.is-narrow.timeline',
@@ -71,6 +77,11 @@ const BeaconInspector = () => {
                     m('div.tile.is-ancestor.is-vertical.inspector',
                         m(Beacon, { activeBeacon: active }))),
             ]),
+            m(BadRowsModal, {
+                addRequests: (pagename, reqs) => requests.push({ page: pagename, entries: reqs }),
+                modal,
+                setModal,
+            }),
         ]),
     };
 };

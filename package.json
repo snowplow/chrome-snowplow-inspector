@@ -1,6 +1,6 @@
 {
   "name": "snowflake-chrome-extension",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Add a panel to DevTools to show Snowplow analytics beacon information.",
   "main": "src/extension.js",
   "scripts": {

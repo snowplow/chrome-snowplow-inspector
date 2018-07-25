@@ -71,4 +71,12 @@ const copyToClipboard = (text: string): void => {
     document.execCommand('copy');
 };
 
-export = {b64d, hash, hasMembers, nameType, copyToClipboard};
+const tryb64 = (text: string): string => {
+    if (typeof text === 'string' && /^([A-Za-z0-9/_+-]{4})+([A-Za-z0-9/_+=-]{1,4})?$/.test(text)) {
+        return b64d(text);
+    } else {
+        return text;
+    }
+};
+
+export = {b64d, hash, hasMembers, nameType, copyToClipboard, tryb64};

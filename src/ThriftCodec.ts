@@ -58,8 +58,9 @@ function decodeB64Thrift(b64: string, schema: object): object {
         // parseInt handles this case and makes it fit as a double
         let r = '';
 
-        for (let i = 0; i < b.length; i++) {
-            r += b.charCodeAt(i).toString(16);
+        for (let i = 0, j; i < b.length; i++) {
+            j = b.charCodeAt(i).toString(16);
+            r += j.length & 1 ? '0' + j : j;
         }
 
         return parseInt(r, 16);
