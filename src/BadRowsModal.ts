@@ -150,7 +150,10 @@ export = {
             m('div.modal-background'),
             m('div.modal-card',
                 [
-                    m('header.modal-card-head'),
+                    m('header.modal-card-head', [
+                        m('p.modal-card-title', 'Bad Rows Import'),
+                        m('button.delete', { onclick: () => vnode.attrs.setModal(null) }),
+                    ]),
                     m('section.modal-card-body', m('textarea.textarea',
                         {
                             oninput: m.withAttr('value', (value) => {
