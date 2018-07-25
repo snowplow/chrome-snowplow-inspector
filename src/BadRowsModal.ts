@@ -1,5 +1,6 @@
 import m = require('mithril');
 import ThriftCodec = require('./ThriftCodec');
+import util = require('./util');
 
 let badRows = '';
 
@@ -40,11 +41,11 @@ const thriftToRequest = (payload) => {
     return {
         pageref: 'page_bad',
         request: {
-            headers,
             cookies,
-            url: 'https://badbucket.example.org',
+            headers,
             method: 'POST',
-            postData: { text: payload.body },
+            postData: { text: util.tryb64(payload.body) },
+            url: 'https://badbucket.example.org',
         },
         response: {},
         startedDateTime: JSON.stringify(new Date(payload.timestamp)),
@@ -101,7 +102,9 @@ const badToRequests = (data: string[]) => {
                         }
                         break;
                     case 'body':
-                        result[tomcat[i]] = x === '-' ? null : atob(x);
+                        if (x !== '-') {
+                            result[tomcat[i]] = util.tryb64(x);
+                        }
                         break;
                     case 'querystring':
                         const qs = /cv=([^&]+).*nuid=([^&]+)/.exec(x);
