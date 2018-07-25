@@ -8,6 +8,9 @@ sp.setPlatform('app');
 const seenCollectors = {};
 
 const trackerAnalytics = (collector, pageUrl, appId) => {
+    if (collector === 'badbucket.example.org') {
+        return;
+    }
     collector = collector.toLowerCase();
     pageUrl = (new URL(pageUrl)).host.toLowerCase();
     appId = (appId || '').toLowerCase();
