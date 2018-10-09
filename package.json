@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "tslint src/*.ts",
     "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/popup.html ../src/options.html dist/ && webpack -p --watch",
-    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/popup.html src/options.html dist/ && webpack -p",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/popup.html ../src/options.html ../LICENSE.txt dist/ && webpack -p --watch",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/popup.html src/options.html LICENSE.txt dist/ && webpack -p",
     "xpi": "npm run build && web-ext build --overwrite-dest -s dist/ -a .",
     "xpi-signed": "npm run build && web-ext sign --id {ab5ef1af-3ce6-4741-9e30-96771603496d} -s dist/ -a .",
     "zip": "npm run build && zip -r snowflake-chrome-extension.zip dist/"
