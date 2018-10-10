@@ -38,14 +38,22 @@ const thriftToRequest = (payload) => {
         }
     }
 
+    const uri = [
+        'https://',
+        (payload.hostname || 'badbucket.example.org'),
+        (payload.path || '/'),
+        (payload.querystring ? '?' + payload.querystring : ''),
+    ].join('');
+
     return {
         pageref: 'page_bad',
         request: {
             cookies,
             headers,
-            method: 'POST',
+            method: 'body' in payload ? 'POST' : 'GET',
             postData: { text: util.tryb64(payload.body) },
-            url: 'https://badbucket.example.org',
+            queryString: payload.querystring,
+            url: uri,
         },
         response: {},
         startedDateTime: JSON.stringify(new Date(payload.timestamp)),
