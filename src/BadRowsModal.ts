@@ -66,7 +66,13 @@ const badToRequests = (data: string[]) => {
             return;
         }
 
-        let js = JSON.parse(row);
+        let js = null;
+
+        try {
+            js = JSON.parse(row);
+        } catch {
+            js = row;
+        }
 
         if (typeof js === 'object' && js !== null && js.hasOwnProperty('line')) {
             js = js.line;
