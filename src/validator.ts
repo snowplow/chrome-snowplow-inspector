@@ -24,10 +24,24 @@ const syncRepos = () => {
             analytics.repoAnalytics(repo);
         }
     });
+
+    chrome.storage.local.get({schemalist: []}, (settings) => {
+        for (const schema of settings.schemalist) {
+            let key = 'iglu:';
+
+            try {
+                key += [schema.self.vendor, schema.self.name, schema.self.format, schema.self.version].join('/');
+            } catch {
+                continue;
+            }
+
+            cache[key] = schema;
+        }
+    });
 };
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && 'repolist' in changes) {
+    if (areaName === 'local' && ('repolist' in changes || 'schemalist' in changes)) {
         syncRepos();
     }
 });
