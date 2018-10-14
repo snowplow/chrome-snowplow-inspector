@@ -68,6 +68,13 @@ chrome.storage.local.get({schemacache: {}, schemastatus: {}}, (settings) => {
 });
 
 export = {
+    clearCache: () => {
+        for (const p in cache) {
+            if (cache.hasOwnProperty(p)) {
+                delete cache[p];
+            }
+        }
+    },
     validate: (schema, data) => {
         const match = SCHEMA_PATTERN.exec(schema);
         if (!match) {
