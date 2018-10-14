@@ -1,5 +1,4 @@
-Snowplow Inspector Web Extension
-================================
+= Snowplow Inspector Web Extension
 :Author: Snowflake Analytics
 :Email: <contact@snowflake-analytics.com>
 
@@ -11,22 +10,24 @@ A debugging tool to help you examine and debug your link:https://snowplowanalyti
 - GET and POST tracking support
 - Automatically decode and parse link:https://snowplowanalytics.com/blog/2014/05/15/introducing-self-describing-jsons/[Self-Describing Events and Custom Contexts]
 - Validate your Contexts and Events against the schemas in your link:https://github.com/snowplow/iglu[Iglu Repository]
+- Import events from your bad rows bucket/stream and see why they failed enrichment
 
-At the moment, only Chrome/Chromium are supported via an official app store, but it mostly works if you build for Firefox v60+.
-
-Feedback, feature requests, pull requests, and bug reports are welcome! Please link:chrome-snowplow-inspector/issues[file an issue].
+Feedback, feature requests, pull requests, and bug reports are welcome! Please link:https://github.com/snowflake-analytics/chrome-snowplow-inspector/issues[file an issue].
 
 == Install
+At the moment, only Chrome/Chromium are supported via an official app store, and builds for Firefox are available, but not supported.
 To install the extension, visit the page on the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
+You can get builds for Firefox v60+ in link:https://github.com/snowflake-analytics/chrome-snowplow-inspector/releases[Releases].
 
 === Schema Validation
-Most easily, link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories] are supported.
-Repository servers like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini]) work if you specify e.g. `/iglu-server/api`, but you have to get CORS working first.
+The extension options should let you load in local JSON Schema files during development, and you can also add your production or Snowplow Mini Iglu Repositories to test against what you have in production.
 
-==== Adding a repository
+Both link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories] and link:https://github.com/snowplow/iglu/wiki/Iglu-server[Iglu Servers] (like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini]) are supported.
+
+==== Adding an Iglu Repository
 . Right-click the extension icon in the main browser toolbar
 . Select Options
-. Paste the URL to your repository in the Iglu Repositories field
+. Paste the URL to your repository in the Iglu Repositories field (if you're adding Snowplow Mini, you need to keep the `/iglu-server/api` suffix)
 . Repository URLs can be separated by spaces, lines, or commas
 
 By default we include the URL for link:https://github.com/snowplow/iglu-central[Iglu Central], which includes schemas for the built-in tracking JSONs. You can add as many repositories as you like.
@@ -37,6 +38,7 @@ Typically repositories are hosted on S3, and by default the files may not be pub
 It is important to have your repository website or S3 bucket configured for link:https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS[Cross-Origin Resource Sharing].
 You can find out how to correctly configure an S3 bucket at link:https://docs.aws.amazon.com/AmazonS3/latest/user-guide/add-cors-configuration.html[How Do I Allow Cross-Domain Resource Sharing with CORS?] the default rule should work, the extension only requires GET access.
 If you configure CORS correctly and schemas are still 'Unrecognised', try clearing your browser cache.
+Alternatively, you can import your schemas directly as Local Schemas in the extension Options page.
 
 == Develop
 === Build
