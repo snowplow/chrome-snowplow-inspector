@@ -12,13 +12,9 @@ const SCHEMA_PATTERN = /^iglu:([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-
 
 const syncRepos = () => {
     repositories.clear();
-    for (const p in status) {
-        if (status[p] === null) {
-            delete status[p];
-        }
-    }
+    repositories.add('http://iglucentral.com');
 
-    chrome.storage.sync.get({repolist: ['http://iglucentral.com']}, (settings) => {
+    chrome.storage.sync.get({repolist: []}, (settings) => {
         for (const repo of settings.repolist) {
             repositories.add(repo);
             analytics.repoAnalytics(repo);
@@ -40,17 +36,23 @@ const syncRepos = () => {
     });
 };
 
-chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && ('repolist' in changes || 'schemalist' in changes)) {
-        syncRepos();
-    }
-});
-
-syncRepos();
-
 const persistCache = (key, value, url) => {
     cache[key] = value;
     status[key] = url;
+    chrome.storage.local.set({schemacache: cache, schemastatus: status});
+};
+
+const clearCache = () => {
+    for (const p in cache) {
+        if (cache.hasOwnProperty(p)) {
+            delete cache[p];
+        }
+    }
+    for (const p in status) {
+        if (status.hasOwnProperty(p)) {
+            delete status[p];
+        }
+    }
     chrome.storage.local.set({schemacache: cache, schemastatus: status});
 };
 
@@ -67,14 +69,18 @@ chrome.storage.local.get({schemacache: {}, schemastatus: {}}, (settings) => {
     }
 });
 
+chrome.storage.onChanged.addListener((changes) => {
+    if ('repolist' in changes || 'schemalist' in changes) {
+        clearCache();
+        syncRepos();
+        m.redraw();
+    }
+});
+
+syncRepos();
+
 export = {
-    clearCache: () => {
-        for (const p in cache) {
-            if (cache.hasOwnProperty(p)) {
-                delete cache[p];
-            }
-        }
-    },
+    clearCache,
     validate: (schema, data) => {
         const match = SCHEMA_PATTERN.exec(schema);
         if (!match) {
