@@ -117,7 +117,7 @@ const contextToTable = (obj) => {
                         util.copyToClipboard(errorText);
                     }
                 }, title: errorText}, validity),
-                m('textarea.card-footer-item[disabled]', {value: JSON.stringify(obj)}),
+                m('textarea.card-footer-item[readonly]', {value: JSON.stringify(obj)}),
             ),
         );
     } else {
