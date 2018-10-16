@@ -2,7 +2,7 @@ import m = require('mithril');
 import ThriftCodec = require('./ThriftCodec');
 import util = require('./util');
 
-let badRows = '';
+let badRows = [];
 
 // Formats: https://github.com/snowplow/snowplow/wiki/Collector-logging-formats
 const tomcat = [
@@ -29,11 +29,17 @@ const tomcat = [
 ];
 
 const thriftToRequest = (payload) => {
+    if (typeof payload !== 'object' ||
+        payload === null ||
+        (!payload.hasOwnProperty('querystring') && !payload.hasOwnProperty('body'))) {
+        return;
+    }
+
     const headers = [];
     const cookies = [{ name: 'sp', value: payload.networkUserId}];
 
     for (const p in payload.headers) {
-        if (payload.headers.hasOwnProperty(p)) {
+        if (payload.headers.hasOwnProperty(p) && payload.headers[p] !== '-') {
             headers.push({name: p, value: payload.headers[p]});
         }
     }
@@ -154,7 +160,7 @@ const badToRequests = (data: string[]) => {
         }
     });
 
-    return logs.filter((x) => typeof x !== 'undefined').map(thriftToRequest);
+    return logs.map(thriftToRequest).filter((x) => typeof x !== 'undefined');
 };
 
 export = {
@@ -168,16 +174,32 @@ export = {
                         m('p.modal-card-title', 'Bad Rows Import'),
                         m('button.delete', { onclick: () => vnode.attrs.setModal(null) }),
                     ]),
-                    m('section.modal-card-body', m('textarea.textarea',
-                        {
-                            oninput: m.withAttr('value', (value) => {
-                                badRows = value;
-                            }),
-                            placeholder: 'Paste JSONL or base 64 events here, one per line',
-                        })),
+                    m('section.modal-card-body', [
+                        m('p',
+                            `Bad Rows occur when events fail to validate during enrichment.
+                            You can paste your bad data straight from S3 (1 JSON object per line),
+                            or, for real-time data, the JSON object from the _source field in ElasticSearch
+                            or just the line property of that object. Keep pasting to include events in bulk.
+                            Invalid payloads (OPTIONS requests, no data, invalid JSON, bots, etc.) will be ignored.`,
+                        ),
+                        m('textarea.textarea',
+                            {
+                                onpaste: (e) => {
+                                    e.preventDefault();
+                                    badRows = badRows.concat(e.clipboardData.getData('text').trim().split('\n'));
+                                },
+                                placeholder: 'Paste JSONL or base 64 events here, one per line',
+                                rows: 1,
+                            },
+                        ),
+                        m('p', ['Number of events to try to import: ', badRows.length]),
+                    ]),
                     m('footer.modal-card-foot', m('button.button', { onclick: () => {
-                        vnode.attrs.addRequests('Bad Rows', badToRequests(badRows.trim().split('\n')));
-                        vnode.attrs.setModal(null);
+                        if (badRows.length) {
+                            vnode.attrs.addRequests('Bad Rows', badToRequests(badRows));
+                            badRows = [];
+                            vnode.attrs.setModal(null);
+                        }
                     } }, 'Import')),
                 ]),
         ],
