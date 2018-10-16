@@ -95,7 +95,7 @@ export = {
 
         const [evendor, ename, eformat, eversion] = match.slice(1);
 
-        if (!(schema in status)) {
+        if (typeof status[schema] === 'undefined') {
             status[schema] = null;
 
             for (const repo of Array.from(repositories)) {
@@ -110,10 +110,35 @@ export = {
                             console.log('received schema does not match expected values:', `${evendor}:${vendor}, ${ename}:${name}, ${eformat}:${format}, ${eversion}:${version}, `);
                         }
                     }
-                }).catch(null);
+                }).catch((error) => {
+                    if (error.message && status[schema] === null) {
+                        status[schema] = 'error';
+                    } else if (error.message === ''  && (status[schema] === null || status[schema] === 'error')) {
+                        status[schema] = 'cors';
+                    }
+                });
             }
         }
 
-        return {valid: false, errors: ['Could not find or access schema definition in any configured repositories.', 'Try adding your Iglu repository in the extension settings.', 'Make sure you have whitelisted your IP and enabled CORS for the repository.'], location: null};
+        const errors = {
+            cors: [
+                'Schema could not be found in any configured repositores.',
+                'At least one repository had CORS errors while requesting the schema.',
+            ],
+            default: [
+                'Could not find or access schema definition in any configured repositories.',
+            ],
+            error: [
+                'Schema could not be found in any configured repositories.',
+                'Try adding your Iglu repository in the extension settings.',
+                'Make sure you have whitelisted your IP address.',
+            ],
+        };
+
+        return {
+            errors: errors[status[schema] || 'default'] || [],
+            location: null,
+            valid: false,
+        };
     },
 };
