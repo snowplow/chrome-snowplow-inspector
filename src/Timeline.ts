@@ -1,12 +1,14 @@
+import * as har from 'har-format';
 import m = require('mithril');
 import analytics = require('./analytics');
 import protocol = require('./protocol');
+import { IBeaconSummary, ITimeline } from './types';
 import util = require('./util');
 
 const COLLECTOR_COLOURS = ['blue', 'red', 'dark', 'green', 'yellow', 'black', 'turquoise'];
 const SEEN_COLLECTORS = new Map();
 
-const colourOf = (beacon) => {
+const colourOf = (beacon: IBeaconSummary) => {
     const id = beacon.collector + beacon.appId;
 
     if (!SEEN_COLLECTORS.has(id)) {
@@ -16,32 +18,35 @@ const colourOf = (beacon) => {
     return SEEN_COLLECTORS.get(id);
 };
 
-const filterRequest = (beacon, filter) => {
+const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
     return typeof filter === 'undefined'
     || filter.test(beacon.appId)
     || filter.test(beacon.collector)
     || filter.test(beacon.eventName)
     || filter.test(beacon.method)
     || filter.test(beacon.page)
-    || Array.from(beacon.payload.values()).filter((x: string) => {
-        let decoded;
+    || (Array.from(beacon.payload.values()) as string[]).filter((x) => {
+        let decoded: string | null;
         try {
             decoded = util.b64d(x);
         } catch (e) {
             decoded = null;
         }
 
-        return filter.test(decoded) || filter.test(x);
+        return filter.test(decoded || '') || filter.test(x);
     }).length > 0
     ;
 };
 
 const nameEvent = (params: Map<string, string>): string => {
-    const result = protocol.paramMap.e.values[params.get('e')] || params.get('e');
+    const event = params.get('e') || 'Unknown Event';
+    const eventTypes = protocol.paramMap.e.values;
+    // @ts-ignore event will never be undefined.
+    const result: string = eventTypes.hasOwnProperty(event) ? eventTypes[event] : event;
 
     switch (result) {
     case 'Self-Describing Event':
-        const payload = params.get('ue_pr') || params.get('ue_px');
+        const payload = params.get('ue_pr') || params.get('ue_px') || '';
         let sdeName = 'Unstructured';
         let sde = null;
 
@@ -66,14 +71,14 @@ const nameEvent = (params: Map<string, string>): string => {
     }
 };
 
-const summariseBeacons = (entry, index, filter) => {
+const summariseBeacons = (entry: har.Entry, index: number, filter?: RegExp): IBeaconSummary[] => {
     const reqs = extractRequests(entry, index);
     const [[id, collector, method], requests] = reqs;
 
     const results = [];
 
-    for (const [i, req] of Array.from(requests.entries())) {
-        const result = {
+    for (const [i, req] of requests.entries()) {
+        const result: IBeaconSummary = {
             appId: req.get('aid'),
             collector,
             eventName: nameEvent(req),
@@ -94,18 +99,17 @@ const summariseBeacons = (entry, index, filter) => {
     return results;
 };
 
-const getPageUrl = (entries) => {
+const getPageUrl = (entries: har.Entry[]) => {
     const urls = entries.reduce((ac, cv) => {
-        let page = cv.request.headers.filter((x) => /referr?er/i.test(x.name))[0];
+        const page = cv.request.headers.filter((x) => /referr?er/i.test(x.name))[0];
         if (page) {
-            page = page.value;
-            ac[page] = (ac[page] || 0) + 1;
+            const pageVal = page.value;
+            ac[pageVal] = (ac[pageVal] || 0) + 1;
         }
         return ac;
-    }, {});
+    }, {} as {[referrer: string]: number});
 
-    let url = '';
-    let parsedUrl;
+    let url: string | null = null;
     let max = -1;
     for (const p in urls) {
         if (urls[p] >= max) {
@@ -113,14 +117,14 @@ const getPageUrl = (entries) => {
         }
     }
 
-    if (url) {
-        parsedUrl = new URL(url);
+    if (url !== null) {
+        return new URL(url);
     }
 
-    return parsedUrl || url;
+    return url;
 };
 
-const extractRequests = (entry, index: number) => {
+const extractRequests = (entry: har.Entry, index: number) => {
     const req = entry.request;
     const id = entry.pageref + util.hash(new Date(entry.startedDateTime).toJSON() + req.url + index);
     const collector = new URL(req.url).hostname;
@@ -133,10 +137,14 @@ const extractRequests = (entry, index: number) => {
 
     if (req.method === 'POST') {
         try {
+            if (req.postData === undefined) {
+                throw new Error('POST request unexpectedly had no body.');
+            }
+
             const payload = JSON.parse(req.postData.text);
 
             for (const pl of payload.data) {
-                beacons.push(new Map(Object.keys(pl).map((x): [string, any] => ([x, pl[x]]))));
+                beacons.push(new Map(Object.keys(pl).map((x): [string, string] => ([x, pl[x]]))));
                 if (nuid) {
                     beacons[beacons.length - 1].set('nuid', nuid.value);
                 }
@@ -156,7 +164,8 @@ const extractRequests = (entry, index: number) => {
         }
 
     } else {
-        beacons.push(new URL(req.url).searchParams);
+        // @ts-ignore TS doesn't understand the iterable semantics here properly.
+        beacons.push(new Map<string, string>(new URL(req.url).searchParams));
         if (nuid) {
             beacons[beacons.length - 1].set('nuid', nuid.value);
         }
@@ -173,7 +182,7 @@ const extractRequests = (entry, index: number) => {
 };
 
 export = {
-    view: (vnode) => {
+    view: (vnode: m.Vnode<ITimeline>) => {
         const url = getPageUrl(vnode.attrs.request.entries);
         return m('div.panel',
             m('p.panel-heading',
@@ -188,7 +197,7 @@ export = {
                         x.response.status === 200 ? '' : 'not-ok',
                         colourOf(y),
                     ].join(' '),
-                    onclick: vnode.attrs.setActive.bind(this, y),
+                    onclick: vnode.attrs.setActive.bind(null, y),
                     title: [
                         `Time: ${y.time}`,
                         `Collector: ${y.collector}`,

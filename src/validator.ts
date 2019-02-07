@@ -1,9 +1,10 @@
 import jsonschema = require('jsonschema');
 import m = require('mithril');
 import analytics = require('./analytics');
+import { ICache, IErrorMessageSet, ISchemaStatus } from './types';
 
-const cache = {};
-const status = {};
+const cache: ICache = {};
+const status: ISchemaStatus = {};
 const jsv = new jsonschema.Validator();
 const repositories = new Set();
 
@@ -36,7 +37,7 @@ const syncRepos = () => {
     });
 };
 
-const persistCache = (key, value, url) => {
+const persistCache = (key: string, value: jsonschema.Schema, url: string) => {
     cache[key] = value;
     status[key] = url;
     chrome.storage.local.set({schemacache: cache, schemastatus: status});
@@ -81,7 +82,7 @@ syncRepos();
 
 export = {
     clearCache,
-    validate: (schema, data) => {
+    validate: (schema: string, data: object) => {
         const match = SCHEMA_PATTERN.exec(schema);
         if (!match) {
             return {valid: false, errors: ['Invalid Iglu URI identifying schema.'], location: null};
@@ -120,7 +121,7 @@ export = {
             }
         }
 
-        const errors = {
+        const errors: IErrorMessageSet = {
             cors: [
                 'Schema could not be found in any configured repositores.',
                 'At least one repository had CORS errors while requesting the schema.',

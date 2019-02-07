@@ -14,7 +14,7 @@
         );
         chrome.storage.local.get({schemalist: []},
             (settings) => {
-                schemalist.value = settings.schemalist.map((x) => JSON.stringify(x)).join('\n');
+                schemalist.value = settings.schemalist.map((x: object) => JSON.stringify(x)).join('\n');
             },
         );
     };

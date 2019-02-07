@@ -1,8 +1,10 @@
+import * as har from 'har-format';
 import m = require('mithril');
 import ThriftCodec = require('./ThriftCodec');
+import { IBadRowsSummary, ITomcatImport } from './types';
 import util = require('./util');
 
-let badRows = [];
+let badRows: string[] = [];
 
 // Formats: https://github.com/snowplow/snowplow/wiki/Collector-logging-formats
 const tomcat = [
@@ -28,19 +30,20 @@ const tomcat = [
     null, // time-taken
 ];
 
-const thriftToRequest = (payload) => {
+const thriftToRequest = (payload?: ITomcatImport): Partial<har.Entry> | undefined => {
     if (typeof payload !== 'object' ||
         payload === null ||
         (!payload.hasOwnProperty('querystring') && !payload.hasOwnProperty('body'))) {
         return;
     }
 
-    const headers = [];
-    const cookies = [{ name: 'sp', value: payload.networkUserId}];
+    const headers: har.Header[] = [];
+    const cookies: har.Cookie[] = [{ name: 'sp', value: (payload.networkUserId as string)}];
 
-    for (const p in payload.headers) {
-        if (payload.headers.hasOwnProperty(p) && payload.headers[p] !== '-') {
-            headers.push({name: p, value: payload.headers[p]});
+    const pheaders = (payload.headers as {[header: string]: string});
+    for (const p in pheaders) {
+        if (payload.headers.hasOwnProperty(p) && pheaders[p] !== '-') {
+            headers.push({name: p, value: pheaders[p]});
         }
     }
 
@@ -51,22 +54,44 @@ const thriftToRequest = (payload) => {
         (payload.querystring ? '?' + payload.querystring : ''),
     ].join('');
 
+    // mock out the rest of the Entry interface
     return {
         pageref: 'page_bad',
         request: {
+            bodySize: 0,
             cookies,
             headers,
+            headersSize: 0,
+            httpVersion: 'HTTP/1.1',
             method: 'body' in payload ? 'POST' : 'GET',
-            postData: { text: util.tryb64(payload.body) },
-            queryString: payload.querystring,
+            postData: {
+                mimeType: 'application/json',
+                params: [],
+                text: util.tryb64(payload.body as string),
+            },
+            queryString: [],
             url: uri,
         },
-        response: {},
-        startedDateTime: JSON.stringify(new Date(payload.timestamp)),
+        response: {
+            bodySize: 0,
+            content: {
+                mimeType: 'text/html',
+                size: 0,
+                text: '',
+            },
+            cookies,
+            headers: [],
+            headersSize: 0,
+            httpVersion: 'HTTP/1.1',
+            redirectURL: '',
+            status: 200,
+            statusText: 'OK',
+        },
+        startedDateTime: JSON.stringify(new Date(payload.timestamp as string)),
     };
 };
 
-const badToRequests = (data: string[]) => {
+const badToRequests = (data: string[]): har.Entry[] => {
     const logs = data.map((row) => {
         if (!row.length) {
             return;
@@ -87,43 +112,47 @@ const badToRequests = (data: string[]) => {
         if (typeof js === 'string') {
             // Check for timestamp to identify Tomcat bad row logs
             if (/^[0-9 -]+\t/.test(js)) {
-                const result: any = {headers: {}};
+                const result: ITomcatImport  = { headers: { Referer: ''} };
                 js.split('\t').forEach((x, i) => {
-                    switch (tomcat[i]) {
+                    const field = tomcat[i];
+                    switch (field) {
                     case 'timestamp':
-                        if (result[tomcat[i]]) {
+                        // There are two timestamp fields, check if we've already processed one
+                        if (result.hasOwnProperty(field) && typeof result[field] === 'string') {
                             const d = new Date();
                             let parts = null;
 
                             // Pretty sure we see date first, but check if they're swapped just in case
                             if (x.indexOf(':') > -1) {
-                                parts = x.split(':');
+                                parts = x.split(':').map((p: string) => parseInt(p, 10));
                                 d.setHours(parts[0]);
                                 d.setMinutes(parts[1]);
                                 d.setSeconds(parts[2]);
-                                parts = result[tomcat[i]].split('-');
+                                // @ts-ignore we know this is a string from above
+                                parts = result[field].split('-');
                                 d.setFullYear(parts[0]);
                                 d.setMonth(parts[1]);
                                 d.setDate(parts[2]);
                             } else {
-                                parts = result[tomcat[i]].split(':');
+                                // @ts-ignore we know this is a string from above
+                                parts = result[field].split(':');
                                 d.setHours(parts[0]);
                                 d.setMinutes(parts[1]);
                                 d.setSeconds(parts[2]);
-                                parts = x.split('-');
+                                parts = x.split('-').map((p: string) => parseInt(p, 10));
                                 d.setFullYear(parts[0]);
                                 d.setMonth(parts[1]);
                                 d.setDate(parts[2]);
                             }
 
-                            result[tomcat[i]] = +d;
+                            result[field] = '' + (+d);
                         } else {
-                            result[tomcat[i]] = x;
+                            result[field] = x;
                         }
                         break;
                     case 'body':
                         if (x !== '-') {
-                            result[tomcat[i]] = util.tryb64(x);
+                            result.body = util.tryb64(x);
                         }
                         break;
                     case 'querystring':
@@ -135,16 +164,18 @@ const badToRequests = (data: string[]) => {
                         break;
                     case 'userAgent':
                     case 'contentType':
-                        result[tomcat[i]] = decodeURIComponent(x.replace(/\+/g, ' '));
+                        result[field] = decodeURIComponent(x.replace(/\+/g, ' '));
                         break;
                     case 'refererUri':
-                        result[tomcat[i]] = x;
-                        result.headers.Referer = x;
+                        result[field] = x;
+                        if (typeof result.headers === 'object') {
+                            result.headers.Referer = x;
+                        }
                         break;
                     case null:
                         break;
                     default:
-                        result[tomcat[i]] = x;
+                        result[field] = x;
                     }
                 });
 
@@ -155,16 +186,24 @@ const badToRequests = (data: string[]) => {
                 }
             // B64 encoded, hopefully thrift from mini/realtime
             } else if (/^([A-Za-z0-9/+]{4})+([A-Za-z0-9/+=]{4})?$/.test(js)) {
-                return ThriftCodec.decodeB64Thrift(js, ThriftCodec.schemas['collector-payload']);
+                return ThriftCodec.decodeB64Thrift(js, ThriftCodec.schemas['collector-payload']) as ITomcatImport;
             }
         }
     });
 
-    return logs.map(thriftToRequest).filter((x) => typeof x !== 'undefined');
+    const entries = [];
+
+    for (const entry of logs.map(thriftToRequest)) {
+        if (entry !== undefined) {
+            entries.push(entry as har.Entry);
+        }
+    }
+
+    return entries;
 };
 
 export = {
-    view: (vnode) => m('div.modal',
+    view: (vnode: m.Vnode<IBadRowsSummary>) => m('div.modal',
         { className: vnode.attrs.modal === 'badRows' ? 'is-active' : 'is-inactive' },
         [
             m('div.modal-background'),
@@ -172,7 +211,7 @@ export = {
                 [
                     m('header.modal-card-head', [
                         m('p.modal-card-title', 'Bad Rows Import'),
-                        m('button.delete', { onclick: () => vnode.attrs.setModal(null) }),
+                        m('button.delete', { onclick: () => vnode.attrs.setModal(undefined) }),
                     ]),
                     m('section.modal-card-body', [
                         m('p',
@@ -184,7 +223,7 @@ export = {
                         ),
                         m('textarea.textarea',
                             {
-                                onpaste: (e) => {
+                                onpaste: (e: ClipboardEvent) => {
                                     e.preventDefault();
                                     badRows = badRows.concat(e.clipboardData.getData('text').trim().split('\n'));
                                 },
@@ -198,7 +237,7 @@ export = {
                         if (badRows.length) {
                             vnode.attrs.addRequests('Bad Rows', badToRequests(badRows));
                             badRows = [];
-                            vnode.attrs.setModal(null);
+                            vnode.attrs.setModal(undefined);
                         }
                     } }, 'Import')),
                 ]),

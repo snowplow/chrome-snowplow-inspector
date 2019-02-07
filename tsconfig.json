@@ -1,7 +1,10 @@
 {
     "compilerOptions": {
         "allowJs": true,
+        "alwaysStrict": true,
         "checkJs": true,
+        "downlevelIteration": true,
+        "strict": true,
         "inlineSourceMap": true,
         "newLine": "lf",
         "pretty": true,

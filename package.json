@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@types/chrome": "0.0.74",
+    "@types/har-format": "^1.2.3",
     "@types/mithril": "^1.1.13",
     "@types/node": "^10.11.6",
     "css-loader": "^0.28.9",

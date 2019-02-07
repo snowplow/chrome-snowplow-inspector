@@ -18,7 +18,7 @@ const thriftTypes = [
     'list',
 ];
 
-const jsTypes = {
+const jsTypes: {[strResult: string]: string} = {
     '[object Array]': 'list',
     '[object Boolean]': 'bool',
     '[object Number]': 'i64',
@@ -29,7 +29,7 @@ const jsTypes = {
 
 // tslint:disable-next-line
 // https://github.com/snowplow/snowplow/blob/master/2-collectors/thrift-schemas/collector-payload-1/src/main/thrift/collector-payload.thrift
-const collectorPayloadSchema = {
+const collectorPayloadSchema: {[fieldId: number]: string } = {
     31337: 'schema',
     100: 'ipAddress',
     200: 'timestamp',
@@ -46,11 +46,11 @@ const collectorPayloadSchema = {
     410: 'networkUserId',
 };
 
-function decodeB64Thrift(b64: string, schema: object): object {
+function decodeB64Thrift(b64: string, schema: {[fieldId: number]: string}): object {
     // Standard b64 decoding
     let bytes = atob(b64);
     // we only decode structs
-    const result = {};
+    const result: {[fieldName: string]: string} = {};
 
     function intFromBytes(b: string): number {
         // build big endian ints
@@ -68,7 +68,7 @@ function decodeB64Thrift(b64: string, schema: object): object {
 
     // compound types have an unknown size, so pass in all the remaining bytes
     // https://erikvanoosten.github.io/thrift-missing-specification/
-    function getType(typeName: string, remainingBytes: string): [number, any] {
+    function getType(typeName: string | null, remainingBytes: string): [number, any] {
         let meta = 0;
         let size = 0;
 
@@ -134,6 +134,9 @@ function decodeB64Thrift(b64: string, schema: object): object {
                 return [totalSize + meta, vals];
             }
         }
+
+        // This should be unreachable
+        return [0, null];
     }
 
     for (;;) {
@@ -169,7 +172,7 @@ function decodeB64Thrift(b64: string, schema: object): object {
     return result;
 }
 
-function encodeB64Thrift(obj: object, schema: object): string {
+function encodeB64Thrift(obj: {[property: string]: any}, schema: {[fieldId: number]: string}): string {
 
     function intToBytes(value: number, size: number): string {
         let bytes = value.toString(16);

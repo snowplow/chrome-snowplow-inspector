@@ -5,9 +5,9 @@ const sp = Snowplow.getTrackerUrl('d.snowflake-analytics.com');
 sp.setAppId('snowplow-chrome-extension');
 sp.setPlatform('app');
 
-const seenCollectors = {};
+const seenCollectors: {[collector: string]: string[]} = {};
 
-const trackerAnalytics = (collector, pageUrl, appId) => {
+const trackerAnalytics = (collector: string, pageUrl: string, appId: string) => {
     if (pageUrl === null) {
         return;
     }
@@ -32,7 +32,7 @@ const trackerAnalytics = (collector, pageUrl, appId) => {
     }
 };
 
-const repoAnalytics = (repo) => {
+const repoAnalytics = (repo: string) => {
     if (repo !== 'http://iglucentral.com') {
         chrome.storage.sync.get({ enableTracking: true }, (settings) => {
             if (settings.enableTracking) {

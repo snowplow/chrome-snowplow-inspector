@@ -1,9 +1,10 @@
 import m = require('mithril');
 import protocol = require('./protocol');
+import { BeaconDetail, IBeacon, IBeaconDetails, IBeaconSummary, IRowSet, ProtocolField } from './types';
 import util = require('./util');
 import validator = require('./validator');
 
-function genClasses(val, finfo) {
+function genClasses(finfo: ProtocolField): string {
     const classes = [];
 
     if (finfo.deprecated) {
@@ -13,15 +14,15 @@ function genClasses(val, finfo) {
     return classes.join(' ');
 }
 
-function parseBeacon(beacon) {
+function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
     const { collector, method, payload } = beacon;
-    const result = {
-        appId: printableValue(payload.get('aid'), protocol.paramMap.aid),
+    const result: IBeaconDetails = {
+        appId: printableValue(payload.get('aid'), protocol.paramMap.aid as ProtocolField),
         collector,
         data: [],
         method,
-        name: printableValue(payload.get('e'), protocol.paramMap.e),
-        time: printableValue(payload.get('stm') || payload.get('dtm'), protocol.paramMap.stm),
+        name: printableValue(payload.get('e'), protocol.paramMap.e as ProtocolField),
+        time: printableValue(payload.get('stm') || payload.get('dtm'), protocol.paramMap.stm as ProtocolField),
     };
 
     for (const gp of protocol.groupPriorities) {
@@ -30,19 +31,19 @@ function parseBeacon(beacon) {
         const rows = [];
 
         for (const field of fields) {
-            const finfo = protocol.paramMap[field];
+            const finfo = (protocol.paramMap as {[fieldkey: string]: ProtocolField})[field];
 
             let val = payload.get(field);
 
             val = printableValue(val, finfo);
 
             if (val !== null) {
-                rows.push([finfo.name, val, genClasses(val, finfo)]);
+                rows.push([finfo.name, val, genClasses(finfo)]);
             }
         }
 
         if (rows.length) {
-            result.data.push([name, rows]);
+            result.data.push([name, rows, '']);
         }
     }
 
@@ -52,18 +53,18 @@ function parseBeacon(beacon) {
     }
 
     if (unknownRows.length) {
-        result.data.push(['Unrecognised Fields', unknownRows]);
+        result.data.push(['Unrecognised Fields', unknownRows, '']);
     }
 
     return result;
 }
 
-const labelType = (val) => m('button.typeinfo.button.is-pulled-right.is-info',
+const labelType = (val: string) => m('button.typeinfo.button.is-pulled-right.is-info',
         {onclick: () => util.copyToClipboard(val), title: 'Click to copy'},
         util.nameType(val))
 ;
 
-const contextToTable = (obj) => {
+const contextToTable = (obj: any): m.Vnode | string => {
     if (typeof obj !== 'object' || obj === null) {
         return JSON.stringify(obj).replace(/^"|"$/g, '');
     }
@@ -148,7 +149,7 @@ const contextToTable = (obj) => {
 const RowSet = () => {
     let visible = true;
     return {
-        view: (vnode) =>
+        view: (vnode: m.Vnode<IRowSet>) =>
             m('div.card.tile.is-child', { class: visible ? 'show-rows' : 'hide-rows' },
                 m('header.card-header', { onclick: () => visible = !visible },
                     m('p.card-header-title', vnode.attrs.setName),
@@ -157,11 +158,11 @@ const RowSet = () => {
     };
 };
 
-const toTable = (rowset) => {
+const toTable = (rowset: BeaconDetail) => {
     const [setName, rows] = rowset;
 
     return m(RowSet, { setName },
-                rows.map((x) => {
+                rows.map((x: [string, any]) => {
                     if (!/Custom Context|(Unstructured|Self-Describing) Event/.test(x[0])) {
                         return m('tr', [m('th', x[0]), m('td', [
                             labelType(x[1]),
@@ -173,7 +174,7 @@ const toTable = (rowset) => {
                 }));
 };
 
-const printableValue = (val, finfo) => {
+const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
     if (val === undefined || val === null || val === '') {
         return null;
     }
@@ -194,7 +195,7 @@ const printableValue = (val, finfo) => {
     case 'json':
         return JSON.parse(val);
     case 'ba64':
-        return printableValue(atob(val.replace(/-/g, '+').replace(/_/g, '/')), { type: finfo.then });
+        return printableValue(atob(val.replace(/-/g, '+').replace(/_/g, '/')), { name: finfo.name, type: finfo.then });
     case 'enum':
         return val;
     case 'emap':
@@ -204,7 +205,7 @@ const printableValue = (val, finfo) => {
     }
 };
 
-const formatBeacon = (d) => [
+const formatBeacon = (d: IBeaconDetails) => [
     m('div.level.box', [
         m('div.level-item.has-text-centered', m('div', [m('p.heading', 'App'), m('p.title', d.appId)])),
         m('div.level-item.has-text-centered', m('div', [m('p.heading', 'Event'), m('p.title', d.name)])),
@@ -222,5 +223,5 @@ const formatBeacon = (d) => [
 ].concat(d.data.map(toTable));
 
 export = {
-    view: (vnode) => vnode.attrs.activeBeacon && formatBeacon(parseBeacon(vnode.attrs.activeBeacon)),
+    view: (vnode: m.Vnode<IBeacon>) => vnode.attrs.activeBeacon && formatBeacon(parseBeacon(vnode.attrs.activeBeacon)),
 };
