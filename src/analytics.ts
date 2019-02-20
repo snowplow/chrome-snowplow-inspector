@@ -42,7 +42,7 @@ const repoAnalytics = (repo: string) => {
     }
 };
 
-const landingUrl = 'https://www.snowflake-analytics.com/?' + [
+const landingUrl = 'https://poplindata.com/?' + [
     'utm_source=debugger%20extension',
     'utm_medium=software',
     'utm_campaign=Chrome%20extension%20debugger%20window%20top-left',

@@ -8,7 +8,7 @@ export = {
         [
             m('div.navbar-brand',
                 m('a.navbar-item', { href: analytics.landingUrl, target: '_blank' },
-                    m('img', { alt: 'Snowflake Analytics logo', src: 'sa-logo.png' }),
+                    m('img', { alt: 'Poplin Data logo', src: 'pd-logo.png' }),
                 ),
             ),
             m('div.navbar-menu.is-active.is-shadowless',

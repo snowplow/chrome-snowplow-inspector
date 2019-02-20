@@ -1,5 +1,5 @@
 {
-  "name": "snowflake-chrome-extension",
+  "name": "chrome-snowplow-inspector",
   "version": "0.2.12",
   "description": "Add a panel to DevTools to show Snowplow analytics beacon information.",
   "main": "src/extension.js",
@@ -7,22 +7,22 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "tslint src/*.ts",
     "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/sa-logo.png ../res/snowflake.png ../res/snowflake-16.png ../res/snowflake-48.png ../res/snowflake-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/popup.html ../src/options.html ../LICENSE.txt dist/ && webpack -p --watch",
-    "build": "npm run clean && mkdir -p dist && cp manifest.json res/sa-logo.png res/snowflake.png res/snowflake-16.png res/snowflake-48.png res/snowflake-128.png res/sp.js src/devtools.html src/panel.html src/popup.html src/options.html LICENSE.txt dist/ && webpack -p",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/pd-logo.png ../res/poplin.png ../res/poplin-16.png ../res/poplin-48.png ../res/poplin-128.png ../res/sp.js ../src/devtools.html ../src/panel.html ../src/popup.html ../src/options.html ../LICENSE.txt dist/ && webpack -p --watch",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/pd-logo.png res/poplin.png res/poplin-16.png res/poplin-48.png res/poplin-128.png res/sp.js src/devtools.html src/panel.html src/popup.html src/options.html LICENSE.txt dist/ && webpack -p",
     "xpi": "npm run build && web-ext build --overwrite-dest -s dist/ -a .",
     "xpi-signed": "npm run build && web-ext sign --id {ab5ef1af-3ce6-4741-9e30-96771603496d} -s dist/ -a .",
-    "zip": "npm run build && zip -r snowflake-chrome-extension.zip dist/"
+    "zip": "npm run build && zip -r poplin-chrome-extension.zip dist/"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/snowflake-analytics/snowflake-chrome-extension.git"
+    "url": "git+https://github.com/poplindata/chrome-snowplow-inspector.git"
   },
-  "author": "Snowflake Analytics",
-  "license": "MIT",
+  "author": "Poplin Data",
+  "license": "GPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/snowflake-analytics/snowflake-chrome-extension/issues"
+    "url": "https://github.com/poplindata/chrome-snowplow-inspector/issues"
   },
-  "homepage": "https://github.com/snowflake-analytics/snowflake-chrome-extension#readme",
+  "homepage": "https://github.com/poplindata/chrome-snowplow-inspector#readme",
   "dependencies": {
     "bulma": "^0.6.2",
     "jsonschema": "^1.2.2",

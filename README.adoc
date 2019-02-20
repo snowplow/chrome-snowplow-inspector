@@ -1,6 +1,6 @@
 = Snowplow Inspector Web Extension
-:Author: Snowflake Analytics
-:Email: <contact@snowflake-analytics.com>
+:Author: Poplin Data
+:Email: <contact@poplindata.com>
 
 A debugging tool to help you examine and debug your link:https://snowplowanalytics.com[Snowplow] tracking implementation.
 
@@ -12,12 +12,12 @@ A debugging tool to help you examine and debug your link:https://snowplowanalyti
 - Validate your Contexts and Events against the schemas in your link:https://github.com/snowplow/iglu[Iglu Repository]
 - Import events from your bad rows bucket/stream and see why they failed enrichment
 
-Feedback, feature requests, pull requests, and bug reports are welcome! Please link:https://github.com/snowflake-analytics/chrome-snowplow-inspector/issues[file an issue].
+Feedback, feature requests, pull requests, and bug reports are welcome! Please link:https://github.com/poplindata/chrome-snowplow-inspector/issues[file an issue].
 
 == Install
 At the moment, only Chrome/Chromium are supported via an official app store, and builds for Firefox are available, but not supported.
 To install the extension, visit the page on the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
-You can get builds for Firefox v60+ in link:https://github.com/snowflake-analytics/chrome-snowplow-inspector/releases[Releases].
+You can get builds for Firefox v60+ in link:https://github.com/poplindata/chrome-snowplow-inspector/releases[Releases].
 
 === Schema Validation
 The extension options should let you load in local JSON Schema files during development, and you can also add your production or Snowplow Mini Iglu Repositories to test against what you have in production.
