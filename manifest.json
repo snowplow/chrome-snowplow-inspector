@@ -9,7 +9,7 @@
     "default_title": "Snowplow Inspector",
     "default_popup": "popup.html",
     "default_icon": {
-      "280": "snowflake.png"
+      "280": "poplin.png"
     }
   },
   "options_ui": {
@@ -17,12 +17,12 @@
     "chrome_style": true
   },
   "icons": {
-    "16": "snowflake-16.png",
-    "48": "snowflake-48.png",
-    "128": "snowflake-128.png",
-    "280": "snowflake.png"
+    "16": "poplin-16.png",
+    "48": "poplin-48.png",
+    "128": "poplin-128.png",
+    "280": "poplin.png"
   },
-  "author": "Snowflake Analytics",
+  "author": "Poplin Data",
   "minimum_chrome_version": "18.0",
   "devtools_page": "devtools.html",
   "permissions": ["storage"]
