@@ -5,14 +5,14 @@ import protocol = require('./protocol');
 import { IBeaconSummary, ITimeline } from './types';
 import util = require('./util');
 
-const COLLECTOR_COLOURS = ['blue', 'red', 'dark', 'green', 'yellow', 'black', 'turquoise'];
+const COLLECTOR_COLOURS = ['turquoise', 'purple', 'dark', 'red', 'yellow', 'blue', 'light'];
 const SEEN_COLLECTORS = new Map();
 
 const colourOf = (beacon: IBeaconSummary) => {
     const id = beacon.collector + beacon.appId;
 
     if (!SEEN_COLLECTORS.has(id)) {
-        SEEN_COLLECTORS.set(id, COLLECTOR_COLOURS[SEEN_COLLECTORS.size % COLLECTOR_COLOURS.length]);
+        SEEN_COLLECTORS.set(id, COLLECTOR_COLOURS[SEEN_COLLECTORS.size % COLLECTOR_COLOURS.length || 0]);
     }
 
     return SEEN_COLLECTORS.get(id);
