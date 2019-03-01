@@ -32,12 +32,18 @@ Both link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Reposito
 
 By default we include the URL for link:https://github.com/snowplow/iglu-central[Iglu Central], which includes schemas for the built-in tracking JSONs. You can add as many repositories as you like.
 
+For newer versions of Iglu Server, you need to include a UUID API key. In the options, you can attach this to a specific repo by including it in the URL as a username.
+For example, `http://01234567-89ab-cdef-fedc-ba9876543210@mini.poplindata.com/iglu-server/api`
+
 ==== Repository Setup
 Make sure you have access to your repository from your browser in order for the extension to find your schemas.
 Typically repositories are hosted on S3, and by default the files may not be publically readable and will result in 403 errors.
-It is important to have your repository website or S3 bucket configured for link:https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS[Cross-Origin Resource Sharing].
+
+For older versions of the extension, it was important to have your repository website or S3 bucket configured for link:https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS[Cross-Origin Resource Sharing].
 You can find out how to correctly configure an S3 bucket at link:https://docs.aws.amazon.com/AmazonS3/latest/user-guide/add-cors-configuration.html[How Do I Allow Cross-Domain Resource Sharing with CORS?] the default rule should work, the extension only requires GET access.
-If you configure CORS correctly and schemas are still 'Unrecognised', try clearing your browser cache.
+More recent versions shouldn't require CORS to be set up as long as you grant the extension permissions when adding a repository.
+
+If schemas are still 'Unrecognised', try clearing your browser cache and the extension's Schema Cache.
 Alternatively, you can import your schemas directly as Local Schemas in the extension Options page.
 
 == Develop
@@ -49,4 +55,3 @@ Instructions to install a local development version of the extension to test are
 === Hack
 You can also use `npm start` to start webpack in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
 You will still need to reload the extension in a browser.
-
