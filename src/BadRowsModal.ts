@@ -186,7 +186,11 @@ const badToRequests = (data: string[]): har.Entry[] => {
                 }
             // B64 encoded, hopefully thrift from mini/realtime
             } else if (/^([A-Za-z0-9/+]{4})+([A-Za-z0-9/+=]{4})?$/.test(js)) {
-                return ThriftCodec.decodeB64Thrift(js, ThriftCodec.schemas['collector-payload']) as ITomcatImport;
+                try {
+                    return ThriftCodec.decodeB64Thrift(js, ThriftCodec.schemas['collector-payload']) as ITomcatImport;
+                } catch (e) {
+                    console.log(e);
+                }
             }
         }
     });
