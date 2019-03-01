@@ -25,6 +25,8 @@ function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
         time: printableValue(payload.get('stm') || payload.get('dtm'), protocol.paramMap.stm as ProtocolField),
     };
 
+    const seen = new Set<string>();
+
     for (const gp of protocol.groupPriorities) {
         const name = gp.name;
         const fields = gp.fields;
@@ -39,6 +41,7 @@ function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
 
             if (val !== null) {
                 rows.push([finfo.name, val, genClasses(finfo)]);
+                seen.add(field);
             }
         }
 
@@ -48,8 +51,10 @@ function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
     }
 
     const unknownRows = [];
-    for (const field of payload) {
-        unknownRows.push([field[0], field[1], '']);
+    for (const [k, v] of payload) {
+        if (!seen.has(k)) {
+            unknownRows.push([k, v, '']);
+        }
     }
 
     if (unknownRows.length) {
