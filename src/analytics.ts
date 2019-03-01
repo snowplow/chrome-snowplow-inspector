@@ -8,11 +8,17 @@ sp.setPlatform('app');
 const seenCollectors: {[collector: string]: string[]} = {};
 
 const trackerAnalytics = (collector: string, pageUrl: string, appId: string) => {
-    if (pageUrl === null) {
+    if (!pageUrl) {
         return;
     }
     collector = collector.toLowerCase();
-    pageUrl = (new URL(pageUrl)).host.toLowerCase();
+    try {
+        pageUrl = (new URL(pageUrl)).host.toLowerCase();
+    } catch (e) {
+        console.log(`Could not parse URL: ${pageUrl}`);
+        return;
+    }
+
     appId = (appId || '').toLowerCase();
 
     const appKey = pageUrl + ':' + appId;

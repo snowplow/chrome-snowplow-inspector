@@ -27,7 +27,12 @@ const hasMembers = (obj: object) => {
 };
 
 const b64d = (s: string): string => {
-    return atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+    try {
+        return atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+    } catch (e) {
+        console.log(e);
+        return '';
+    }
 };
 
 const nameType = (val: any): string => {
