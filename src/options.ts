@@ -47,12 +47,18 @@
     };
 
     const updateStoredSettings = () => {
+        const repos = repolist.value.split(/\s*[\n,]\s*/)
+                                    .map((x) => x.replace(/\n|\/+\s*$/g, ''))
+                                    .filter((x) => !!x);
+
+        const perms = {origins: repos.map((r) => '*://' + (new URL(r).hostname) + '/*')};
+
         chrome.storage.sync.set({
             enableTracking: tracking.checked,
-            repolist: repolist.value.split(/\s*[\n,]\s*/)
-                                    .map((x) => x.replace(/\n|\/+\s*$/g, ''))
-                                    .filter((x) => !!x),
+            repolist: repos,
         }, () => {
+            // We need to request permission to the iglu repos to avoid CORS
+            chrome.permissions.request(perms);
             // Schemas can get quite large so store them locally only
             chrome.storage.local.set({
                 schemalist: parseMessyJson(schemalist.value),

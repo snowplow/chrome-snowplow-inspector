@@ -102,7 +102,11 @@ export = {
             for (const repo of Array.from(repositories)) {
                 const url = [repo, 'schemas', evendor, ename, eformat, eversion].join('/');
 
-                m.request(url).then((schemaJson) => {
+                const parsedUrl = new URL(url);
+                const apikey = parsedUrl.username;
+                parsedUrl.username = '';
+
+                m.request(parsedUrl.href, {headers: {apikey}}).then((schemaJson) => {
                     if (schemaJson.hasOwnProperty('self')) {
                         const {vendor, name, format, version} = (schemaJson as any).self;
                         if (evendor === vendor && ename === name && eformat === format && eversion === version) {
