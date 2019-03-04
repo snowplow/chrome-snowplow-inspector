@@ -49,7 +49,7 @@ const thriftToRequest = (payload?: ITomcatImport): Partial<har.Entry> | undefine
 
     const uri = [
         'https://',
-        (payload.hostname || 'badbucket.example.org'),
+        'badbucket.example.org',
         (payload.path || '/'),
         (payload.querystring ? '?' + payload.querystring : ''),
     ].join('');
