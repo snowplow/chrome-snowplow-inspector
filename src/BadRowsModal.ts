@@ -161,6 +161,7 @@ const badToRequests = (data: string[]): har.Entry[] => {
                             result.collector = qs[1];
                             result.networkUserId = qs[2];
                         }
+                        result[field] = x;
                         break;
                     case 'userAgent':
                     case 'contentType':
