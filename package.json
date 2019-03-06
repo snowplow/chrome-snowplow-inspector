@@ -29,17 +29,17 @@
     "mithril": "^1.1.1"
   },
   "devDependencies": {
-    "@types/chrome": "0.0.74",
-    "@types/har-format": "^1.2.3",
-    "@types/mithril": "^1.1.13",
-    "@types/node": "^10.11.6",
+    "@types/chrome": "0.0.81",
+    "@types/har-format": "^1.2.4",
+    "@types/mithril": "^1.1.16",
+    "@types/node": "^11.10.5",
     "css-loader": "^0.28.9",
     "style-loader": "^0.20.1",
     "ts-loader": "^3.2.0",
-    "tslint": "^5.11.0",
+    "tslint": "^5.13.1",
     "tslint-eslint-rules": "^4.1.1",
     "typescript": "^2.9.2",
-    "web-ext": "^2.9.1",
+    "web-ext": "^2.9.3",
     "webpack": "^2.5.1"
   }
 }
