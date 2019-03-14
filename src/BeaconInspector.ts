@@ -51,8 +51,14 @@ const BeaconInspector = () => {
     }
 
     return {
-        // @ts-ignore typedefs for chrome aren't complete for the HAR spec.
-        oninit: () => chrome.devtools.network.onRequestFinished.addListener(handleNewRequest),
+        oninit: () => {
+            chrome.devtools.network.getHAR((harLog) => {
+                (harLog as { entries: har.Entry[] }).entries.map(handleNewRequest);
+
+                // @ts-ignore typedefs for chrome aren't complete for the HAR spec.
+                chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
+            });
+        },
         view: () => ([
             m(Toolbar, {
                 clearRequests: () => (requests = [], active = undefined),
