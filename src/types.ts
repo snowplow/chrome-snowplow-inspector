@@ -41,8 +41,9 @@ export interface IErrorMessageSet {
 }
 
 export interface IToolbar {
-    setModal: (modalName: string) => void;
     clearRequests: () => void;
+    handleNewRequest: (request: har.Entry) => void;
+    setModal: (modalName: string) => void;
 }
 
 export interface IRowSet {

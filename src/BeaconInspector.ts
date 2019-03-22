@@ -62,6 +62,7 @@ const BeaconInspector = () => {
         view: () => ([
             m(Toolbar, {
                 clearRequests: () => (requests = [], active = undefined),
+                handleNewRequest,
                 setModal,
             }),
             m('section.columns.section', [

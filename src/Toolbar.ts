@@ -1,3 +1,4 @@
+import * as har from 'har-format';
 import m = require('mithril');
 import analytics = require('./analytics');
 import { IToolbar } from './types';
@@ -20,6 +21,42 @@ export = {
                             'Clear Schema Cache'),
                         m('a.button.is-outlined.is-small.control', { onclick: () => vnode.attrs.setModal('badRows') },
                             'Import Bad Rows'),
+                        m('a.button.is-outlined.is-small.control', {
+                            onclick: () => {
+                                const f = document.createElement('input') as HTMLInputElement;
+                                f.type = 'file';
+                                f.multiple = true;
+                                f.accept = '.har';
+                                f.onchange = (change: Event) => {
+                                    const files = (change.target as HTMLInputElement).files || new FileList();
+
+                                    for (let i = 0; i < files.length; i++) {
+                                        const file = files.item(i);
+
+                                        if (file !== null) {
+                                            const fr = new FileReader();
+
+                                            fr.addEventListener('load', () => {
+                                                try {
+                                                    const content = JSON.parse(fr.result as string) as har.Har;
+                                                    content.log.entries.forEach((entry) => {
+                                                        // group by file unless there's a specific page grouping
+                                                        entry.pageref = entry.pageref || file.name;
+                                                        vnode.attrs.handleNewRequest(entry);
+                                                    });
+                                                } catch (e) {
+                                                    console.log(e);
+                                                }
+                                            }, false);
+
+                                            fr.readAsText(file);
+                                        }
+                                    }
+                                };
+                                f.click();
+                            },
+                        },
+                            'Import HAR Session'),
                     ]),
                 ),
             ),
