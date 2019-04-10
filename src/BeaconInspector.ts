@@ -51,6 +51,13 @@ const BeaconInspector = () => {
         return !!(active && active.id === beacon.id);
     }
 
+    function addRequests(pagename: string, reqs: har.Entry[]) {
+        reqs.forEach((v) => {
+            v.pageref = pagename || v.pageref;
+            handleNewRequest(v);
+        });
+    }
+
     return {
         oninit: () => {
             chrome.devtools.network.getHAR((harLog) => {
@@ -62,8 +69,8 @@ const BeaconInspector = () => {
         },
         view: () => ([
             m(Toolbar, {
+                addRequests,
                 clearRequests: () => (requests = [], active = undefined),
-                handleNewRequest,
                 setModal,
             }),
             m('section.columns.section', [

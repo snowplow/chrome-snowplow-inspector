@@ -41,8 +41,8 @@ export interface IErrorMessageSet {
 }
 
 export interface IToolbar {
+    addRequests: (pagename: string, requests: har.Entry[]) => void;
     clearRequests: () => void;
-    handleNewRequest: (request: har.Entry) => void;
     setModal: (modalName: string) => void;
 }
 

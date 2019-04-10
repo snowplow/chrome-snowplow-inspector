@@ -39,16 +39,8 @@ export = {
                                             const fr = new FileReader();
 
                                             fr.addEventListener('load', () => {
-                                                try {
-                                                    const content = JSON.parse(fr.result as string) as har.Har;
-                                                    content.log.entries.forEach((entry) => {
-                                                        // group by file unless there's a specific page grouping
-                                                        entry.pageref = entry.pageref || file.name;
-                                                        vnode.attrs.handleNewRequest(entry);
-                                                    });
-                                                } catch (e) {
-                                                    console.log(e);
-                                                }
+                                                const content = JSON.parse(fr.result as string) as har.Har;
+                                                vnode.attrs.addRequests(file.name, content.log.entries);
                                             }, false);
 
                                             fr.readAsText(file);
