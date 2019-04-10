@@ -51,7 +51,7 @@ const nameEvent = (params: Map<string, string>): string => {
         let sde = null;
 
         try {
-            sde = JSON.parse(util.b64d(payload));
+            sde = JSON.parse(util.tryb64(payload));
         } catch (e) {
             sde = JSON.parse(payload);
         } finally {

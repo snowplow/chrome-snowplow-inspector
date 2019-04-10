@@ -27,7 +27,9 @@ export = {
                             {
                                 onpaste: (e: ClipboardEvent) => {
                                     e.preventDefault();
-                                    badRows = badRows.concat(e.clipboardData.getData('text').trim().split('\n'));
+                                    if (e.clipboardData !== null) {
+                                        badRows = badRows.concat(e.clipboardData.getData('text').trim().split('\n'));
+                                    }
                                 },
                                 placeholder: 'Paste JSONL or base 64 events here, one per line',
                                 rows: 1,
