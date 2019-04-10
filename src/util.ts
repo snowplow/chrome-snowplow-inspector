@@ -174,6 +174,113 @@ const thriftToRequest = (payload?: ITomcatImport): Partial<har.Entry> | undefine
     };
 };
 
+const esToRequests = (data: object[]): har.Entry[] => {
+    return data.map((hit) => {
+        if (hit.hasOwnProperty('collector_tstamp')) {
+            return goodToRequests(hit as { [esKeyName: string]: string }) as har.Entry;
+        } else {
+            return badToRequests([JSON.stringify(hit)])[0];
+        }
+    });
+};
+
+const goodToRequests = (data: { [esKeyName: string]: string | object }): Partial<har.Entry> => {
+    const uri = new URL('https://elasticsearch.invalid/i');
+    const reverseTypeMap: { [event: string]: string } = {
+        page_ping: 'Page Ping',
+        page_view: 'Pageview',
+        struct: 'Structured Event',
+        transaction: 'Transaction',
+        transaction_item: 'Transaction Item',
+        unstruct: 'Self-Describing Event',
+    };
+
+    const contexts = [];
+
+    for (const p in data) {
+        if (data.hasOwnProperty(p) && data[p] !== null) {
+            const key = (protocol.esMap as { [esKeyName: string]: string})[p];
+            const val = data[p];
+            if (key !== '') {
+                if (key === 'e') {
+                    uri.searchParams.set(key, reverseTypeMap[val as string]);
+                } else if (/tstamp/.test(p)) {
+                    const d = new Date(val as string);
+                    uri.searchParams.set(key, (+d).toString(10));
+                } else if (/^unstruct_event_/.test(p)) {
+                    const { event_vendor, event_name, event_format, event_version} = data;
+
+                    const wrapped = {
+                        data: {
+                            data: val,
+                            schema: `iglu:${event_vendor}/${event_name}/${event_format}/${event_version}`,
+                        },
+                        schema: 'iglu:com.snowplowanalytics.snowplow/unstruct_event/jsonschema/1-0-0',
+                    };
+
+                    uri.searchParams.set('ue_pr', JSON.stringify(wrapped));
+                } else if (/^contexts_/.test(p)) {
+                    // the 'good' enrichment process irrecoverably destroys vendor/version info, so guess
+                    const schemaname = p.replace('contexts_', '')
+                                        .replace(/_(\d)+$/, '/jsonschema/$1-0-0')
+                                        .replace(/(^.+)_([^_]+_[^_]+)/, '$1/$2')
+                                        .replace(/_/g, '.')
+                                        .replace(/\/([^\./]+).([^\./]+)/, '/$1_$2');
+
+                    for (const c of data[p]) {
+                        contexts.push({
+                            data: c,
+                            schema: 'iglu:' + schemaname,
+                        });
+                    }
+                } else {
+                    uri.searchParams.set(key, val as string);
+                }
+            }
+        }
+    }
+
+    if (contexts.length) {
+        const wrapped = {
+            data: contexts,
+            schema: 'iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1-0-0',
+        };
+
+        uri.searchParams.set('co', JSON.stringify(wrapped));
+    }
+
+    return {
+        pageref: 'page_good',
+        request: {
+            bodySize: 0,
+            cookies: [],
+            headers: [],
+            headersSize: 0,
+            httpVersion: 'HTTP/1.1',
+            method: 'GET',
+            queryString: [],
+            url: uri.href,
+        },
+        response: {
+            bodySize: 0,
+            content: {
+                mimeType: 'text/html',
+                size: 0,
+                text: '',
+            },
+            cookies: [],
+            headers: [],
+            headersSize: 0,
+            httpVersion: 'HTTP/1.1',
+            redirectURL: '',
+            status: 200,
+            statusText: 'OK',
+        },
+        startedDateTime: new Date().toISOString(),
+    };
+
+};
+
 const badToRequests = (data: string[]): har.Entry[] => {
     const logs = data.map((row) => {
         if (!row.length) {

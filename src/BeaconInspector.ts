@@ -2,6 +2,7 @@ import * as har from 'har-format';
 import m = require('mithril');
 import BadRowsModal = require('./BadRowsModal');
 import Beacon = require('./Beacon');
+import LiveStreamModal = require('./LiveStreamModal');
 import Timeline = require('./Timeline');
 import Toolbar = require('./Toolbar');
 import { IBeaconSummary, IPageRequests } from './types';
@@ -88,7 +89,12 @@ const BeaconInspector = () => {
                         m(Beacon, { activeBeacon: active }))),
             ]),
             m(BadRowsModal, {
-                addRequests: (pagename: string, reqs: har.Entry[]) => requests.push({ page: pagename, entries: reqs }),
+                addRequests,
+                modal,
+                setModal,
+            }),
+            m(LiveStreamModal, {
+                addRequests,
                 modal,
                 setModal,
             }),

@@ -19,7 +19,7 @@ const trackerAnalytics = (collector: string, pageUrl: string, appId: string) => 
         return;
     }
 
-    if (pageUrl === 'badbucket.example.org') {
+    if (pageUrl === 'badbucket.invalid' || pageUrl === 'elasticsearch.invalid') {
         return;
     }
 
