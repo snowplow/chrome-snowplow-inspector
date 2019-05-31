@@ -2,8 +2,9 @@ import * as har from 'har-format';
 import m = require('mithril');
 import analytics = require('./analytics');
 import protocol = require('./protocol');
-import { IBeaconSummary, ITimeline } from './types';
+import { BeaconValidity, IBeaconSummary, ITimeline } from './types';
 import util = require('./util');
+import validator = require('./validator');
 
 const COLLECTOR_COLOURS = ['turquoise', 'purple', 'dark', 'red', 'yellow', 'blue', 'light'];
 const SEEN_COLLECTORS = new Map();
@@ -71,6 +72,60 @@ const nameEvent = (params: Map<string, string>): string => {
     }
 };
 
+const validateEvent = (params: Map<string, string>): BeaconValidity => {
+    let unrec = false;
+    let valid = true;
+    let status;
+
+    if (params.get('e') === 'ue') {
+        const payload = params.get('ue_pr') || params.get('ue_px') || '';
+
+        try {
+            const sde = JSON.parse(util.tryb64(payload));
+            if (typeof sde === 'object' && sde !== null && sde.hasOwnProperty('schema') && sde.hasOwnProperty('data')) {
+                status = validator.validate(sde.schema, sde.data);
+                unrec = unrec || status.location === null;
+                valid = valid && status.valid;
+
+                status = validator.validate(sde.data.schema, sde.data.data);
+                unrec = unrec || status.location === null;
+                valid = valid && status.valid;
+            } else {
+                unrec = true;
+                valid = false;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    if (params.has('cx') || params.has('co')) {
+        const payload = params.get('co') || params.get('cx') || '';
+
+        try {
+            const ctx = JSON.parse(util.tryb64(payload));
+            if (typeof ctx === 'object' && ctx !== null && ctx.hasOwnProperty('schema') && ctx.hasOwnProperty('data')) {
+                status = validator.validate(ctx.schema, ctx.data);
+                unrec = unrec || status.location === null;
+                valid = valid && status.valid;
+
+                ctx.data.forEach((c: {schema: string, data: object}) => {
+                    status = validator.validate(c.schema, c.data);
+                    unrec = unrec || status.location === null;
+                    valid = valid && status.valid;
+                });
+            } else {
+                unrec = true;
+                valid = false;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    return valid ? 'Valid' : unrec ? 'Unrecognised' : 'Invalid';
+};
+
 const summariseBeacons = (entry: har.Entry, index: number, filter?: RegExp): IBeaconSummary[] => {
     const reqs = extractRequests(entry, index);
     const [[id, collector, method], requests] = reqs;
@@ -87,6 +142,7 @@ const summariseBeacons = (entry: har.Entry, index: number, filter?: RegExp): IBe
             page: req.get('url'),
             payload: new Map(req),
             time: (new Date(parseInt(req.get('stm') || req.get('dtm'), 10) || +new Date())).toJSON(),
+            validity: validateEvent(req),
         };
 
         analytics.trackerAnalytics(collector, result.page, result.appId);
@@ -196,6 +252,7 @@ export = {
                         vnode.attrs.isActive(y) ? 'is-active' : '',
                         x.response.status === 200 ? '' : 'not-ok',
                         colourOf(y),
+                        y.validity === 'Invalid' ? 'is-invalid' : '',
                     ].join(' '),
                     onclick: vnode.attrs.setActive.bind(null, y),
                     title: [
@@ -203,10 +260,12 @@ export = {
                         `Collector: ${y.collector}`,
                         `App ID: ${y.appId}`,
                         `Status: ${x.response.status} ${x.response.statusText}`,
+                        `Validity: ${y.validity}`,
                     ].join('\n'),
                 },
                     m('span.panel-icon', '\u26ab\ufe0f'),
                     y.eventName,
+                    m('span.panel-icon.validity', y.validity === 'Invalid' ? '\u26d4\ufe0f' : ''),
                 ),
                 );
             })),

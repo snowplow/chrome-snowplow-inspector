@@ -15,8 +15,10 @@ export interface IBeaconSummary {
     page: string;
     payload: Map<string, string>;
     time: string;
+    validity: BeaconValidity;
 }
 
+export type BeaconValidity = 'Valid' | 'Unrecognised' | 'Invalid';
 export type BeaconDetail = [string, any, string];
 
 export interface IBeaconDetails {
