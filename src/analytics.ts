@@ -46,7 +46,12 @@ const repoAnalytics = (repo: string) => {
     if (repo !== 'http://iglucentral.com') {
         chrome.storage.sync.get({ enableTracking: true }, (settings) => {
             if (settings.enableTracking) {
-                sp.trackStructEvent('Custom Repo', 'Loaded', repo);
+                const repoUrl = new URL(repo);
+                // Don't steal credentials if present
+                repoUrl.username = '';
+                repoUrl.password = '';
+
+                sp.trackStructEvent('Custom Repo', 'Loaded', repoUrl.href);
             }
         });
     }
