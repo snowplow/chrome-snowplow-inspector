@@ -250,7 +250,8 @@ export = {
                 return summary.map((y) => m('a.panel-block', {
                     class: [
                         vnode.attrs.isActive(y) ? 'is-active' : '',
-                        x.response.status === 200 ? '' : 'not-ok',
+                        // Some race in Firefox where the response information isn't always populated
+                        x.response.status === 200 || x.response.status === 0 ? '' : 'not-ok',
                         colourOf(y),
                         y.validity === 'Invalid' ? 'is-invalid' : '',
                     ].join(' '),
