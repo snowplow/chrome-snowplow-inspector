@@ -2,6 +2,6 @@ import m = require('mithril');
 import SnowplowInspector = require('./components/SnowplowInspector');
 
 // tslint:disable-next-line
-const bulma = require('bulma/css/bulma.css');
+require('./style/inspector.scss');
 
 m.mount(document.body, SnowplowInspector);
