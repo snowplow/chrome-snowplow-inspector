@@ -1,7 +1,7 @@
 import m = require('mithril');
-import BeaconInspector = require('./BeaconInspector');
+import SnowplowInspector = require('./components/SnowplowInspector');
 
 // tslint:disable-next-line
 const bulma = require('bulma/css/bulma.css');
 
-m.mount(document.body, BeaconInspector);
+m.mount(document.body, SnowplowInspector);

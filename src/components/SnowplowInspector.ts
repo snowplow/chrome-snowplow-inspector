@@ -1,15 +1,15 @@
 import * as har from 'har-format';
 import m = require('mithril');
+import { IBeaconSummary, IPageRequests } from '../ts/types';
 import BadRowsModal = require('./BadRowsModal');
 import Beacon = require('./Beacon');
 import LiveStreamModal = require('./LiveStreamModal');
 import Timeline = require('./Timeline');
 import Toolbar = require('./Toolbar');
-import { IBeaconSummary, IPageRequests } from './types';
 
 const spPattern = /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
 
-const BeaconInspector = () => {
+const SnowplowInspector = () => {
     let requests: IPageRequests[] = [];
     let active: IBeaconSummary | undefined;
     let filter: RegExp | undefined;
@@ -109,4 +109,4 @@ const BeaconInspector = () => {
     };
 };
 
-export = BeaconInspector;
+export = SnowplowInspector;

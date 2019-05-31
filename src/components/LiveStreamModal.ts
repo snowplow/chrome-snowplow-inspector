@@ -1,7 +1,7 @@
 import { SearchResponse } from 'elasticsearch';
 import m = require('mithril');
-import { IBadRowsSummary } from './types';
-import util = require('./util');
+import { IBadRowsSummary } from '../ts/types';
+import util = require('../ts/util');
 
 let streamLock: number = -1;
 

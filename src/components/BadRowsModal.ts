@@ -1,6 +1,6 @@
 import m = require('mithril');
-import { IBadRowsSummary } from './types';
-import util = require('./util');
+import { IBadRowsSummary } from '../ts/types';
+import util = require('../ts/util');
 
 let badRows: string[] = [];
 

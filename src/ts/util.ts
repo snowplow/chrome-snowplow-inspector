@@ -1,6 +1,6 @@
 import * as har from 'har-format';
 import protocol = require('./protocol');
-import ThriftCodec = require('./ThriftCodec');
+import thriftcodec = require('./thriftcodec');
 import { ITomcatImport } from './types';
 
 const hash = (bytes: string): string => {
@@ -378,7 +378,7 @@ const badToRequests = (data: string[]): har.Entry[] => {
             // B64 encoded, hopefully thrift from mini/realtime
             } else if (/^([A-Za-z0-9/+]{4})+([A-Za-z0-9/+=]{4})?$/.test(js)) {
                 try {
-                    return ThriftCodec.decodeB64Thrift(js, ThriftCodec.schemas['collector-payload']) as ITomcatImport;
+                    return thriftcodec.decodeB64Thrift(js, thriftcodec.schemas['collector-payload']) as ITomcatImport;
                 } catch (e) {
                     console.log(e);
                 }

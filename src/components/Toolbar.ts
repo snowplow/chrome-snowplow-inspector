@@ -1,8 +1,8 @@
 import * as har from 'har-format';
 import m = require('mithril');
-import analytics = require('./analytics');
-import { IToolbar } from './types';
-import validator = require('./validator');
+import analytics = require('../ts/analytics');
+import { IToolbar } from '../ts/types';
+import validator = require('../ts/validator');
 
 export = {
     view: (vnode: m.Vnode<IToolbar>) => m('nav.navbar.is-flex-touch',

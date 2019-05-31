@@ -1,8 +1,8 @@
 import m = require('mithril');
-import protocol = require('./protocol');
-import { BeaconDetail, IBeacon, IBeaconDetails, IBeaconSummary, IRowSet, ProtocolField } from './types';
-import util = require('./util');
-import validator = require('./validator');
+import protocol = require('../ts/protocol');
+import { BeaconDetail, IBeacon, IBeaconDetails, IBeaconSummary, IRowSet, ProtocolField } from '../ts/types';
+import util = require('../ts/util');
+import validator = require('../ts/validator');
 
 function genClasses(finfo: ProtocolField): string {
     const classes = [];

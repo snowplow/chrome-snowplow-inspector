@@ -1,10 +1,10 @@
 import * as har from 'har-format';
 import m = require('mithril');
-import analytics = require('./analytics');
-import protocol = require('./protocol');
-import { BeaconValidity, IBeaconSummary, ITimeline } from './types';
-import util = require('./util');
-import validator = require('./validator');
+import analytics = require('../ts/analytics');
+import protocol = require('../ts/protocol');
+import { BeaconValidity, IBeaconSummary, ITimeline } from '../ts/types';
+import util = require('../ts/util');
+import validator = require('../ts/validator');
 
 const COLLECTOR_COLOURS = ['turquoise', 'purple', 'dark', 'red', 'yellow', 'blue', 'light'];
 const SEEN_COLLECTORS = new Map();
