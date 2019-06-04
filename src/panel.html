@@ -3,35 +3,6 @@
   <head>
     <meta charset="utf-8">
     <title>Poplin Data - Snowplow Beacon Analyser</title>
-    <style>
-        :root {height: 100vh; overflow: hidden}
-        body {background-color: ghostwhite; height: 100vh}
-        .tile.is-ancestor {margin-top: 0 !important}
-        .panel-block {background-color: white}
-        .section {padding: 1rem .75rem 3rem 1.5rem !important; height: 100%; overflow: auto}
-        .inspector .tile {display:inline-table !important}
-        .inspector .card-content {padding-bottom: 0}
-        .hide-rows .card-content {display: none}
-        .column.timeline {overflow: auto}
-        #beacon {overflow: auto; padding: 1rem}
-        .filterPanel {position: sticky; top: 0}
-        #filter {display: block; width: 100%}
-        .iglu.invalid > footer > .validation, #filter.invalid {background-color: hsl(348, 100%, 61%); color: ghostwhite}
-        .iglu.valid > footer > .validation {color: green}
-        .iglu > footer > .validation {cursor: pointer}
-        .panel-block.not-ok, .panel-block.not-ok.is-active {color: hsl(348, 100%, 61%)}
-        .panel-icon {font-size: inherit; margin-right: .45em}
-        .blue .panel-icon, .panel-block.blue.is-active .panel-icon {color: #549fd6}
-        .red .panel-icon, .panel-block.red.is-active .panel-icon {color: #d65435}
-        .dark .panel-icon, .panel-block.dark.is-active .panel-icon {color: #1d2b38}
-        .purple .panel-icon, .panel-block.purple.is-active .panel-icon {color: #5e529c}
-        .yellow .panel-icon, .panel-block.yellow.is-active .panel-icon {color: #f4d595}
-        .black .panel-icon, .panel-block.black.is-active .panel-icon {color: hsl(0, 0%, 4%)}
-        .light .panel-icon, .panel-block.light.is-active .panel-icon {color: #ccdbe1}
-        .turquoise .panel-icon, .panel-block.turquoise.is-active .panel-icon {color: #1cbbb4}
-        .panel-block.is-active .panel-icon.validity, .panel-block .panel-icon.validity {color: hsl(348, 100%, 61%); flex-grow: 2; text-align: right}
-        textarea.card-footer-item {resize: none}
-        </style>
   <body>
     <script src="sp.js"></script>
     <script src="extension.js"></script>
