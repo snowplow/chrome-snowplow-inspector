@@ -25,24 +25,24 @@
   "homepage": "https://github.com/poplindata/chrome-snowplow-inspector#readme",
   "dependencies": {
     "bulma": "^0.6.2",
-    "jsonschema": "^1.2.2",
-    "mithril": "^1.1.1"
+    "jsonschema": "1.*",
+    "mithril": "1.*"
   },
   "devDependencies": {
-    "@types/chrome": "0.0.81",
-    "@types/elasticsearch": "^5.0.33",
-    "@types/har-format": "^1.2.4",
-    "@types/mithril": "^1.1.16",
-    "@types/node": "^11.13.13",
-    "css-loader": "^0.28.11",
-    "node-sass": "^4.12.0",
-    "sass-loader": "^7.1.0",
-    "style-loader": "^0.20.3",
-    "ts-loader": "^3.2.0",
-    "tslint": "^5.17.0",
-    "tslint-eslint-rules": "^4.1.1",
-    "typescript": "^2.9.2",
-    "web-ext": "^2.9.3",
-    "webpack": "^2.5.1"
+    "@types/chrome": "*",
+    "@types/elasticsearch": "5.*",
+    "@types/har-format": "1.*",
+    "@types/mithril": "1.*",
+    "@types/node": "*",
+    "css-loader": "^2.*",
+    "node-sass": "4.*",
+    "sass-loader": "7.*",
+    "style-loader": "*",
+    "ts-loader": "3.*",
+    "tslint": "*",
+    "tslint-eslint-rules": "*",
+    "typescript": "*",
+    "web-ext": "*",
+    "webpack": "^2.*"
   }
 }

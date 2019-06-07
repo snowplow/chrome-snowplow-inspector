@@ -106,11 +106,11 @@ export = {
                 const apikey = parsedUrl.username;
                 parsedUrl.username = '';
 
-                m.request(parsedUrl.href, {headers: {apikey}}).then((schemaJson) => {
-                    if (schemaJson.hasOwnProperty('self')) {
+                m.request(parsedUrl.href, {headers: {apikey}}).then((schemaJson: unknown) => {
+                    if ((schemaJson as object).hasOwnProperty('self')) {
                         const {vendor, name, format, version} = (schemaJson as any).self;
                         if (evendor === vendor && ename === name && eformat === format && eversion === version) {
-                            persistCache(schema, schemaJson, url);
+                            persistCache(schema, schemaJson as jsonschema.Schema, url);
                         } else {
                             console.log('received schema does not match expected values:', `${evendor}:${vendor}, ${ename}:${name}, ${eformat}:${format}, ${eversion}:${version}, `);
                         }
