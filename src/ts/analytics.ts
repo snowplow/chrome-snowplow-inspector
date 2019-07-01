@@ -1,7 +1,7 @@
 declare const Snowplow: any;
 
 /* global Snowplow:false */
-const sp = Snowplow.getTrackerUrl('d.snowflake-analytics.com');
+const sp = Snowplow.getTrackerUrl('d.poplindata.com');
 sp.setAppId('snowplow-chrome-extension');
 sp.setPlatform('app');
 
