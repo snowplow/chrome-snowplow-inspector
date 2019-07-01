@@ -36,7 +36,7 @@ body {
 
   &.is-active .panel-icon.validity,
   & .panel-icon.validity {
-    color: $red;
+    color: $red !important;
     flex-grow: 2;
     text-align: right;
   }
