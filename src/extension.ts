@@ -9,6 +9,6 @@ declare module chrome.devtools.panels {
     export const themeName: string;
 }
 
-document.body.classList.add(chrome.devtools.panels.themeName);
+document.body.classList.add('theme' + chrome.devtools.panels.themeName);
 
 m.mount(document.body, SnowplowInspector);
