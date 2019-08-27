@@ -26,23 +26,23 @@
   "dependencies": {
     "bulma": "^0.7.5",
     "jsonschema": "1.*",
-    "mithril": "1.*"
+    "mithril": "2.*"
   },
   "devDependencies": {
-    "@types/chrome": "*",
+    "@types/chrome": "0.0.88",
     "@types/elasticsearch": "5.*",
     "@types/har-format": "1.*",
-    "@types/mithril": "1.*",
-    "@types/node": "^12.6.2",
+    "@types/mithril": "^2.0.0",
+    "@types/node": "^12.7.2",
     "css-loader": "^2.*",
     "node-sass": "4.*",
-    "sass-loader": "7.*",
-    "style-loader": "*",
+    "sass-loader": "^7.3.1",
+    "style-loader": "^1.0.0",
     "ts-loader": "3.*",
-    "tslint": "^5.18.0",
+    "tslint": "^5.19.0",
     "tslint-eslint-rules": "*",
     "typescript": "^3.5.3",
-    "web-ext": "^3.1.0",
+    "web-ext": "^3.1.1",
     "webpack": "^2.*"
   }
 }
