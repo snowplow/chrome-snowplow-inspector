@@ -20,13 +20,13 @@ const SnowplowInspector = () => {
         if (spPattern.test(request.url)) {
             return true;
         } else {
-            // It's possible that the request uses a custom endpoint
+            // It's possible that the request uses a custom endpoint via postPath
             if (request.method === 'POST' && typeof request.postData !== 'undefined') {
                 // Custom endpoints only support POST requests
                 try {
-                    const post = JSON.parse(request.postData.text);
-                    return 'schema' in post && plPattern.test(post.schema);
-                } catch (e) {
+                    const post = JSON.parse(request.postData.text) || {};
+                    return typeof post === 'object' && 'schema' in post && plPattern.test(post.schema);
+                } catch {
                     // invalid JSON, not a Snowplow event
                 }
             }
