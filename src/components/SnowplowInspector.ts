@@ -8,6 +8,7 @@ import Timeline = require('./Timeline');
 import Toolbar = require('./Toolbar');
 
 const spPattern = /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
+const plPattern = /^iglu:[^\/]+\/payload_data/i;
 
 const SnowplowInspector = () => {
     let requests: IPageRequests[] = [];
@@ -15,8 +16,23 @@ const SnowplowInspector = () => {
     let filter: RegExp | undefined;
     let modal: string | undefined;
 
-    function isSnowplow(request: har.Request) {
-        return spPattern.test(request.url);
+    function isSnowplow(request: har.Request): boolean {
+        if (spPattern.test(request.url)) {
+            return true;
+        } else {
+            // It's possible that the request uses a custom endpoint
+            if (request.method === 'POST' && typeof request.postData !== 'undefined') {
+                // Custom endpoints only support POST requests
+                try {
+                    const post = JSON.parse(request.postData.text);
+                    return 'schema' in post && plPattern.test(post.schema);
+                } catch (e) {
+                    // invalid JSON, not a Snowplow event
+                }
+            }
+        }
+
+        return false;
     }
 
     function handleNewRequest(req: har.Entry): void {
