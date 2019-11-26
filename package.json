@@ -1,6 +1,6 @@
 {
   "name": "chrome-snowplow-inspector",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "description": "Add a panel to DevTools to show Snowplow analytics beacon information.",
   "main": "src/extension.js",
   "scripts": {
