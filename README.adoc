@@ -53,5 +53,5 @@ Run `npm install` to install required dependencies, then `npm run build` to buil
 Instructions to install a local development version of the extension to test are over at the link:https://developer.chrome.com/extensions/getstarted#unpacked[extension development documentation].
 
 === Hack
-You can also use `npm start` to start webpack in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
+You can also use `npm start` to start parcel in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
 You will still need to reload the extension in a browser.
