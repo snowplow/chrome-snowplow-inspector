@@ -1,3 +1,4 @@
 node_modules/
 dist/
 poplin-chrome-extension.zip
+.cache/
