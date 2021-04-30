@@ -39,6 +39,6 @@
     "tslint": "^5.20.1",
     "tslint-eslint-rules": "*",
     "typescript": "^3.7.2",
-    "web-ext": "^3.2.1"
+    "web-ext": "^6.1.0"
   }
 }
