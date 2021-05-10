@@ -29,11 +29,11 @@
     "mithril": "2.*"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.136",
+    "@types/chrome": "^0.0.138",
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/mithril": "^2.0.2",
-    "@types/node": "^12.12.14",
+    "@types/node": "^15.0.2",
     "parcel-bundler": "^1.12.4",
     "sass": "^1.23.7",
     "tslint": "^5.20.1",
