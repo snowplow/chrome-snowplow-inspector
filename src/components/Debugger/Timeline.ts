@@ -1,10 +1,10 @@
-import * as har from "har-format";
+import { Entry } from "har-format";
 import m = require("mithril");
-import analytics = require("../ts/analytics");
-import protocol = require("../ts/protocol");
-import { BeaconValidity, IBeaconSummary, ITimeline } from "../ts/types";
-import util = require("../ts/util");
-import validator = require("../ts/validator");
+import analytics = require("../../ts/analytics");
+import protocol = require("../../ts/protocol");
+import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
+import util = require("../../ts/util");
+import validator = require("../../ts/validator");
 
 const COLLECTOR_COLOURS = [
   "turquoise",
@@ -156,7 +156,7 @@ const validateEvent = (params: Map<string, string>): BeaconValidity => {
 };
 
 const summariseBeacons = (
-  entry: har.Entry,
+  entry: Entry,
   index: number,
   filter?: RegExp
 ): IBeaconSummary[] => {
@@ -190,7 +190,7 @@ const summariseBeacons = (
   return results;
 };
 
-const getPageUrl = (entries: har.Entry[]) => {
+const getPageUrl = (entries: Entry[]) => {
   const urls = entries.reduce((ac, cv) => {
     const page = cv.request.headers.filter((x) => /referr?er/i.test(x.name))[0];
     if (page) {
@@ -215,7 +215,7 @@ const getPageUrl = (entries: har.Entry[]) => {
   return url;
 };
 
-const extractRequests = (entry: har.Entry, index: number) => {
+const extractRequests = (entry: Entry, index: number) => {
   const req = entry.request;
   const id =
     entry.pageref +
@@ -234,7 +234,7 @@ const extractRequests = (entry: har.Entry, index: number) => {
 
   if (req.method === "POST") {
     try {
-      if (req.postData === undefined) {
+      if (req.postData === undefined || !req.postData.text) {
         throw new Error("POST request unexpectedly had no body.");
       }
 
@@ -283,17 +283,17 @@ const extractRequests = (entry: har.Entry, index: number) => {
 
 export = {
   view: (vnode: m.Vnode<ITimeline>) => {
-    const url = getPageUrl(vnode.attrs.request.entries);
+    const url = getPageUrl(vnode.attrs.requests);
     return m(
       "div.panel",
       m(
         "p.panel-heading",
         { title: url && url.href },
-        url ? url.pathname.slice(0, 34) : vnode.attrs.request.page || "New Page"
+        url ? url.pathname.slice(0, 34) : "Current Page"
       ),
       Array.prototype.concat.apply(
         [],
-        vnode.attrs.request.entries.map((x, i) => {
+        vnode.attrs.requests.map((x, i) => {
           const summary = summariseBeacons(x, i, vnode.attrs.filter);
           return summary.map((y) =>
             m(

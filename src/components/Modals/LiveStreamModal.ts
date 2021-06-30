@@ -1,7 +1,7 @@
 import { SearchResponse } from "elasticsearch";
 import m = require("mithril");
-import { IBadRowsSummary } from "../ts/types";
-import util = require("../ts/util");
+import { IBadRowsSummary } from "../../ts/types";
+import util = require("../../ts/util");
 
 let streamLock: number = -1;
 
@@ -59,7 +59,6 @@ export = {
 
                   if (hits.length) {
                     vnode.attrs.addRequests(
-                      "Live Data",
                       util.esToRequests(hits.map((x) => x._source))
                     );
                   }

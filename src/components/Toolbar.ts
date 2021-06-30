@@ -1,4 +1,4 @@
-import * as har from "har-format";
+import { Har } from "har-format";
 import m = require("mithril");
 import analytics = require("../ts/analytics");
 import { IToolbar } from "../ts/types";
@@ -69,11 +69,8 @@ export = {
                           () => {
                             const content = JSON.parse(
                               fr.result as string
-                            ) as har.Har;
-                            vnode.attrs.addRequests(
-                              file.name,
-                              content.log.entries
-                            );
+                            ) as Har;
+                            vnode.attrs.addRequests(content.log.entries);
                           },
                           false
                         );

@@ -1,11 +1,16 @@
-import * as har from "har-format";
+import { Entry } from "har-format";
 import jsonschema = require("jsonschema");
 
 export type Application = "debugger" | "schemaManager";
 
+export interface IDebugger {
+  events: Entry[];
+  addRequests: (requests: Entry[]) => void;
+}
+
 export interface IPageRequests {
   page: string;
-  entries: har.Entry[];
+  entries: Entry[];
 }
 
 export interface IBeaconSummary {
@@ -45,7 +50,7 @@ export interface IErrorMessageSet {
 }
 
 export interface IToolbar {
-  addRequests: (pagename: string, requests: har.Entry[]) => void;
+  addRequests: (requests: Entry[]) => void;
   changeApp: (app: Application) => void;
   clearRequests: () => void;
   setModal: (modalName: string) => void;
@@ -58,7 +63,7 @@ export interface IRowSet {
 export interface ITimeline {
   isActive: (beacon: IBeaconSummary) => boolean;
   filter?: RegExp;
-  request: IPageRequests;
+  requests: Entry[];
   setActive: (beacon: IBeaconSummary) => void;
 }
 
@@ -67,7 +72,7 @@ export interface IBeacon {
 }
 
 export interface IBadRowsSummary {
-  addRequests: (pagename: string, requests: har.Entry[]) => void;
+  addRequests: (requests: Entry[]) => void;
   modal?: string;
   setModal: (modalName?: string) => void;
 }

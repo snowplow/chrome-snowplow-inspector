@@ -1,6 +1,6 @@
 import m = require("mithril");
-import { IBadRowsSummary } from "../ts/types";
-import util = require("../ts/util");
+import { IBadRowsSummary } from "../../ts/types";
+import util = require("../../ts/util");
 
 let badRows: string[] = [];
 
@@ -51,10 +51,7 @@ export = {
               {
                 onclick: () => {
                   if (badRows.length) {
-                    vnode.attrs.addRequests(
-                      "Bad Rows",
-                      util.badToRequests(badRows)
-                    );
+                    vnode.attrs.addRequests(util.badToRequests(badRows));
                     badRows = [];
                     vnode.attrs.setModal(undefined);
                   }
