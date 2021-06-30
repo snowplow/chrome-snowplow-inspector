@@ -41,6 +41,7 @@ const SnowplowInspector = () => {
         m(Toolbar, {
           addRequests,
           changeApp,
+          application,
           clearRequests: () => (events.length = 0),
           setModal,
         }),
