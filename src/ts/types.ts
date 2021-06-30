@@ -1,11 +1,14 @@
 import { Entry } from "har-format";
 import jsonschema = require("jsonschema");
 
+import Resolver = require("./Resolver");
+
 export type Application = "debugger" | "schemaManager";
 
 export interface IDebugger {
-  events: Entry[];
   addRequests: (requests: Entry[]) => void;
+  events: Entry[];
+  resolver: Resolver;
 }
 
 export interface IPageRequests {

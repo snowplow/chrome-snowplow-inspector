@@ -1,5 +1,17 @@
-import Registry = require("./Registry");
+import m = require("mithril");
 
-class DataStructuresRegistry {}
+import Registry = require("./Registry");
+import { RegistrySpec } from "../types";
+
+class DataStructuresRegistry extends Registry {
+  constructor(spec: RegistrySpec) {
+    super();
+  }
+
+  walk() {}
+  view() {
+    return m("p", "DataStructure Registry");
+  }
+}
 
 export = DataStructuresRegistry;

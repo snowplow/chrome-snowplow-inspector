@@ -1,7 +1,7 @@
 import m = require("mithril");
 
 import analytics = require("../../ts/analytics");
-import Resolver = require("../../ts/resolver");
+import Resolver = require("../../ts/Resolver");
 
 import Directory = require("./Directory");
 import RegistryList = require("./RegistryList");
