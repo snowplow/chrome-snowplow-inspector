@@ -2,7 +2,7 @@ import { Entry } from "har-format";
 import m = require("mithril");
 
 import { Application } from "../ts/types";
-import Resolver = require("../ts/resolver");
+import Resolver = require("../ts/Resolver");
 
 import BadRowsModal = require("./Modals/BadRowsModal");
 import LiveStreamModal = require("./Modals/LiveStreamModal");
@@ -34,10 +34,10 @@ const SnowplowInspector = () => {
       let app;
       switch (application) {
         case "debugger":
-          app = m(Debugger, { events, addRequests });
+          app = m(Debugger, { addRequests, events, resolver });
           break;
         case "schemaManager":
-          app = m(SchemaManager);
+          app = m(SchemaManager, { resolver });
           break;
       }
 
