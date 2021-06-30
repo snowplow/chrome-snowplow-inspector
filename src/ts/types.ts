@@ -1,153 +1,154 @@
-import * as har from 'har-format';
-import jsonschema = require('jsonschema');
+import * as har from "har-format";
+import jsonschema = require("jsonschema");
 
-export type Application = 'debugger' | 'schemaManager';
+export type Application = "debugger" | "schemaManager";
 
 export interface IPageRequests {
-    page: string;
-    entries: har.Entry[];
+  page: string;
+  entries: har.Entry[];
 }
 
 export interface IBeaconSummary {
-    appId: string;
-    collector: string;
-    eventName: string;
-    id: string;
-    method: string;
-    page: string;
-    payload: Map<string, string>;
-    time: string;
-    validity: BeaconValidity;
+  appId: string;
+  collector: string;
+  eventName: string;
+  id: string;
+  method: string;
+  page: string;
+  payload: Map<string, string>;
+  time: string;
+  validity: BeaconValidity;
 }
 
-export type BeaconValidity = 'Valid' | 'Unrecognised' | 'Invalid';
+export type BeaconValidity = "Valid" | "Unrecognised" | "Invalid";
 export type BeaconDetail = [string, any, string];
 
 export interface IBeaconDetails {
-    appId: string;
-    collector: string;
-    data: BeaconDetail[];
-    method: string;
-    name: string;
-    time: string;
+  appId: string;
+  collector: string;
+  data: BeaconDetail[];
+  method: string;
+  name: string;
+  time: string;
 }
 
 export interface ICache {
-    [igluUri: string]: jsonschema.Schema;
+  [igluUri: string]: jsonschema.Schema;
 }
 
 export interface ISchemaStatus {
-    [igluUri: string]: string | null;
+  [igluUri: string]: string | null;
 }
 
 export interface IErrorMessageSet {
-    [errorType: string]: string[];
+  [errorType: string]: string[];
 }
 
 export interface IToolbar {
-    addRequests: (pagename: string, requests: har.Entry[]) => void;
-    changeApp: (app: Application) => void;
-    clearRequests: () => void;
-    setModal: (modalName: string) => void;
+  addRequests: (pagename: string, requests: har.Entry[]) => void;
+  changeApp: (app: Application) => void;
+  clearRequests: () => void;
+  setModal: (modalName: string) => void;
 }
 
 export interface IRowSet {
-    setName: string;
+  setName: string;
 }
 
 export interface ITimeline {
-    isActive: (beacon: IBeaconSummary) => boolean;
-    filter?: RegExp;
-    request: IPageRequests;
-    setActive: (beacon: IBeaconSummary) => void;
+  isActive: (beacon: IBeaconSummary) => boolean;
+  filter?: RegExp;
+  request: IPageRequests;
+  setActive: (beacon: IBeaconSummary) => void;
 }
 
 export interface IBeacon {
-    activeBeacon?: IBeaconSummary;
+  activeBeacon?: IBeaconSummary;
 }
 
 export interface IBadRowsSummary {
-    addRequests: (pagename: string, requests: har.Entry[]) => void;
-    modal?: string;
-    setModal: (modalName?: string) => void;
+  addRequests: (pagename: string, requests: har.Entry[]) => void;
+  modal?: string;
+  setModal: (modalName?: string) => void;
 }
 
-export interface ITomcatImport  {
-    [fieldName: string]: string | { [header: string]: string };
+export interface ITomcatImport {
+  [fieldName: string]: string | { [header: string]: string };
 }
 
 interface IProtTextField {
-    deprecated?: boolean;
-    header?: 'text';
-    name: string;
-    type: 'text';
+  deprecated?: boolean;
+  header?: "text";
+  name: string;
+  type: "text";
 }
 
 interface IProtBoolField {
-    deprecated?: boolean;
-    name: string;
-    type: 'bool';
+  deprecated?: boolean;
+  name: string;
+  type: "bool";
 }
 
 interface IProtNumbField {
-    deprecated?: boolean;
-    name: string;
-    type: 'numb';
+  deprecated?: boolean;
+  name: string;
+  type: "numb";
 }
 
 interface IProtDoubField {
-    deprecated?: boolean;
-    name: string;
-    type: 'doub';
+  deprecated?: boolean;
+  name: string;
+  type: "doub";
 }
 
 interface IProtUuidField {
-    cookie?: string;
-    deprecated?: boolean;
-    name: string;
-    type: 'uuid';
+  cookie?: string;
+  deprecated?: boolean;
+  name: string;
+  type: "uuid";
 }
 
 interface IProtJsonField {
-    deprecated?: boolean;
-    name: string;
-    type: 'json';
+  deprecated?: boolean;
+  name: string;
+  type: "json";
 }
 
 interface IProtBa64Field {
-    deprecated?: boolean;
-    name: string;
-    then: 'json';
-    type: 'ba64';
+  deprecated?: boolean;
+  name: string;
+  then: "json";
+  type: "ba64";
 }
 
 interface IProtEnumField {
-    deprecated?: boolean;
-    name: string;
-    type: 'enum';
-    values: string[];
+  deprecated?: boolean;
+  name: string;
+  type: "enum";
+  values: string[];
 }
 
 interface IProtEpocField {
-    deprecated?: boolean;
-    name: string;
-    type: 'epoc';
+  deprecated?: boolean;
+  name: string;
+  type: "epoc";
 }
 
 interface IProtEmapField {
-    deprecated?: boolean;
-    name: string;
-    type: 'emap';
-    values: {[val: string]: string};
+  deprecated?: boolean;
+  name: string;
+  type: "emap";
+  values: { [val: string]: string };
 }
 
-export type ProtocolField = IProtBa64Field |
-                             IProtBoolField |
-                             IProtDoubField |
-                             IProtEmapField |
-                             IProtEnumField |
-                             IProtEpocField |
-                             IProtJsonField |
-                             IProtNumbField |
-                             IProtTextField |
-                             IProtUuidField;
+export type ProtocolField =
+  | IProtBa64Field
+  | IProtBoolField
+  | IProtDoubField
+  | IProtEmapField
+  | IProtEnumField
+  | IProtEpocField
+  | IProtJsonField
+  | IProtNumbField
+  | IProtTextField
+  | IProtUuidField;

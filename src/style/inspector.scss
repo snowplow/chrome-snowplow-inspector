@@ -104,7 +104,7 @@ $colors: (
   "yellow": $yellow,
   "black": $black,
   "light": $white-ter,
-  "turquoise": $turquoise
+  "turquoise": $turquoise,
 );
 
 @each $class, $color in $colors {

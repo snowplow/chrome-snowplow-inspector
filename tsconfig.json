@@ -1,18 +1,16 @@
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "alwaysStrict": true,
-        "checkJs": true,
-        "downlevelIteration": true,
-        "strict": true,
-        "inlineSourceMap": true,
-        "newLine": "lf",
-        "pretty": true,
-        "target": "ES3",
-        "lib": ["es5", "es6", "es7", "dom"],
-        "module": "commonjs"
-    },
-    "include": [
-        "src/*"
-    ]
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "checkJs": true,
+    "downlevelIteration": true,
+    "strict": true,
+    "inlineSourceMap": true,
+    "newLine": "lf",
+    "pretty": true,
+    "target": "ES3",
+    "lib": ["es5", "es6", "es7", "dom"],
+    "module": "commonjs"
+  },
+  "include": ["src/*"]
 }
