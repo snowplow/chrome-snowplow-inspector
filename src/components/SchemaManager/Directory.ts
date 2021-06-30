@@ -1,3 +1,8 @@
 import m = require("mithril");
 
-export = m("p.directory", "Directory goes here");
+const Directory = {
+  view: (vnode: m.Vnode<{ resolver: Resolver }>) =>
+    m("div.directory.column", "Directory goes here"),
+};
+
+export = Directory;

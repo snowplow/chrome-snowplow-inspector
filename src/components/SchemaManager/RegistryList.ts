@@ -1,3 +1,8 @@
 import m = require("mithril");
 
-export = m("p.registry", "Registry list goes here");
+const RegistryList = {
+  view: (vnode: m.Vnode<{ resolver: Resolver }>) =>
+    m("div.registries.column.is-narrow", "RegistryList goes here"),
+};
+
+export = RegistryList;
