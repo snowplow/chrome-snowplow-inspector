@@ -1,15 +1,13 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
-    "jsRules": {},
-    "rules": {
-        "linebreak-style": [true, "LF"],
-        "quotemark": [true, "single"],
-        "semicolon": [true, "always"],
-        "no-console": [false],
-        "no-bitwise": [false]
-    },
-    "rulesDirectory": []
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended"],
+  "jsRules": {},
+  "rules": {
+    "linebreak-style": [true, "LF"],
+    "quotemark": [true, "single"],
+    "semicolon": [true, "always"],
+    "no-console": [false],
+    "no-bitwise": [false]
+  },
+  "rulesDirectory": []
 }
