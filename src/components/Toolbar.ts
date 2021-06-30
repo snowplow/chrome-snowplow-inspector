@@ -4,22 +4,11 @@ import analytics = require("../ts/analytics");
 import { IToolbar } from "../ts/types";
 import validator = require("../ts/validator");
 
-export = {
-  view: (vnode: m.Vnode<IToolbar>) =>
-    m("nav.navbar.is-flex-touch", [
-      m(
-        "div.navbar-brand",
-        m(
-          "a.navbar-item",
-          { href: analytics.landingUrl, target: "_blank" },
-          m("img", { alt: "Poplin Data logo", src: "pd-logo.png" })
-        )
-      ),
-      m(
-        "div.navbar-menu.is-active.is-shadowless",
-        m(
-          "div.navbar-start",
-          m("div.navbar-item.field.is-grouped", [
+const toolbarView = (vnode: m.Vnode<IToolbar>) => {
+    let toolbar_view;
+    switch (vnode.attrs.application) {
+        case "debugger":
+            toolbar_view = [
             m(
               "a.button.is-outlined.is-small.control",
               { onclick: () => vnode.attrs.changeApp("schemaManager") },
@@ -84,7 +73,37 @@ export = {
               },
               "Import HAR Session"
             ),
-          ])
+            ];
+            break;
+        case "schemaManager":
+            toolbar_view = [
+                m(
+                  "a.button.is-outlined.is-small.control",
+                  { onclick: () => vnode.attrs.changeApp("debugger") },
+                  "Back to Debugger."
+                )
+            ];
+            break;
+    }
+    return toolbar_view;
+}
+
+export = {
+  view: (vnode: m.Vnode<IToolbar>) =>
+    m("nav.navbar.is-flex-touch", [
+      m(
+        "div.navbar-brand",
+        m(
+          "a.navbar-item",
+          { href: analytics.landingUrl, target: "_blank" },
+          m("img", { alt: "Poplin Data logo", src: "pd-logo.png" })
+        )
+      ),
+      m(
+        "div.navbar-menu.is-active.is-shadowless",
+        m(
+          "div.navbar-start",
+          m("div.navbar-item.field.is-grouped", toolbarView(vnode))
         )
       ),
     ]),
