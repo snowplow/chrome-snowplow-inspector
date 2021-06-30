@@ -1,6 +1,8 @@
 import * as har from 'har-format';
 import jsonschema = require('jsonschema');
 
+export type Application = 'debugger' | 'schemaManager';
+
 export interface IPageRequests {
     page: string;
     entries: har.Entry[];
@@ -44,6 +46,7 @@ export interface IErrorMessageSet {
 
 export interface IToolbar {
     addRequests: (pagename: string, requests: har.Entry[]) => void;
+    changeApp: (app: Application) => void;
     clearRequests: () => void;
     setModal: (modalName: string) => void;
 }

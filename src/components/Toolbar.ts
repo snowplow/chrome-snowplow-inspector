@@ -15,6 +15,8 @@ export = {
             m('div.navbar-menu.is-active.is-shadowless',
                 m('div.navbar-start',
                     m('div.navbar-item.field.is-grouped', [
+                        m('a.button.is-outlined.is-small.control', { onclick: () => vnode.attrs.changeApp('schemaManager') },
+                            'Manage Schemas'),
                         m('a.button.is-outlined.is-small.control', { onclick: vnode.attrs.clearRequests },
                             'Clear Events'),
                         m('a.button.is-outlined.is-small.control', { onclick: validator.clearCache },
