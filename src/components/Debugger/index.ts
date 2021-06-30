@@ -60,10 +60,17 @@ const Debugger = (vnode: m.Vnode<IDebugger>) => {
 
   return {
     oninit: () => {
-      chrome.devtools.network.getHAR((harLog) => {
-        harLog.entries.map(handleNewRequest);
+      if (!vnode.attrs.events.length) {
+        chrome.devtools.network.getHAR((harLog) => {
+          harLog.entries.forEach(handleNewRequest);
+          chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
+        });
+      } else {
         chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
-      });
+      }
+    },
+    onremove: () => {
+      chrome.devtools.network.onRequestFinished.removeListener(handleNewRequest);
     },
     view: () =>
       m("section.columns.section", [
