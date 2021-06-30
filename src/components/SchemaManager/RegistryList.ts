@@ -1,4 +1,5 @@
 import m = require("mithril");
+import Resolver = require("../../ts/resolver");
 
 const RegistryList = {
   view: (vnode: m.Vnode<{ resolver: Resolver }>) =>
