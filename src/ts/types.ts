@@ -81,6 +81,10 @@ export interface ITomcatImport {
   [fieldName: string]: string | { [header: string]: string };
 }
 
+export interface RegistrySpec {
+  kind: "local" | "ds" | "static" | "iglu";
+}
+
 interface IProtTextField {
   deprecated?: boolean;
   header?: "text";

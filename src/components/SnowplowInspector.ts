@@ -1,6 +1,9 @@
 import { Entry } from "har-format";
 import m = require("mithril");
+
 import { Application } from "../ts/types";
+import Resolver = require("../ts/resolver");
+
 import BadRowsModal = require("./Modals/BadRowsModal");
 import LiveStreamModal = require("./Modals/LiveStreamModal");
 import Debugger = require("./Debugger");
@@ -10,6 +13,7 @@ import Toolbar = require("./Toolbar");
 const SnowplowInspector = () => {
   let modal: string | undefined;
   let application: Application = "debugger";
+  const resolver = new Resolver();
 
   const events: Entry[] = [];
 
