@@ -1,7 +1,7 @@
 import { Entry, Request } from "har-format";
 import m = require("mithril");
 
-import { IBeaconSummary, IDebugger, IPageRequests } from "../../ts/types";
+import { IBeaconSummary, IDebugger } from "../../ts/types";
 
 import Beacon = require("./Beacon");
 import Timeline = require("./Timeline");
@@ -55,7 +55,6 @@ const Debugger = (vnode: m.Vnode<IDebugger>) => {
     }
 
     vnode.attrs.addRequests([req]);
-    m.redraw();
   }
 
   return {
@@ -63,14 +62,18 @@ const Debugger = (vnode: m.Vnode<IDebugger>) => {
       if (!vnode.attrs.events.length) {
         chrome.devtools.network.getHAR((harLog) => {
           harLog.entries.forEach(handleNewRequest);
-          chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
+          chrome.devtools.network.onRequestFinished.addListener(
+            handleNewRequest
+          );
         });
       } else {
         chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
       }
     },
     onremove: () => {
-      chrome.devtools.network.onRequestFinished.removeListener(handleNewRequest);
+      chrome.devtools.network.onRequestFinished.removeListener(
+        handleNewRequest
+      );
     },
     view: () =>
       m("section.columns.section", [

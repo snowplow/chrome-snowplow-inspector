@@ -86,6 +86,23 @@ export interface ITomcatImport {
 
 export interface RegistrySpec {
   kind: "local" | "ds" | "static" | "iglu";
+  id?: string;
+  name: string;
+  [opt: string]: any;
+}
+
+export interface IgluSchema {
+  vendor: string;
+  name: string;
+  format: string;
+  version: string;
+  registry: RegistrySpec;
+  description?: string;
+  schemaHash: string;
+  raw: string;
+  data: { [key: string]: any };
+
+  uri(): string;
 }
 
 interface IProtTextField {

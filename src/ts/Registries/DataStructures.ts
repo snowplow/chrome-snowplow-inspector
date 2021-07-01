@@ -5,10 +5,12 @@ import { RegistrySpec } from "../types";
 
 class DataStructuresRegistry extends Registry {
   constructor(spec: RegistrySpec) {
-    super();
+    super(spec);
   }
 
-  walk() {}
+  walk() {
+    return [];
+  }
   view() {
     return m("p", "DataStructure Registry");
   }

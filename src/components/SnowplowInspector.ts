@@ -23,6 +23,7 @@ const SnowplowInspector = () => {
 
   function addRequests(reqs: Entry[]) {
     events.push.apply(events, reqs);
+    m.redraw();
   }
 
   function changeApp(app: Application) {
