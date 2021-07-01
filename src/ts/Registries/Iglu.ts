@@ -5,10 +5,13 @@ import { RegistrySpec } from "../types";
 
 class IgluRegistry extends Registry {
   constructor(spec: RegistrySpec) {
-    super();
+    super(spec);
   }
 
-  walk() {}
+  walk() {
+    return [];
+  }
+
   view() {
     return m("p", "DataStructure Registry");
   }
