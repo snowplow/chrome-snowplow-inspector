@@ -5,7 +5,8 @@
   "main": "src/extension.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "tslint src/*.ts",
+    "check": "tsc --noEmit",
+    "fmt": "prettier -w src",
     "clean": "rm -r dist || true",
     "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/pd-logo.png ../res/poplin.png ../res/poplin-16.png ../res/poplin-48.png ../res/poplin-128.png ../src/popup.html ../LICENSE.txt dist/ && parcel watch src/panel.html src/options.html src/devtools.html",
     "build": "npm run clean && mkdir -p dist && cp manifest.json res/pd-logo.png res/poplin.png res/poplin-16.png res/poplin-48.png res/poplin-128.png src/popup.html LICENSE.txt dist/ && parcel build --no-source-maps src/panel.html src/options.html src/devtools.html",
@@ -38,7 +39,6 @@
     "prettier": "^2.3.2",
     "sass": "^1.23.7",
     "tslib": "^1.14.1",
-    "tslint": "^6.1.3",
     "typescript": "^4.2.4",
     "web-ext": "^6.1.0"
   }
