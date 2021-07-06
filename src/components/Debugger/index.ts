@@ -1,5 +1,5 @@
 import { Entry, Request } from "har-format";
-import { default as m } from "mithril";
+import { default as m, Vnode } from "mithril";
 
 import { IBeaconSummary, IDebugger } from "../../ts/types";
 

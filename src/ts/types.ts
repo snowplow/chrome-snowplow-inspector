@@ -1,7 +1,7 @@
 import { Entry } from "har-format";
 import { Schema } from "jsonschema";
 
-import { Resolver } from "./iglu/Resolver";
+import { Resolver } from "./iglu";
 
 export type Application = "debugger" | "schemaManager";
 
