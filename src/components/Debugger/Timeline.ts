@@ -332,7 +332,7 @@ export const Timeline = {
                   `Validity: ${y.validity}`,
                 ].join("\n"),
               },
-              m("span.panel-icon", "\u26ab\ufe0f"),
+              m("span.panel-icon.identifier"),
               y.eventName,
               m(
                 "span.panel-icon.validity",

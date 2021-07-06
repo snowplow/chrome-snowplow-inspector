@@ -108,8 +108,9 @@ $colors: (
 );
 
 @each $class, $color in $colors {
-  .#{$class} .panel-icon,
-  .panel-block.#{$class}.is-active .panel-icon {
-    color: #{$color};
+  .#{$class} .panel-icon.identifier,
+  .panel-block.#{$class}.is-active .panel-icon.identifier {
+    background-color: #{$color};
+    border-radius: 100%;
   }
 }
