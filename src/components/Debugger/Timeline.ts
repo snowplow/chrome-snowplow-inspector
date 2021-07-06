@@ -249,7 +249,7 @@ const extractRequests = (
       const payload = JSON.parse(req.postData.text);
 
       for (const pl of payload.data) {
-        const beacon: Map<string, string> = new Map(pl.entries());
+        const beacon: Map<string, string> = new Map(Object.entries(pl));
         if (nuid && !beacon.has("nuid")) {
           beacon.set("nuid", nuid.value);
         }
