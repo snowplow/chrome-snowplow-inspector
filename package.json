@@ -34,11 +34,11 @@
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/mithril": "^2.0.2",
-    "@types/node": "^15.0.2",
+    "@types/node": "^16.0.0",
     "parcel-bundler": "^1.12.4",
     "prettier": "^2.3.2",
     "sass": "^1.23.7",
-    "tslib": "^1.14.1",
+    "tslib": "*",
     "typescript": "^4.2.4",
     "web-ext": "^6.1.0"
   }
