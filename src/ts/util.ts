@@ -163,7 +163,6 @@ const thriftToRequest = (
       method: "body" in payload ? "POST" : "GET",
       postData: {
         mimeType: "application/json",
-        params: [],
         text: tryb64(payload.body as string),
       },
       queryString: [],
@@ -246,12 +245,15 @@ const goodToRequests = (data: {
             .replace(/_/g, ".")
             .replace(/\/([^\./]+).([^\./]+)/, "/$1_$2");
 
-          for (const c of data[p]) {
-            contexts.push({
-              data: c,
-              schema: "iglu:" + schemaname,
-            });
-          }
+          const ctx = data[p];
+          if (Array.isArray(ctx)) {
+            for (const c of ctx) {
+              contexts.push({
+                data: c,
+                schema: "iglu:" + schemaname,
+              });
+            }
+          } else throw "protocol violation";
         } else {
           uri.searchParams.set(key, val as string);
         }

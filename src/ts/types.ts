@@ -17,12 +17,12 @@ export interface IPageRequests {
 }
 
 export interface IBeaconSummary {
-  appId: string;
+  appId?: string;
   collector: string;
   eventName: string;
   id: string;
   method: string;
-  page: string;
+  page?: string;
   payload: Map<string, string>;
   time: string;
   validity: BeaconValidity;
@@ -53,6 +53,7 @@ export interface IErrorMessageSet {
 }
 
 export interface IToolbar {
+  application: Application;
   addRequests: (requests: Entry[]) => void;
   changeApp: (app: Application) => void;
   clearRequests: () => void;

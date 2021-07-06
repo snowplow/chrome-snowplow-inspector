@@ -21,8 +21,8 @@ const seenCollectors: { [collector: string]: string[] } = {};
 
 export const trackerAnalytics = (
   collector: string,
-  pageUrl: string,
-  appId: string
+  pageUrl?: string,
+  appId?: string
 ) => {
   if (!pageUrl) {
     return;
