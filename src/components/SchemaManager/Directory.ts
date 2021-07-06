@@ -1,5 +1,5 @@
 import { default as m, Vnode } from "mithril";
-import { Resolver } from "../../ts/iglu/Resolver";
+import { Resolver } from "../../ts/iglu";
 import { IgluSchema } from "../../ts/types";
 
 interface SchemaDirectory {
