@@ -1,6 +1,5 @@
-import { default as m, Vnode } from "mithril";
-import { Resolver } from "../../ts/iglu";
-import { IgluSchema } from "../../ts/types";
+import { default as m, redraw, Vnode } from "mithril";
+import { IgluSchema, Resolver } from "../../ts/iglu";
 
 interface SchemaDirectory {
   [vendor: string]: VendorDirectory;
@@ -18,13 +17,22 @@ interface VersionDirectory {
   [version: string]: IgluSchema[];
 }
 
+const catalog: IgluSchema[] = [];
+
 export const Directory = {
-  view: (vnode: Vnode<{ resolver: Resolver }>) => {
+  oninit: (vnode: Vnode<{ resolver: Resolver }>) => {
     const { resolver } = vnode.attrs;
-
-    const schemas: IgluSchema[] = resolver.walk();
-
-    const directory: SchemaDirectory = schemas.reduce((acc, el) => {
+    resolver
+      .walk()
+      .then(
+        (discovered) => (
+          (catalog.length = 0), catalog.push.apply(catalog, discovered)
+        )
+      )
+      .then(redraw);
+  },
+  view: (vnode: Vnode<{ resolver: Resolver }>) => {
+    const directory: SchemaDirectory = catalog.reduce((acc, el) => {
       const v = (acc[el.vendor] = acc[el.vendor] || {});
       const n = (v[el.name] = v[el.name] || {});
       const f = (n[el.format] = n[el.format] || {});
@@ -37,45 +45,31 @@ export const Directory = {
     return m(
       "div.directory.column",
       Object.entries(directory).map(([vendor, schemas]) => {
-        return m("summary.vendor", [
-          vendor,
-          m(
-            "details",
-            Object.entries(schemas).map(([name, formats]) =>
-              m("summary.name", [
-                name,
-                m(
-                  "details",
-                  Object.entries(formats).map(([format, versions]) =>
-                    m("summary.format", [
-                      format,
+        return m("details.vendor", [
+          m("summary", vendor),
+          Object.entries(schemas).map(([name, formats]) =>
+            m("details.name", [
+              m("summary", name),
+              Object.entries(formats).map(([format, versions]) =>
+                m("details.format[open]", [
+                  m("summary", format),
+                  Object.entries(versions).map(([version, deployments]) =>
+                    m("details.version", [
+                      m("summary", version),
                       m(
-                        "details",
-                        Object.entries(versions).map(([version, deployments]) =>
-                          m("summary.version", [
-                            version,
-                            m(
-                              "ul.registries",
-                              deployments.map((d) => m("li", d))
-                            ),
-                            deployments[0].description
-                              ? m("p.description", deployments[0].description)
-                              : undefined,
-                            m("textarea", {
-                              value: JSON.stringify(
-                                deployments[0].data,
-                                null,
-                                4
-                              ),
-                            }),
-                          ])
+                        "ul.registries",
+                        deployments.map((d) =>
+                          m(
+                            "li",
+                            m("textarea", { value: JSON.stringify(d, null, 4) })
+                          )
                         )
                       ),
                     ])
-                  )
-                ),
-              ])
-            )
+                  ),
+                ])
+              ),
+            ])
           ),
         ]);
       })

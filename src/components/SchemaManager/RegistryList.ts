@@ -3,5 +3,5 @@ import { Resolver } from "../../ts/iglu";
 
 export const RegistryList = {
   view: (vnode: Vnode<{ resolver: Resolver }>) =>
-    m("div.registries.column.is-narrow", "RegistryList goes here"),
+    m("div.registries.column.is-narrow", m(vnode.attrs.resolver)),
 };

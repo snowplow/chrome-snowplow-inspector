@@ -1,14 +1,9 @@
 import { default as m } from "mithril";
 
 import { Registry } from "./Registry";
-import {
-  ExtensionOptions,
-  IgluUri,
-  IgluSchema,
-  RegistrySpec,
-  RegistryStatus,
-  ResolvedIgluSchema,
-} from "../../types";
+import { ExtensionOptions, RegistrySpec, RegistryStatus } from "../../types";
+
+import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 
 export class LocalRegistry extends Registry {
   private readonly defaultOptions: Pick<ExtensionOptions, "localSchemas">;
@@ -20,22 +15,40 @@ export class LocalRegistry extends Registry {
     this.defaultOptions = {
       localSchemas: { [this.spec.name]: [] },
     };
+
+    // migrate old schemas
+    chrome.storage.local.get("schemalist", (storage) => {
+      const { schemalist } = storage;
+      if (Array.isArray(schemalist) && schemalist.length) {
+        schemalist.forEach((s) => {
+          if (typeof s === "object" && s && "self" in s) {
+            const { vendor, name, format, version } = s["self"];
+
+            const built = IgluSchema.fromUri(
+              `iglu:${vendor}/${name}/${format}/${version}`
+            );
+            if (built) {
+              const res = built.resolve(s, this);
+              if (res) this.manifest.set(built, res);
+            }
+          }
+        });
+      }
+    });
   }
 
-  resolve(schema: IgluUri | IgluSchema) {
+  resolve(schema: IgluUri | IgluSchema): Promise<ResolvedIgluSchema> {
     if (typeof schema === "string") {
-      return this.resolve(schema as IgluSchema);
+      const s = IgluSchema.fromUri(schema);
+      return s ? this.resolve(s) : Promise.reject();
     }
 
-    return Promise.resolve(this.manifest.get(schema));
+    const r = this.manifest.get(schema);
+    return r ? Promise.resolve(r) : Promise.reject();
   }
 
   status() {
     return Promise.resolve<RegistryStatus>("OK");
-  }
-
-  view() {
-    return m("p", "DataStructure Registry");
   }
 
   walk() {
@@ -43,7 +56,12 @@ export class LocalRegistry extends Registry {
       chrome.storage.local.get(
         "localSchemas",
         (items: Partial<ExtensionOptions>) => {
-          if (items.localSchemas) fulfil(items.localSchemas[this.spec.name]);
+          if (items.localSchemas)
+            items.localSchemas[this.spec.name].forEach((s) =>
+              this.manifest.set(s, Object.assign(s, { registry: this }))
+            );
+
+          fulfil(Array.from(this.manifest.keys()));
         }
       )
     );

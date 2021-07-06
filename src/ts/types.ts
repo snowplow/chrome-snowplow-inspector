@@ -1,7 +1,7 @@
 import { Entry } from "har-format";
 import { Schema } from "jsonschema";
 
-import { Resolver } from "./iglu";
+import { IgluSchema, ResolvedIgluSchema, Resolver } from "./iglu";
 
 export type Application = "debugger" | "schemaManager";
 
@@ -11,7 +11,7 @@ interface LocalOptions {
   schemalist?: string[];
   schemacache?: { [uri: string]: any };
   schemastatus?: { [uri: string]: any };
-  localSchemas: { [registry: string]: IgluSchema[] };
+  localSchemas: { [registry: string]: Omit<ResolvedIgluSchema, "registry">[] };
 }
 interface SyncOptions {
   enableTracking: boolean;
@@ -105,23 +105,6 @@ export interface RegistrySpec {
   id?: string;
   name: string;
   [opt: string]: any;
-}
-
-export type IgluUri =
-  `iglu:${IgluSchema["vendor"]}/${IgluSchema["name"]}/${IgluSchema["format"]}/${IgluSchema["version"]}}`;
-
-export interface IgluSchema {
-  vendor: string;
-  name: string;
-  format: string;
-  version: string;
-
-  schemaHash(): string;
-  uri(): IgluUri;
-}
-
-export interface ResolvedIgluSchema extends IgluSchema {
-  validate(data: unknown): void;
 }
 
 interface IProtTextField {
