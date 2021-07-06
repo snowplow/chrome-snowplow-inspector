@@ -1,12 +1,12 @@
 import { SearchResponse } from "elasticsearch";
-import m = require("mithril");
+import { default as m, request, Vnode } from "mithril";
 import { IBadRowsSummary } from "../../ts/types";
-import util = require("../../ts/util");
+import { esToRequests } from "../../ts/util";
 
 let streamLock: number = -1;
 
-export = {
-  view: (vnode: m.Vnode<IBadRowsSummary>) =>
+export const LiveStreamModal = {
+  view: (vnode: Vnode<IBadRowsSummary>) =>
     m(
       "div.modal",
       {
@@ -47,7 +47,7 @@ export = {
               const url = `${esUrl.protocol}//${esUrl.host}${esUrl.pathname}${esUrl.search}`;
 
               let timeoutId = window.setTimeout(function pollStream() {
-                m.request({
+                request({
                   password: esUrl.password || undefined,
                   url,
                   user: esUrl.username || undefined,
@@ -59,7 +59,7 @@ export = {
 
                   if (hits.length) {
                     vnode.attrs.addRequests(
-                      util.esToRequests(hits.map((x) => x._source))
+                      esToRequests(hits.map((x) => x._source))
                     );
                   }
 

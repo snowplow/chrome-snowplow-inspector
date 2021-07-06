@@ -1,6 +1,6 @@
-import m = require("mithril");
-import SnowplowInspector = require("./components/SnowplowInspector");
+import { mount } from "mithril";
+import { SnowplowInspector } from "./components/SnowplowInspector";
 
+console.assert(false);
 document.body.classList.add("theme" + chrome.devtools.panels.themeName);
-
-m.mount(document.body, SnowplowInspector);
+mount(document.body, SnowplowInspector);

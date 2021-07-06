@@ -1,6 +1,6 @@
-import * as har from "har-format";
-import protocol = require("./protocol");
-import thriftcodec = require("./thriftcodec");
+import { Cookie, Entry, Header } from "har-format";
+import { protocol } from "./protocol";
+import { schemas, decodeB64Thrift } from "./thriftcodec";
 import { ITomcatImport } from "./types";
 
 const uuidv4 = (): string =>
@@ -123,7 +123,7 @@ const tomcat = [
 
 const thriftToRequest = (
   payload?: ITomcatImport
-): Partial<har.Entry> | undefined => {
+): Partial<Entry> | undefined => {
   if (
     typeof payload !== "object" ||
     payload === null ||
@@ -132,8 +132,8 @@ const thriftToRequest = (
     return;
   }
 
-  const headers: har.Header[] = [];
-  const cookies: har.Cookie[] = [
+  const headers: Header[] = [];
+  const cookies: Cookie[] = [
     { name: "sp", value: payload.networkUserId as string },
   ];
 
@@ -188,12 +188,10 @@ const thriftToRequest = (
   };
 };
 
-const esToRequests = (data: object[]): har.Entry[] => {
+const esToRequests = (data: object[]): Entry[] => {
   return data.map((hit) => {
     if (hit.hasOwnProperty("collector_tstamp")) {
-      return goodToRequests(
-        hit as { [esKeyName: string]: string }
-      ) as har.Entry;
+      return goodToRequests(hit as { [esKeyName: string]: string }) as Entry;
     } else {
       return badToRequests([JSON.stringify(hit)])[0];
     }
@@ -202,7 +200,7 @@ const esToRequests = (data: object[]): har.Entry[] => {
 
 const goodToRequests = (data: {
   [esKeyName: string]: string | object;
-}): Partial<har.Entry> => {
+}): Partial<Entry> => {
   const uri = new URL("https://elasticsearch.invalid/i");
   const reverseTypeMap: { [event: string]: string } = {
     page_ping: "Page Ping",
@@ -301,7 +299,7 @@ const goodToRequests = (data: {
   };
 };
 
-const badToRequests = (data: string[]): har.Entry[] => {
+const badToRequests = (data: string[]): Entry[] => {
   const logs = data.map((row) => {
     if (!row.length) {
       return;
@@ -401,9 +399,9 @@ const badToRequests = (data: string[]): har.Entry[] => {
         // B64 encoded, hopefully thrift from mini/realtime
       } else if (/^([A-Za-z0-9/+]{4})+([A-Za-z0-9/+=]{4})?$/.test(js)) {
         try {
-          return thriftcodec.decodeB64Thrift(
+          return decodeB64Thrift(
             js,
-            thriftcodec.schemas["collector-payload"]
+            schemas["collector-payload"]
           ) as ITomcatImport;
         } catch (e) {
           console.log(e);
@@ -416,14 +414,14 @@ const badToRequests = (data: string[]): har.Entry[] => {
 
   for (const entry of logs.map(thriftToRequest)) {
     if (entry !== undefined) {
-      entries.push(entry as har.Entry);
+      entries.push(entry as Entry);
     }
   }
 
   return entries;
 };
 
-export = {
+export {
   badToRequests,
   b64d,
   esToRequests,

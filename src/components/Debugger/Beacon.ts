@@ -1,5 +1,5 @@
-import m = require("mithril");
-import protocol = require("../../ts/protocol");
+import { default as m, Vnode } from "mithril";
+import { protocol } from "../../ts/protocol";
 import {
   BeaconDetail,
   IBeacon,
@@ -8,8 +8,8 @@ import {
   IRowSet,
   ProtocolField,
 } from "../../ts/types";
-import util = require("../../ts/util");
-import validator = require("../../ts/validator");
+import { hasMembers, nameType, copyToClipboard } from "../../ts/util";
+import { validate } from "../../ts/validator";
 
 function genClasses(finfo: ProtocolField): string {
   const classes = [];
@@ -85,10 +85,10 @@ function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
 const labelType = (val: string) =>
   m(
     "button.typeinfo.button.is-pulled-right.is-info",
-    { onclick: () => util.copyToClipboard(val), title: "Click to copy" },
-    util.nameType(val)
+    { onclick: () => copyToClipboard(val), title: "Click to copy" },
+    nameType(val)
   );
-const contextToTable = (obj: any): m.Vnode | string => {
+const contextToTable = (obj: any): Vnode | string => {
   if (typeof obj !== "object" || obj === null) {
     return JSON.stringify(obj).replace(/^"|"$/g, "");
   }
@@ -97,7 +97,7 @@ const contextToTable = (obj: any): m.Vnode | string => {
   let p;
 
   if ("schema" in obj && "data" in obj) {
-    const validation = validator.validate(obj.schema, obj.data);
+    const validation = validate(obj.schema, obj.data);
     const validity = validation.valid
       ? "Valid"
       : validation.location === null
@@ -110,10 +110,10 @@ const contextToTable = (obj: any): m.Vnode | string => {
     } else {
       for (p in obj.data) {
         if (obj.data.hasOwnProperty(p)) {
-          const type = util.nameType(obj.data[p]);
+          const type = nameType(obj.data[p]);
           if (
             (type === "object" || type === "array") &&
-            util.hasMembers(obj.data[p])
+            hasMembers(obj.data[p])
           ) {
             rows.push(
               m("tr", [m("th", p), m("td", contextToTable(obj.data[p]))])
@@ -155,7 +155,7 @@ const contextToTable = (obj: any): m.Vnode | string => {
               if (validity === "Unrecognised") {
                 chrome.runtime.openOptionsPage();
               } else {
-                util.copyToClipboard(errorText);
+                copyToClipboard(errorText);
               }
             },
             title: errorText,
@@ -168,11 +168,8 @@ const contextToTable = (obj: any): m.Vnode | string => {
   } else {
     for (p in obj) {
       if (obj.hasOwnProperty(p)) {
-        const type = util.nameType(obj[p]);
-        if (
-          (type === "object" || type === "array") &&
-          util.hasMembers(obj[p])
-        ) {
+        const type = nameType(obj[p]);
+        if ((type === "object" || type === "array") && hasMembers(obj[p])) {
           rows.push(m("tr", [m("th", p), m("td", contextToTable(obj[p]))]));
         } else {
           rows.push(
@@ -192,7 +189,7 @@ const contextToTable = (obj: any): m.Vnode | string => {
 const RowSet = () => {
   let visible = true;
   return {
-    view: (vnode: m.Vnode<IRowSet>) =>
+    view: (vnode: Vnode<IRowSet>) =>
       m(
         "div.card.tile.is-child",
         { class: visible ? "show-rows" : "hide-rows" },
@@ -293,8 +290,8 @@ const formatBeacon = (d: IBeaconDetails) =>
     ]),
   ].concat(d.data.map(toTable));
 
-export = {
-  view: (vnode: m.Vnode<IBeacon>) =>
+export const Beacon = {
+  view: (vnode: Vnode<IBeacon>) =>
     vnode.attrs.activeBeacon &&
     formatBeacon(parseBeacon(vnode.attrs.activeBeacon)),
 };

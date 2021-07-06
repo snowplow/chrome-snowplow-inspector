@@ -19,7 +19,7 @@ snowplow("newTracker", "sp", "d.poplindata.com", {
 
 const seenCollectors: { [collector: string]: string[] } = {};
 
-const trackerAnalytics = (
+export const trackerAnalytics = (
   collector: string,
   pageUrl: string,
   appId: string
@@ -58,7 +58,7 @@ const trackerAnalytics = (
   }
 };
 
-const repoAnalytics = (repo: string) => {
+export const repoAnalytics = (repo: string) => {
   if (repo !== "http://iglucentral.com") {
     chrome.storage.sync.get({ enableTracking: true }, (settings) => {
       if (settings.enableTracking) {
@@ -73,12 +73,10 @@ const repoAnalytics = (repo: string) => {
   }
 };
 
-const landingUrl =
+export const landingUrl =
   "https://poplindata.com/?" +
   [
     "utm_source=debugger%20extension",
     "utm_medium=software",
     "utm_campaign=Chrome%20extension%20debugger%20window%20top-left",
   ].join("&");
-
-export = { trackerAnalytics, repoAnalytics, landingUrl };
