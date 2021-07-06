@@ -1,10 +1,10 @@
 import { Entry } from "har-format";
-import m = require("mithril");
-import analytics = require("../../ts/analytics");
-import protocol = require("../../ts/protocol");
+import { default as m, Vnode } from "mithril";
+import { trackerAnalytics } from "../../ts/analytics";
+import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
-import util = require("../../ts/util");
-import validator = require("../../ts/validator");
+import { b64d, hash, tryb64 } from "../../ts/util";
+import { validate } from "../../ts/validator";
 
 const COLLECTOR_COLOURS = [
   "turquoise",
@@ -41,7 +41,7 @@ const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
     (Array.from(beacon.payload.values()) as string[]).filter((x) => {
       let decoded: string | null;
       try {
-        decoded = util.b64d(x);
+        decoded = b64d(x);
       } catch (e) {
         decoded = null;
       }
@@ -66,7 +66,7 @@ const nameEvent = (params: Map<string, string>): string => {
       let sde = null;
 
       try {
-        sde = JSON.parse(util.tryb64(payload));
+        sde = JSON.parse(tryb64(payload));
       } catch (e) {
         sde = JSON.parse(payload);
       } finally {
@@ -100,18 +100,18 @@ const validateEvent = (params: Map<string, string>): BeaconValidity => {
     const payload = params.get("ue_pr") || params.get("ue_px") || "";
 
     try {
-      const sde = JSON.parse(util.tryb64(payload));
+      const sde = JSON.parse(tryb64(payload));
       if (
         typeof sde === "object" &&
         sde !== null &&
         sde.hasOwnProperty("schema") &&
         sde.hasOwnProperty("data")
       ) {
-        status = validator.validate(sde.schema, sde.data);
+        status = validate(sde.schema, sde.data);
         unrec = unrec || status.location === null;
         valid = valid && status.valid;
 
-        status = validator.validate(sde.data.schema, sde.data.data);
+        status = validate(sde.data.schema, sde.data.data);
         unrec = unrec || status.location === null;
         valid = valid && status.valid;
       } else {
@@ -127,19 +127,19 @@ const validateEvent = (params: Map<string, string>): BeaconValidity => {
     const payload = params.get("co") || params.get("cx") || "";
 
     try {
-      const ctx = JSON.parse(util.tryb64(payload));
+      const ctx = JSON.parse(tryb64(payload));
       if (
         typeof ctx === "object" &&
         ctx !== null &&
         ctx.hasOwnProperty("schema") &&
         ctx.hasOwnProperty("data")
       ) {
-        status = validator.validate(ctx.schema, ctx.data);
+        status = validate(ctx.schema, ctx.data);
         unrec = unrec || status.location === null;
         valid = valid && status.valid;
 
         ctx.data.forEach((c: { schema: string; data: object }) => {
-          status = validator.validate(c.schema, c.data);
+          status = validate(c.schema, c.data);
           unrec = unrec || status.location === null;
           valid = valid && status.valid;
         });
@@ -180,7 +180,7 @@ const summariseBeacons = (
       validity: validateEvent(req),
     };
 
-    analytics.trackerAnalytics(collector, result.page, result.appId);
+    trackerAnalytics(collector, result.page, result.appId);
 
     if (filterRequest(result, filter)) {
       results.push(result);
@@ -219,7 +219,7 @@ const extractRequests = (entry: Entry, index: number) => {
   const req = entry.request;
   const id =
     entry.pageref +
-    util.hash(new Date(entry.startedDateTime).toJSON() + req.url + index);
+    hash(new Date(entry.startedDateTime).toJSON() + req.url + index);
   const collector = new URL(req.url).hostname;
   const method = req.method;
   const beacons = [];
@@ -261,28 +261,32 @@ const extractRequests = (entry: Entry, index: number) => {
       console.log("=================");
     }
   } else {
-    // @ts-ignore TS doesn't understand the iterable semantics here properly.
-    beacons.push(new Map<string, string>(new URL(req.url).searchParams));
-    if (nuid) {
-      beacons[beacons.length - 1].set("nuid", nuid.value);
+    const beacon: Map<string, string> = new Map();
+    new URL(req.url).searchParams.forEach((value, key) =>
+      beacon.set(key, value)
+    );
+    if (nuid && !beacon.has("nuid")) {
+      beacon.set("nuid", nuid.value);
     }
-    if (ua) {
-      beacons[beacons.length - 1].set("ua", ua.value);
+    if (ua && !beacon.has("ua")) {
+      beacon.set("ua", ua.value);
     }
-    if (lang) {
+    if (lang && !beacon.has("lang")) {
       const langval = /^[^;,]+/.exec(lang.value);
-      beacons[beacons.length - 1].set(
-        "lang",
-        langval ? langval[0] : lang.value
-      );
+      beacon.set("lang", langval ? langval[0] : lang.value);
     }
+    if (refr && !beacon.has("url")) {
+      beacon.set("url", refr.value);
+    }
+
+    beacons.push(beacon);
   }
 
   return [[id, collector, method], beacons];
 };
 
-export = {
-  view: (vnode: m.Vnode<ITimeline>) => {
+export const Timeline = {
+  view: (vnode: Vnode<ITimeline>) => {
     const url = getPageUrl(vnode.attrs.requests);
     return m(
       "div.panel",

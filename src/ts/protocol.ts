@@ -1,6 +1,4 @@
-/* tslint:disable:object-literal-sort-keys max-line-length */
-
-export = {
+export const protocol = {
   groupPriorities: [
     {
       name: "Event",

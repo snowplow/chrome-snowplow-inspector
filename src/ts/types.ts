@@ -1,7 +1,7 @@
 import { Entry } from "har-format";
-import jsonschema = require("jsonschema");
+import { Schema } from "jsonschema";
 
-import Resolver = require("./Resolver");
+import { Resolver } from "./iglu/Resolver";
 
 export type Application = "debugger" | "schemaManager";
 
@@ -41,7 +41,7 @@ export interface IBeaconDetails {
 }
 
 export interface ICache {
-  [igluUri: string]: jsonschema.Schema;
+  [igluUri: string]: Schema;
 }
 
 export interface ISchemaStatus {

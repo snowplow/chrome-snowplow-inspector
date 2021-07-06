@@ -1,5 +1,5 @@
-import m = require("mithril");
-import Resolver = require("../../ts/Resolver");
+import { default as m, Vnode } from "mithril";
+import { Resolver } from "../../ts/iglu/Resolver";
 import { IgluSchema } from "../../ts/types";
 
 interface SchemaDirectory {
@@ -18,8 +18,8 @@ interface VersionDirectory {
   [version: string]: IgluSchema[];
 }
 
-const Directory = {
-  view: (vnode: m.Vnode<{ resolver: Resolver }>) => {
+export const Directory = {
+  view: (vnode: Vnode<{ resolver: Resolver }>) => {
     const { resolver } = vnode.attrs;
 
     const schemas: IgluSchema[] = resolver.walk();
@@ -82,5 +82,3 @@ const Directory = {
     );
   },
 };
-
-export = Directory;

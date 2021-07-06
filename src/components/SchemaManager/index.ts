@@ -1,12 +1,11 @@
-import m = require("mithril");
+import { default as m, Vnode } from "mithril";
 
-import analytics = require("../../ts/analytics");
-import Resolver = require("../../ts/Resolver");
+import { Resolver } from "../../ts/iglu/Resolver";
 
-import Directory = require("./Directory");
-import RegistryList = require("./RegistryList");
+import { Directory } from "./Directory";
+import { RegistryList } from "./RegistryList";
 
-const SchemaManager = (vnode: m.Vnode<{ resolver: Resolver }>) => {
+export const SchemaManager = (vnode: Vnode<{ resolver: Resolver }>) => {
   return {
     view: () =>
       m("section.schema-manager.columns.section", [
@@ -15,5 +14,3 @@ const SchemaManager = (vnode: m.Vnode<{ resolver: Resolver }>) => {
       ]),
   };
 };
-
-export = SchemaManager;

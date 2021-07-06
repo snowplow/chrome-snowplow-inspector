@@ -1,10 +1,10 @@
 import { Har } from "har-format";
-import m = require("mithril");
-import analytics = require("../ts/analytics");
+import { default as m, Vnode } from "mithril";
+import { landingUrl } from "../ts/analytics";
 import { IToolbar } from "../ts/types";
-import validator = require("../ts/validator");
+import { clearCache } from "../ts/validator";
 
-const toolbarView = (vnode: m.Vnode<IToolbar>) => {
+const toolbarView = (vnode: Vnode<IToolbar>) => {
   let toolbar_view;
   switch (vnode.attrs.application) {
     case "debugger":
@@ -21,7 +21,7 @@ const toolbarView = (vnode: m.Vnode<IToolbar>) => {
         ),
         m(
           "a.button.is-outlined.is-small.control",
-          { onclick: validator.clearCache },
+          { onclick: clearCache },
           "Clear Schema Cache"
         ),
         m(
@@ -85,14 +85,14 @@ const toolbarView = (vnode: m.Vnode<IToolbar>) => {
   return toolbar_view;
 };
 
-export = {
-  view: (vnode: m.Vnode<IToolbar>) =>
+export const Toolbar = {
+  view: (vnode: Vnode<IToolbar>) =>
     m("nav.navbar.is-flex-touch", [
       m(
         "div.navbar-brand",
         m(
           "a.navbar-item",
-          { href: analytics.landingUrl, target: "_blank" },
+          { href: landingUrl, target: "_blank" },
           m("img", { alt: "Poplin Data logo", src: "pd-logo.png" })
         )
       ),

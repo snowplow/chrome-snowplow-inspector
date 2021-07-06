@@ -1,11 +1,11 @@
-import m = require("mithril");
+import { default as m, Vnode } from "mithril";
 import { IBadRowsSummary } from "../../ts/types";
-import util = require("../../ts/util");
+import { badToRequests } from "../../ts/util";
 
 let badRows: string[] = [];
 
-export = {
-  view: (vnode: m.Vnode<IBadRowsSummary>) =>
+export const BadRowsModal = {
+  view: (vnode: Vnode<IBadRowsSummary>) =>
     m(
       "div.modal",
       {
@@ -51,7 +51,7 @@ export = {
               {
                 onclick: () => {
                   if (badRows.length) {
-                    vnode.attrs.addRequests(util.badToRequests(badRows));
+                    vnode.attrs.addRequests(badToRequests(badRows));
                     badRows = [];
                     vnode.attrs.setModal(undefined);
                   }

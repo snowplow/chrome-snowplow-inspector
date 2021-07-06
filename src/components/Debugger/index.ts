@@ -1,10 +1,10 @@
 import { Entry, Request } from "har-format";
-import m = require("mithril");
+import { default as m } from "mithril";
 
 import { IBeaconSummary, IDebugger } from "../../ts/types";
 
-import Beacon = require("./Beacon");
-import Timeline = require("./Timeline");
+import { Beacon } from "./Beacon";
+import { Timeline } from "./Timeline";
 
 const spPattern =
   /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
@@ -33,7 +33,7 @@ function isSnowplow(request: Request): boolean {
   return false;
 }
 
-const Debugger = (vnode: m.Vnode<IDebugger>) => {
+export const Debugger = (vnode: Vnode<IDebugger>) => {
   let active: IBeaconSummary | undefined;
   let filter: RegExp | undefined;
 
@@ -112,5 +112,3 @@ const Debugger = (vnode: m.Vnode<IDebugger>) => {
       ]),
   };
 };
-
-export = Debugger;

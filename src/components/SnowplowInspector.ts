@@ -1,16 +1,15 @@
 import { Entry } from "har-format";
-import m = require("mithril");
+import { redraw, default as m } from "mithril";
 
 import { Application } from "../ts/types";
-import Resolver = require("../ts/Resolver");
+import { Resolver } from "../ts/iglu/Resolver";
 
-import BadRowsModal = require("./Modals/BadRowsModal");
-import LiveStreamModal = require("./Modals/LiveStreamModal");
-import Debugger = require("./Debugger");
-import SchemaManager = require("./SchemaManager");
-import Toolbar = require("./Toolbar");
+import { BadRowsModal, LiveStreamModal } from "./Modals";
+import { Debugger } from "./Debugger";
+import { SchemaManager } from "./SchemaManager";
+import { Toolbar } from "./Toolbar";
 
-const SnowplowInspector = () => {
+export const SnowplowInspector = () => {
   let modal: string | undefined;
   let application: Application = "debugger";
   const resolver = new Resolver();
@@ -23,7 +22,7 @@ const SnowplowInspector = () => {
 
   function addRequests(reqs: Entry[]) {
     events.push.apply(events, reqs);
-    m.redraw();
+    redraw();
   }
 
   function changeApp(app: Application) {
@@ -65,5 +64,3 @@ const SnowplowInspector = () => {
     },
   };
 };
-
-export = SnowplowInspector;

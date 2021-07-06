@@ -27,7 +27,6 @@ const jsTypes: { [strResult: string]: string } = {
   "[object Undefined]": "byte",
 };
 
-// tslint:disable-next-line
 // https://github.com/snowplow/snowplow/blob/master/2-collectors/thrift-schemas/collector-payload-1/src/main/thrift/collector-payload.thrift
 const collectorPayloadSchema: { [fieldId: number]: string } = {
   31337: "schema",
@@ -46,10 +45,10 @@ const collectorPayloadSchema: { [fieldId: number]: string } = {
   410: "networkUserId",
 };
 
-function decodeB64Thrift(
+export const decodeB64Thrift = (
   b64: string,
   schema: { [fieldId: number]: string }
-): object {
+): object => {
   // Standard b64 decoding
   let bytes = atob(b64);
   // we only decode structs
@@ -183,12 +182,12 @@ function decodeB64Thrift(
   }
 
   return result;
-}
+};
 
-function encodeB64Thrift(
+export const encodeB64Thrift = (
   obj: { [property: string]: any },
   schema: { [fieldId: number]: string }
-): string {
+): string => {
   function intToBytes(value: number, size: number): string {
     let bytes = value.toString(16);
     while (bytes.length < size * 2) {
@@ -246,12 +245,8 @@ function encodeB64Thrift(
   }
 
   return btoa(unescape(result));
-}
+};
 
-export = {
-  decodeB64Thrift,
-  encodeB64Thrift,
-  schemas: {
-    "collector-payload": collectorPayloadSchema,
-  },
+export const schemas = {
+  "collector-payload": collectorPayloadSchema,
 };

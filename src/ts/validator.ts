@@ -1,14 +1,13 @@
-import jsonschema = require("jsonschema");
-import m = require("mithril");
-import analytics = require("./analytics");
+import { Schema, Validator } from "jsonschema";
+import { default as m, redraw, request } from "mithril";
+import { repoAnalytics } from "./analytics";
 import { ICache, IErrorMessageSet, ISchemaStatus } from "./types";
 
 const cache: ICache = {};
 const status: ISchemaStatus = {};
-const jsv = new jsonschema.Validator();
+const jsv = new Validator();
 const repositories = new Set();
 
-/* tslint:disable:max-line-length */
 const SCHEMA_PATTERN =
   /^iglu:([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\/([1-9][0-9]*(?:-(?:0|[1-9][0-9]*)){2})$/;
 
@@ -19,7 +18,7 @@ const syncRepos = () => {
   chrome.storage.sync.get({ repolist: [] }, (settings) => {
     for (const repo of settings.repolist) {
       repositories.add(repo);
-      analytics.repoAnalytics(repo);
+      repoAnalytics(repo);
     }
   });
 
@@ -43,13 +42,13 @@ const syncRepos = () => {
   });
 };
 
-const persistCache = (key: string, value: jsonschema.Schema, url: string) => {
+const persistCache = (key: string, value: Schema, url: string) => {
   cache[key] = value;
   status[key] = url;
   chrome.storage.local.set({ schemacache: cache, schemastatus: status });
 };
 
-const clearCache = () => {
+export const clearCache = () => {
   for (const p in cache) {
     if (cache.hasOwnProperty(p)) {
       delete cache[p];
@@ -83,96 +82,92 @@ chrome.storage.onChanged.addListener((changes) => {
   if ("repolist" in changes || "schemalist" in changes) {
     clearCache();
     syncRepos();
-    m.redraw();
+    redraw();
   }
 });
 
 syncRepos();
 
-export = {
-  clearCache,
-  validate: (schema: string, data: object) => {
-    const match = SCHEMA_PATTERN.exec(schema);
-    if (!match) {
-      return {
-        valid: false,
-        errors: ["Invalid Iglu URI identifying schema."],
-        location: null,
-      };
-    }
-
-    if (schema in cache) {
-      const result = jsv.validate(data, cache[schema]) as any;
-      result.location = status[schema];
-      return result;
-    }
-
-    const [evendor, ename, eformat, eversion] = match.slice(1);
-
-    if (typeof status[schema] === "undefined") {
-      status[schema] = null;
-
-      for (const repo of Array.from(repositories)) {
-        const url = [repo, "schemas", evendor, ename, eformat, eversion].join(
-          "/"
-        );
-
-        const parsedUrl = new URL(url);
-        const apikey = parsedUrl.username;
-        parsedUrl.username = "";
-
-        m.request(parsedUrl.href, { headers: { apikey } })
-          .then((schemaJson: unknown) => {
-            if ((schemaJson as object).hasOwnProperty("self")) {
-              const { vendor, name, format, version } = (schemaJson as any)
-                .self;
-              if (
-                evendor === vendor &&
-                ename === name &&
-                eformat === format &&
-                eversion === version
-              ) {
-                persistCache(schema, schemaJson as jsonschema.Schema, url);
-              } else {
-                console.log(
-                  "received schema does not match expected values:",
-                  `${evendor}:${vendor}, ${ename}:${name}, ${eformat}:${format}, ${eversion}:${version}, `
-                );
-              }
-            }
-          })
-          .catch((error) => {
-            if (error.message && status[schema] === null) {
-              status[schema] = "error";
-            } else if (
-              error.message === "" &&
-              (status[schema] === null || status[schema] === "error")
-            ) {
-              status[schema] = "cors";
-            }
-          });
-      }
-    }
-
-    const errors: IErrorMessageSet = {
-      cors: [
-        "Schema could not be found in any configured repositores.",
-        "At least one repository had CORS errors while requesting the schema.",
-      ],
-      default: [
-        "Could not find or access schema definition in any configured repositories.",
-      ],
-      error: [
-        "Schema could not be found in any configured repositories.",
-        "Try adding your Iglu repository in the extension settings.",
-        "Make sure you have whitelisted your IP address.",
-      ],
-    };
-
+export const validate = (schema: string, data: object) => {
+  const match = SCHEMA_PATTERN.exec(schema);
+  if (!match) {
     return {
-      errors: errors[status[schema] || "default"] || [],
-      location: null,
       valid: false,
+      errors: ["Invalid Iglu URI identifying schema."],
+      location: null,
     };
-  },
+  }
+
+  if (schema in cache) {
+    const result = jsv.validate(data, cache[schema]) as any;
+    result.location = status[schema];
+    return result;
+  }
+
+  const [evendor, ename, eformat, eversion] = match.slice(1);
+
+  if (typeof status[schema] === "undefined") {
+    status[schema] = null;
+
+    for (const repo of Array.from(repositories)) {
+      const url = [repo, "schemas", evendor, ename, eformat, eversion].join(
+        "/"
+      );
+
+      const parsedUrl = new URL(url);
+      const apikey = parsedUrl.username;
+      parsedUrl.username = "";
+
+      request(parsedUrl.href, { headers: { apikey } })
+        .then((schemaJson: unknown) => {
+          if ((schemaJson as object).hasOwnProperty("self")) {
+            const { vendor, name, format, version } = (schemaJson as any).self;
+            if (
+              evendor === vendor &&
+              ename === name &&
+              eformat === format &&
+              eversion === version
+            ) {
+              persistCache(schema, schemaJson as Schema, url);
+            } else {
+              console.log(
+                "received schema does not match expected values:",
+                `${evendor}:${vendor}, ${ename}:${name}, ${eformat}:${format}, ${eversion}:${version}, `
+              );
+            }
+          }
+        })
+        .catch((error) => {
+          if (error.message && status[schema] === null) {
+            status[schema] = "error";
+          } else if (
+            error.message === "" &&
+            (status[schema] === null || status[schema] === "error")
+          ) {
+            status[schema] = "cors";
+          }
+        });
+    }
+  }
+
+  const errors: IErrorMessageSet = {
+    cors: [
+      "Schema could not be found in any configured repositores.",
+      "At least one repository had CORS errors while requesting the schema.",
+    ],
+    default: [
+      "Could not find or access schema definition in any configured repositories.",
+    ],
+    error: [
+      "Schema could not be found in any configured repositories.",
+      "Try adding your Iglu repository in the extension settings.",
+      "Make sure you have whitelisted your IP address.",
+    ],
+  };
+
+  return {
+    errors: errors[status[schema] || "default"] || [],
+    location: null,
+    valid: false,
+  };
 };
