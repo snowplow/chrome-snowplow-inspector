@@ -5,6 +5,21 @@ import { Resolver } from "./iglu/Resolver";
 
 export type Application = "debugger" | "schemaManager";
 
+export type RegistryStatus = "OK" | "UNHEALTHY";
+
+interface LocalOptions {
+  schemalist?: string[];
+  schemacache?: { [uri: string]: any };
+  schemastatus?: { [uri: string]: any };
+  localSchemas: { [registry: string]: IgluSchema[] };
+}
+interface SyncOptions {
+  enableTracking: boolean;
+  repolist: string[];
+}
+
+export type ExtensionOptions = LocalOptions & SyncOptions;
+
 export interface IDebugger {
   addRequests: (requests: Entry[]) => void;
   events: Entry[];
@@ -92,18 +107,21 @@ export interface RegistrySpec {
   [opt: string]: any;
 }
 
+export type IgluUri =
+  `iglu:${IgluSchema["vendor"]}/${IgluSchema["name"]}/${IgluSchema["format"]}/${IgluSchema["version"]}}`;
+
 export interface IgluSchema {
   vendor: string;
   name: string;
   format: string;
   version: string;
-  registry: RegistrySpec;
-  description?: string;
-  schemaHash: string;
-  raw: string;
-  data: { [key: string]: any };
 
-  uri(): string;
+  schemaHash(): string;
+  uri(): IgluUri;
+}
+
+export interface ResolvedIgluSchema extends IgluSchema {
+  validate(data: unknown): void;
 }
 
 interface IProtTextField {
