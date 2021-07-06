@@ -1,7 +1,8 @@
 import { default as m } from "mithril";
 
 import { Registry } from "./Registry";
-import { IgluSchema, IgluUri, RegistrySpec, RegistryStatus } from "../../types";
+import { IgluSchema, IgluUri } from "../IgluSchema";
+import { RegistrySpec, RegistryStatus } from "../../types";
 
 export class IgluRegistry extends Registry {
   private manifest: Map<string, IgluSchema> = new Map();
@@ -41,7 +42,14 @@ export class IgluRegistry extends Registry {
     );
   }
 
-  resolve(uri: IgluUri) {}
+  resolve(schema: IgluSchema) {
+    return this.fetch(schema.uri().replace("iglu:", "api/schemas/"))
+      .then((res) => res.json())
+      .then((result) => {
+        const resolved = schema.resolve(result, this);
+        return resolved ? Promise.resolve(resolved) : Promise.reject();
+      });
+  }
 
   status() {
     return this.lastStatus
@@ -71,9 +79,5 @@ export class IgluRegistry extends Registry {
 
   walk() {
     return this.fetch("api/schemas").then((resp) => resp.json());
-  }
-
-  view() {
-    return m("p", "Iglu Registry");
   }
 }

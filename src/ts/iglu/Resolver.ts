@@ -2,7 +2,8 @@ import { default as m } from "mithril";
 
 import { build } from "./Registries";
 import { Registry } from "./Registries/Registry";
-import { IgluSchema, IgluUri, RegistrySpec, RegistryStatus } from "../types";
+import { IgluSchema, IgluUri } from "./IgluSchema";
+import { RegistrySpec, RegistryStatus } from "../types";
 
 const DEFAULT_REGISTRIES: RegistrySpec[] = [
   { kind: "local", name: "Local Registry" },
@@ -24,7 +25,21 @@ export class Resolver extends Registry {
     });
   }
 
-  resolve(schema: IgluUri | IgluSchema) {}
+  resolve(schema: IgluSchema) {
+    // .all rejects on first rejection, otherwise waiting for fulfillment
+    // invert rejections to successes and the first success to an error to early abort
+    return Promise.all(
+      this.registries.map((r) =>
+        r.resolve(schema).then(
+          (res) => Promise.reject(res),
+          () => Promise.resolve()
+        )
+      )
+    ).then(
+      () => Promise.reject(), // everything rejected
+      (res) => Promise.resolve(res) // successfully found schema
+    );
+  }
 
   status() {
     return Promise.all(this.registries.map((r) => r.status())).then((s) =>
@@ -33,12 +48,15 @@ export class Resolver extends Registry {
   }
 
   view() {
-    return m("span.resolver");
+    return m(
+      "ol",
+      this.registries.map((reg) => m(reg))
+    );
   }
 
   walk() {
     return Promise.all(
       this.registries.map((reg) => reg.walk().catch(() => [] as IgluSchema[]))
-    ).then((...args) => Array.prototype.concat.apply([], args));
+    ).then((args) => Array.prototype.concat.apply([], args));
   }
 }

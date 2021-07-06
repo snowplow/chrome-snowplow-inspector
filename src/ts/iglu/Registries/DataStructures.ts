@@ -1,7 +1,8 @@
 import { default as m } from "mithril";
 
+import { IgluSchema } from "../";
 import { Registry } from "./Registry";
-import { IgluSchema, RegistrySpec } from "../../types";
+import { RegistrySpec } from "../../types";
 
 export class DataStructuresRegistry extends Registry {
   private schemas: IgluSchema[] = [];
@@ -10,10 +11,11 @@ export class DataStructuresRegistry extends Registry {
     super(spec);
   }
 
+  resolve() {}
+
+  status() {}
+
   walk() {
     return Promise.resolve(this.schemas);
-  }
-  view() {
-    return m("p", "DataStructure Registry");
   }
 }

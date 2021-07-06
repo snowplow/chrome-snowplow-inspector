@@ -6,6 +6,8 @@ import { IgluRegistry } from "./Iglu";
 import { LocalRegistry } from "./Local";
 import { StaticRegistry } from "./Static";
 
+export { Registry };
+
 export const build = (spec: RegistrySpec): Registry => {
   switch (spec.kind) {
     case "ds":
