@@ -33,11 +33,11 @@ const colourOf = (beacon: IBeaconSummary) => {
 const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
   return (
     typeof filter === "undefined" ||
-    filter.test(beacon.appId) ||
+    (beacon.appId && filter.test(beacon.appId)) ||
     filter.test(beacon.collector) ||
     filter.test(beacon.eventName) ||
     filter.test(beacon.method) ||
-    filter.test(beacon.page) ||
+    (beacon.page && filter.test(beacon.page)) ||
     (Array.from(beacon.payload.values()) as string[]).filter((x) => {
       let decoded: string | null;
       try {
@@ -53,14 +53,13 @@ const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
 
 const nameEvent = (params: Map<string, string>): string => {
   const event = params.get("e") || "Unknown Event";
-  const eventTypes = protocol.paramMap.e.values;
-  // @ts-ignore event will never be undefined.
-  const result: string = eventTypes.hasOwnProperty(event)
-    ? eventTypes[event]
-    : event;
 
-  switch (result) {
-    case "Self-Describing Event":
+  let result: string;
+  const eventTypes = protocol.paramMap.e.values;
+  switch (event) {
+    case "se":
+      return eventTypes[event] + ": " + params.get("se_ca");
+    case "ue":
       const payload = params.get("ue_pr") || params.get("ue_px") || "";
       let sdeName = "Unstructured";
       let sde = null;
@@ -84,10 +83,13 @@ const nameEvent = (params: Map<string, string>): string => {
       }
 
       return "SD Event: " + sdeName;
-    case "Structured Event":
-      return result + ": " + params.get("se_ca");
+    case "pp":
+    case "pv":
+    case "ti":
+    case "tr":
+      return eventTypes[event];
     default:
-      return result;
+      return event;
   }
 };
 
@@ -175,7 +177,7 @@ const summariseBeacons = (
       page: req.get("url"),
       payload: new Map(req),
       time: new Date(
-        parseInt(req.get("stm") || req.get("dtm"), 10) || +new Date()
+        parseInt(req.get("stm") || req.get("dtm") || "", 10) || +new Date()
       ).toJSON(),
       validity: validateEvent(req),
     };
@@ -215,7 +217,10 @@ const getPageUrl = (entries: Entry[]) => {
   return url;
 };
 
-const extractRequests = (entry: Entry, index: number) => {
+const extractRequests = (
+  entry: Entry,
+  index: number
+): [[string, string, string], Map<string, string>[]] => {
   const req = entry.request;
   const id =
     entry.pageref +
@@ -225,12 +230,15 @@ const extractRequests = (entry: Entry, index: number) => {
   const beacons = [];
 
   const nuid = entry.request.cookies.filter((x) => x.name === "sp")[0];
-  const ua = entry.request.headers.filter(
+  const ua = entry.request.headers.find(
     (x) => x.name.toLowerCase() === "user-agent"
-  )[0];
-  const lang = entry.request.headers.filter(
+  );
+  const lang = entry.request.headers.find(
     (x) => x.name.toLowerCase() === "accept-language"
-  )[0];
+  );
+  const refr = entry.request.headers.find(
+    (x) => x.name.toLowerCase() === "referer"
+  );
 
   if (req.method === "POST") {
     try {
@@ -241,18 +249,21 @@ const extractRequests = (entry: Entry, index: number) => {
       const payload = JSON.parse(req.postData.text);
 
       for (const pl of payload.data) {
-        beacons.push(
-          new Map(Object.keys(pl).map((x): [string, string] => [x, pl[x]]))
-        );
-        if (nuid) {
-          beacons[beacons.length - 1].set("nuid", nuid.value);
+        const beacon: Map<string, string> = new Map(pl.entries());
+        if (nuid && !beacon.has("nuid")) {
+          beacon.set("nuid", nuid.value);
         }
-        if (ua) {
-          beacons[beacons.length - 1].set("ua", ua.value);
+        if (ua && !beacon.has("ua")) {
+          beacon.set("ua", ua.value);
         }
-        if (lang) {
-          beacons[beacons.length - 1].set("lang", lang.value);
+        if (lang && !beacon.has("lang")) {
+          beacon.set("lang", lang.value);
         }
+        if (refr && !beacon.has("url")) {
+          beacon.set("url", refr.value);
+        }
+
+        beacons.push(beacon);
       }
     } catch (e) {
       console.log("=================");
