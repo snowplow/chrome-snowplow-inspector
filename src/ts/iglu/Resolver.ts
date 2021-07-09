@@ -2,7 +2,7 @@ import { default as m } from "mithril";
 
 import { build } from "./Registries";
 import { Registry } from "./Registries/Registry";
-import { IgluSchema, IgluUri } from "./IgluSchema";
+import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
 import { RegistrySpec, RegistryStatus } from "../types";
 
 const DEFAULT_REGISTRIES: RegistrySpec[] = [
@@ -31,13 +31,13 @@ export class Resolver extends Registry {
     return Promise.all(
       this.registries.map((r) =>
         r.resolve(schema).then(
-          (res) => Promise.reject(res),
-          () => Promise.resolve()
+          (res) => Promise.reject<ResolvedIgluSchema>(res),
+          () => Promise.resolve(null)
         )
       )
     ).then(
-      () => Promise.reject(), // everything rejected
-      (res) => Promise.resolve(res) // successfully found schema
+      () => Promise.reject(null), // everything rejected
+      (res) => Promise.resolve<ResolvedIgluSchema>(res) // successfully found schema
     );
   }
 
@@ -57,6 +57,6 @@ export class Resolver extends Registry {
   walk() {
     return Promise.all(
       this.registries.map((reg) => reg.walk().catch(() => [] as IgluSchema[]))
-    ).then((args) => Array.prototype.concat.apply([], args));
+    ).then((args) => ([] as IgluSchema[]).concat(...args));
   }
 }
