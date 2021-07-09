@@ -1,5 +1,5 @@
 import { default as m, redraw, Vnode } from "mithril";
-import { IgluSchema, Resolver } from "../../ts/iglu";
+import { IgluSchema, ResolvedIgluSchema, Resolver } from "../../ts/iglu";
 
 interface SchemaDirectory {
   [vendor: string]: VendorDirectory;
@@ -14,22 +14,24 @@ interface NameDirectory {
 }
 
 interface VersionDirectory {
-  [version: string]: IgluSchema[];
+  [version: string]: ResolvedIgluSchema[];
 }
 
-const catalog: IgluSchema[] = [];
+const catalog: ResolvedIgluSchema[] = [];
 
 export const Directory = {
   oninit: (vnode: Vnode<{ resolver: Resolver }>) => {
     const { resolver } = vnode.attrs;
-    resolver
-      .walk()
-      .then(
-        (discovered) => (
-          (catalog.length = 0), catalog.push.apply(catalog, discovered)
+    resolver.walk().then((discovered) =>
+      Promise.all(
+        discovered.map((s) =>
+          vnode.attrs.resolver.resolve(s).then((res) => {
+            catalog.push(res);
+            redraw();
+          })
         )
       )
-      .then(redraw);
+    );
   },
   view: (vnode: Vnode<{ resolver: Resolver }>) => {
     const directory: SchemaDirectory = catalog.reduce((acc, el) => {
@@ -61,7 +63,9 @@ export const Directory = {
                         deployments.map((d) =>
                           m(
                             "li",
-                            m("textarea", { value: JSON.stringify(d, null, 4) })
+                            m("textarea", {
+                              value: JSON.stringify(d.data, null, 4),
+                            })
                           )
                         )
                       ),
