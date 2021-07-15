@@ -13,28 +13,8 @@ export class LocalRegistry extends Registry {
     super(spec);
 
     this.defaultOptions = {
-      localSchemas: { [this.spec.name]: [] },
+      localSchemas: JSON.stringify({ [this.spec.name]: [] }),
     };
-
-    // migrate old schemas
-    chrome.storage.local.get("schemalist", (storage) => {
-      const { schemalist } = storage;
-      if (Array.isArray(schemalist) && schemalist.length) {
-        schemalist.forEach((s) => {
-          if (typeof s === "object" && s && "self" in s) {
-            const { vendor, name, format, version } = s["self"];
-
-            const built = IgluSchema.fromUri(
-              `iglu:${vendor}/${name}/${format}/${version}`
-            );
-            if (built) {
-              const res = built.resolve(s, this);
-              if (res) this.manifest.set(built, res);
-            }
-          }
-        });
-      }
-    });
   }
 
   resolve(schema: IgluUri | IgluSchema): Promise<ResolvedIgluSchema> {
@@ -56,10 +36,16 @@ export class LocalRegistry extends Registry {
       chrome.storage.local.get(
         "localSchemas",
         (items: Partial<ExtensionOptions>) => {
-          if (items.localSchemas)
-            items.localSchemas[this.spec.name].forEach((s) =>
-              this.manifest.set(s, Object.assign(s, { registry: this }))
+          if (items.localSchemas) {
+            const ls =
+              typeof items.localSchemas === "string"
+                ? JSON.parse(items.localSchemas)
+                : { [this.spec.name]: [] };
+            (ls[this.spec.name] || []).forEach(
+              (s: Omit<ResolvedIgluSchema, "registry">) =>
+                this.manifest.set(s, Object.assign(s, { registry: this }))
             );
+          }
 
           fulfil(Array.from(this.manifest.keys()));
         }

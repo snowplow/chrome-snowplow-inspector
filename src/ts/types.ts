@@ -11,7 +11,7 @@ interface LocalOptions {
   schemalist?: string[];
   schemacache?: { [uri: string]: any };
   schemastatus?: { [uri: string]: any };
-  localSchemas: { [registry: string]: Omit<ResolvedIgluSchema, "registry">[] };
+  localSchemas: string; // { [registry: string]: Omit<ResolvedIgluSchema, "registry">[] };
 }
 interface SyncOptions {
   enableTracking: boolean;
