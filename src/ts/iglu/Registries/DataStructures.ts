@@ -2,20 +2,293 @@ import { default as m } from "mithril";
 
 import { IgluSchema } from "../";
 import { Registry } from "./Registry";
-import { RegistrySpec } from "../../types";
+import { RegistrySpec, RegistryStatus } from "../../types";
+import { IgluUri, ResolvedIgluSchema } from "../IgluSchema";
+
+const INSIGHTS_OAUTH_ENDPOINT = "https://id.snowplowanalytics.com/";
+const INSIGHTS_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api";
+const INSIGHTS_API_ENDPOINT = "https://console.snowplowanalytics.com/";
+
+type InsightsOauthResponse = {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+};
+
+type DataStructuresSchema = {
+  hash: string;
+  organizationId: string;
+  vendor: IgluSchema["vendor"];
+  name: IgluSchema["name"];
+  format: IgluSchema["format"];
+  description: string;
+  meta: {
+    schemaType: "event" | "entity";
+    hidden: boolean;
+    customData: object;
+  };
+  deployments: {
+    version: IgluSchema["version"];
+    patchLevel: number;
+    contentHash: string;
+    env: "DEV" | "PROD";
+    ts: string;
+    message: string;
+    initiator: string;
+  }[];
+};
+
+type DataStructuresMetaData = {
+  hash: string;
+  organizationId: string;
+  description: string;
+  deployments: Omit<DataStructuresSchema["deployments"][number], "version">[];
+} & DataStructuresSchema["meta"];
 
 export class DataStructuresRegistry extends Registry {
-  private schemas: IgluSchema[] = [];
+  private readonly dsApiEndpoint: URL;
+
+  private readonly oauthApiEndpoint: URL;
+  private readonly oauthAudience: string;
+  private readonly oauthUsername?: string;
+  private readonly oauthPassword?: string;
+
+  private readonly organizationId: string;
+  private readonly clientId: string;
+  private readonly clientSecret: string;
+
+  private accessToken?: string;
+  private accessExpiry?: Date;
+
+  private lastStatus?: RegistryStatus;
+  private readonly metadata: Map<IgluUri, DataStructuresMetaData> = new Map();
 
   constructor(spec: RegistrySpec) {
     super(spec);
+
+    this.dsApiEndpoint = new URL(
+      spec["dsApiEndpoint"] || INSIGHTS_API_ENDPOINT
+    );
+
+    this.oauthApiEndpoint = new URL(
+      spec["oauthApiEndpoint"] || INSIGHTS_OAUTH_ENDPOINT
+    );
+    this.oauthAudience = spec["oauthAudience"] || INSIGHTS_OAUTH_AUDIENCE;
+    this.oauthUsername = spec["oauthUsername"];
+    this.oauthPassword = spec["oauthPassword"];
+
+    this.organizationId = spec["organizationId"];
+    this.clientId = spec["clientId"];
+    this.clientSecret = spec["clientSecret"];
   }
 
-  resolve() {}
+  private fetch(apiPath: string): ReturnType<typeof fetch> {
+    return this.auth().then((headers) => {
+      const opts: Partial<RequestInit> = {
+        headers,
+        referrerPolicy: "origin",
+      };
 
-  status() {}
+      return fetch(
+        new URL(
+          apiPath.replace(
+            "/organizations/",
+            `/organizations/${this.organizationId}/`
+          ),
+          this.dsApiEndpoint
+        ).href,
+        opts
+      ).then((resp) => (resp.ok ? resp : Promise.reject("HTTP_ERROR")));
+    });
+  }
+
+  private auth(): Promise<RequestInit["headers"]> {
+    const now = new Date();
+    if (this.accessToken && this.accessExpiry && now < this.accessExpiry) {
+      return Promise.resolve({ Authorization: `Bearer ${this.accessToken}` });
+    }
+
+    const data = new URLSearchParams({
+      audience: this.oauthAudience,
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+    });
+
+    if (this.oauthUsername) data.append("username", this.oauthUsername);
+    if (this.oauthPassword) {
+      data.append("password", this.oauthPassword);
+      data.append("grant_type", "password");
+    }
+
+    const opts: Partial<RequestInit> = {
+      method: "POST",
+      body: data,
+      referrerPolicy: "origin",
+    };
+    return new Promise<Response>((fulfil, fail) =>
+      chrome.permissions.contains(
+        {
+          origins: [
+            `${this.oauthApiEndpoint.origin}/*`,
+            `${this.dsApiEndpoint.origin}/*`,
+          ],
+        },
+        (allowed) =>
+          allowed
+            ? fetch(
+                new URL("oauth/token", this.oauthApiEndpoint).href,
+                opts
+              ).then(fulfil)
+            : fail("EXTENSION_ERROR")
+      )
+    )
+      .then((resp) => (resp.ok ? resp.json() : Promise.reject("AUTH_ERROR")))
+      .then((resp: InsightsOauthResponse) => {
+        this.accessToken = `${resp.token_type} ${resp.access_token}`;
+        this.accessExpiry = new Date(Date.now() + resp.expires_in);
+        return { Authorization: this.accessToken };
+      })
+      .catch((reason) => {
+        this.opts["statusReason"] = reason;
+        this.lastStatus = "UNHEALTHY";
+        return Promise.reject();
+      });
+  }
+
+  private pickPatch(metadata: DataStructuresMetaData) {
+    let candidate: DataStructuresMetaData["deployments"][number] | null = null;
+    let patches = false;
+    for (const version of metadata.deployments) {
+      if (
+        false ||
+        !candidate ||
+        candidate.patchLevel < version.patchLevel ||
+        candidate.ts < version.ts ||
+        (candidate?.env === "DEV" && version.env === "PROD")
+      ) {
+        patches =
+          patches ||
+          (!!candidate && candidate.contentHash !== version.contentHash);
+        candidate = version;
+      }
+    }
+
+    if (candidate && patches) {
+      return "?env=" + candidate.env.toLowerCase();
+    }
+
+    return "";
+  }
+
+  resolve(schema: IgluSchema): Promise<ResolvedIgluSchema> {
+    if (this.metadata.has(schema.uri())) {
+      const md = this.metadata.get(schema.uri())!;
+      const patchEnv = this.pickPatch(md);
+
+      return this.fetch(
+        `api/schemas/v1/organizations/schemas/${md.hash}/versions/${schema.version}${patchEnv}`
+      )
+        .then((resp) => resp.json())
+        .then((data) => schema.resolve(data, this))
+        .then((res) => (res ? res : Promise.reject()));
+    } else
+      return this.walk().then(() =>
+        this.metadata.has(schema.uri())
+          ? this.resolve(schema)
+          : Promise.reject()
+      );
+  }
+
+  status() {
+    const last = this.lastStatus;
+    let undefined;
+
+    switch (last) {
+      case "UNHEALTHY":
+        this.lastStatus = undefined;
+      // fall through
+      case "OK":
+        return Promise.resolve(last);
+      case undefined:
+        return new Promise<RegistryStatus>((fulfil, fail) =>
+          chrome.permissions.contains(
+            {
+              origins: [
+                `${this.oauthApiEndpoint.origin}/*`,
+                `${this.dsApiEndpoint.origin}/*`,
+              ],
+            },
+            (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
+          )
+        )
+          .then(() => this.auth())
+          .then(() => {
+            const now = new Date();
+            if (
+              this.accessToken &&
+              this.accessExpiry &&
+              now < this.accessExpiry
+            ) {
+              return "OK";
+            } else {
+              return Promise.reject("AUTH_EXPIRED");
+            }
+          })
+          .catch((reason) => {
+            this.opts["statusReason"] = reason;
+            this.lastStatus = "UNHEALTHY";
+            return Promise.resolve(this.lastStatus);
+          });
+    }
+  }
 
   walk() {
-    return Promise.resolve(this.schemas);
+    return this.fetch("api/schemas/v1/organizations/schemas")
+      .then((resp) => resp.json())
+      .then((resp) => {
+        if (Array.isArray(resp)) {
+          const structures: DataStructuresSchema[] = resp;
+          const catalog: IgluSchema[] = [];
+
+          structures.forEach((struct) => {
+            const { description, meta, hash, organizationId } = struct;
+            if (organizationId !== this.organizationId) return;
+
+            const { vendor, name, format, deployments } = struct;
+
+            const versionInfo: Map<
+              string,
+              DataStructuresMetaData["deployments"][number][]
+            > = new Map();
+
+            deployments.forEach((dep) => {
+              catalog.push(new IgluSchema(vendor, name, format, dep.version));
+
+              const v: Omit<typeof dep, "version"> = Object.assign({}, dep, {
+                version: undefined,
+              });
+              if (versionInfo.has(dep.version)) {
+                versionInfo.get(dep.version)?.push(v);
+              } else {
+                versionInfo.set(dep.version, [v]);
+              }
+            });
+
+            versionInfo.forEach((deployments, version) => {
+              const s = new IgluSchema(vendor, name, format, version);
+              const metadata: DataStructuresMetaData = {
+                ...meta,
+                description,
+                hash,
+                organizationId,
+                deployments,
+              };
+              this.metadata.set(s.uri(), metadata);
+            });
+          });
+
+          return catalog;
+        } else return Promise.reject();
+      });
   }
 }
