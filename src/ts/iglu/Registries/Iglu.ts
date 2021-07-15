@@ -11,19 +11,6 @@ export class IgluRegistry extends Registry {
   private readonly apiKey?: string;
   private lastStatus?: RegistryStatus;
 
-  private details?: {
-    version: string;
-    authInfo?: {
-      vendor: string;
-      schema: string | null;
-      key: string[];
-    };
-    database?: string;
-    schemaCount: number;
-    debug: boolean;
-    patchesAllowed: boolean;
-  };
-
   constructor(spec: RegistrySpec) {
     super(spec);
 
@@ -45,6 +32,10 @@ export class IgluRegistry extends Registry {
   resolve(schema: IgluSchema) {
     return this.fetch(schema.uri().replace("iglu:", "api/schemas/"))
       .then((res) => res.json())
+      .catch(() => {
+        this.lastStatus = "UNHEALTHY";
+        return Promise.reject();
+      })
       .then((result) => {
         const resolved = schema.resolve(result, this);
         return resolved ? Promise.resolve(resolved) : Promise.reject();
@@ -52,9 +43,17 @@ export class IgluRegistry extends Registry {
   }
 
   status() {
-    return this.lastStatus
-      ? Promise.resolve(this.lastStatus)
-      : new Promise<RegistryStatus>((fulfil, fail) =>
+    const last = this.lastStatus;
+    let undefined;
+
+    switch (last) {
+      case "UNHEALTHY":
+        this.lastStatus = undefined;
+      // fall through
+      case "OK":
+        return Promise.resolve(last);
+      case undefined:
+        return new Promise<RegistryStatus>((fulfil, fail) =>
           chrome.permissions.contains(
             { origins: [`*://${this.base.host}/*`] },
             (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
@@ -72,12 +71,26 @@ export class IgluRegistry extends Registry {
               : Promise.reject("REGISTRY_DB_ERROR")
           )
           .then<RegistryStatus>((json) => {
-            this.details = json;
+            Object.assign(this.opts, json);
             return "OK";
+          })
+          .catch((reason) => {
+            this.opts["statusReason"] = reason;
+            this.lastStatus = "UNHEALTHY";
+            return Promise.resolve(this.lastStatus);
           });
+    }
   }
 
   walk() {
-    return this.fetch("api/schemas").then((resp) => resp.json());
+    return this.fetch("api/schemas")
+      .then((resp) => resp.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          return data
+            .map(IgluSchema.fromUri)
+            .filter((s): s is IgluSchema => s !== null);
+        } else return Promise.reject();
+      });
   }
 }
