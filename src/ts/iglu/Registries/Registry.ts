@@ -32,13 +32,14 @@ export abstract class Registry {
 
   view() {
     return m(
-      "li",
-      m("textarea", {
+      "option",
+      {
         className: `registry ${this.spec.kind} ${
           this.lastStatus ? this.lastStatus.toLowerCase() : ""
         }`,
-        value: JSON.stringify(this, null, 4),
-      })
+        value: this.spec.id,
+      },
+      this.spec.name
     );
   }
 
