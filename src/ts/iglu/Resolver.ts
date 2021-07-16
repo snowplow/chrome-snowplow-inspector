@@ -17,6 +17,7 @@ const DEFAULT_REGISTRIES: RegistrySpec[] = [
 
 export class Resolver extends Registry {
   readonly registries: Registry[];
+  readonly hitCache: Map<IgluUri, Registry[]> = new Map();
 
   constructor() {
     super({ kind: "local", name: "Resolver" });
@@ -74,8 +75,7 @@ export class Resolver extends Registry {
 
               return result;
             })
-          )
-          .then(m.redraw);
+          );
       }
     );
   }
@@ -171,37 +171,57 @@ export class Resolver extends Registry {
   }
 
   resolve(schema: IgluSchema) {
+    const candidates = this.hitCache.get(schema.uri()) || this.registries;
     // .all rejects on first rejection, otherwise waiting for fulfillment
     // invert rejections to successes and the first success to an error to early abort
     return Promise.all(
-      this.registries.map((r) =>
+      candidates.map((r) =>
         r.resolve(schema).then(
-          (res) => Promise.reject<ResolvedIgluSchema>(res),
-          () => Promise.resolve(null)
+          (res) => Promise.reject(res),
+          () => Promise.resolve()
         )
       )
     ).then(
-      () => Promise.reject(null), // everything rejected
-      (res) => Promise.resolve<ResolvedIgluSchema>(res) // successfully found schema
+      () => Promise.reject(), // everything rejected
+      (res) => Promise.resolve(res) // successfully found schema
     );
   }
 
   status() {
     return Promise.all(this.registries.map((r) => r.status())).then((s) =>
-      s.reduce((res, s) => (s === "OK" ? res : "UNHEALTHY"), "OK")
+      s.reduce(
+        (res, s) => (s === "OK" || s === "WAITING" ? res : "UNHEALTHY"),
+        "OK"
+      )
     );
   }
 
   view() {
     return m(
-      "ol",
+      "select[multiple]",
+      { size: this.registries.length },
       this.registries.map((reg) => m(reg))
     );
   }
 
   walk() {
     return Promise.all(
-      this.registries.map((reg) => reg.walk().catch(() => [] as IgluSchema[]))
-    ).then((args) => ([] as IgluSchema[]).concat(...args));
+      this.registries.map((reg) =>
+        reg
+          .walk()
+          .catch(() => [] as IgluSchema[])
+          .then((schemas) => {
+            for (const s of schemas) {
+              const uri = s.uri();
+              if (!this.hitCache.has(uri)) this.hitCache.set(uri, [reg]);
+              else this.hitCache.get(uri)?.push(reg);
+            }
+
+            return schemas;
+          })
+      )
+    ).then((args) => {
+      return ([] as IgluSchema[]).concat(...args);
+    });
   }
 }
