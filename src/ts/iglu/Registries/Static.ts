@@ -4,6 +4,8 @@ import { Registry } from "./Registry";
 import { IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 import { RegistrySpec, RegistryStatus } from "../../types";
 
+const REQUEST_TIMEOUT_MS = 5000;
+
 export class StaticRegistry extends Registry {
   private cache: Map<IgluSchema, ResolvedIgluSchema> = new Map();
   private readonly base: URL;
@@ -14,13 +16,18 @@ export class StaticRegistry extends Registry {
   }
 
   private fetch(schemaPath: string): ReturnType<typeof fetch> {
+    const ac = new AbortController();
+    const id = setTimeout(ac.abort.bind(ac), REQUEST_TIMEOUT_MS);
+
     const opts: Partial<RequestInit> = {
       referrerPolicy: "origin",
+      signal: ac.signal,
     };
 
-    return fetch(new URL(schemaPath, this.base).href, opts).then((resp) =>
-      resp.ok ? resp : Promise.reject("HTTP_ERROR")
-    );
+    return fetch(new URL(schemaPath, this.base).href, opts).then((resp) => {
+      clearTimeout(id);
+      return resp.ok ? resp : Promise.reject("HTTP_ERROR");
+    });
   }
 
   resolve(schema: IgluSchema) {
