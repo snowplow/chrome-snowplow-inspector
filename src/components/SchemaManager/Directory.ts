@@ -22,14 +22,18 @@ const catalog: ResolvedIgluSchema[] = [];
 
 export const Directory = {
   oninit: (vnode: Vnode<{ resolver: Resolver }>) => {
+    catalog.length = 0;
     const { resolver } = vnode.attrs;
     resolver.walk().then((discovered) =>
       Promise.all(
         discovered.map((s) =>
-          vnode.attrs.resolver.resolve(s).then((res) => {
-            catalog.push(res);
-            redraw();
-          })
+          vnode.attrs.resolver
+            .resolve(s)
+            .then((res) => {
+              catalog.push(res);
+              redraw();
+            })
+            .catch((reason) => console.log("resolving", s, "failed", reason))
         )
       )
     );
@@ -47,41 +51,38 @@ export const Directory = {
 
     return m(
       "div.directory.column",
-      sorted(Object.entries(directory), (x) => x[0]).map(
-        ([vendor, schemas]) => {
-          return m("details.vendor", [
-            m("summary", vendor),
-            sorted(Object.entries(schemas), (x) => x[0]).map(
-              ([name, formats]) =>
-                m("details.name", [
-                  m("summary", name),
-                  Object.entries(formats).map(([format, versions]) =>
-                    m("details.format[open]", [
-                      m("summary", format),
-                      sorted(Object.entries(versions), (x) => x[0]).map(
-                        ([version, deployments]) =>
-                          m("details.version", [
-                            m("summary", version),
+      Object.entries(directory).map(([vendor, schemas]) => {
+        return m("details.vendor[open]", [
+          m("summary", vendor),
+          sorted(Object.entries(schemas), (x) => x[0]).map(([name, formats]) =>
+            m("details.name", [
+              m("summary", name),
+              Object.entries(formats).map(([format, versions]) =>
+                m("details.format[open]", [
+                  m("summary", format),
+                  sorted(Object.entries(versions), (x) => x[0]).map(
+                    ([version, deployments]) =>
+                      m("details.version", [
+                        m("summary", version),
+                        m(
+                          "ul.registries",
+                          deployments.map((d) =>
                             m(
-                              "ul.registries",
-                              deployments.map((d) =>
-                                m(
-                                  "li",
-                                  m("textarea", {
-                                    value: JSON.stringify(d.data, null, 4),
-                                  })
-                                )
-                              )
-                            ),
-                          ])
-                      ),
-                    ])
+                              "li",
+                              m("textarea", {
+                                value: JSON.stringify(d.data, null, 4),
+                              })
+                            )
+                          )
+                        ),
+                      ])
                   ),
                 ])
-            ),
-          ]);
-        }
-      )
+              ),
+            ])
+          ),
+        ]);
+      })
     );
   },
 };
