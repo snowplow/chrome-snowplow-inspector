@@ -18,6 +18,29 @@ const hash = (bytes: string): string => {
   return String(h);
 };
 
+function sorted<T>(list: Iterable<T>, keycb?: (a: T) => any): T[] {
+  if (!list) return list;
+  const sortees: T[] = [];
+  let i = -1;
+  for (const e of list) {
+    if (i >= 0) {
+      let j = i;
+      sortees.push(e);
+
+      const cmp = keycb ? keycb(e) : e;
+      while ((keycb ? keycb(sortees[j]) : sortees[j]) > cmp) j--;
+
+      if (i !== j) {
+        sortees.copyWithin(j + 1, j);
+        sortees[j + 1] = e;
+      }
+    } else sortees.push(e);
+    i++;
+  }
+
+  return sortees;
+}
+
 const hasMembers = (obj: object) => {
   if (typeof obj !== "object" || obj === null) {
     return false;
@@ -434,4 +457,5 @@ export {
   thriftToRequest,
   tryb64,
   uuidv4,
+  sorted,
 };

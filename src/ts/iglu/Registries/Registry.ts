@@ -31,7 +31,15 @@ export abstract class Registry {
   }
 
   view() {
-    return m("li", m("textarea", { value: JSON.stringify(this) }));
+    return m(
+      "li",
+      m("textarea", {
+        className: `registry ${this.spec.kind} ${
+          this.lastStatus ? this.lastStatus.toLowerCase() : ""
+        }`,
+        value: JSON.stringify(this, null, 4),
+      })
+    );
   }
 
   abstract resolve(_: IgluSchema): Promise<ResolvedIgluSchema>;
