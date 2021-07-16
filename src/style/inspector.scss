@@ -114,3 +114,15 @@ $colors: (
     border-radius: 100%;
   }
 }
+
+.registry.ok {
+  background-color: white;
+}
+
+.registry.waiting {
+  background-color: $grey-dark;
+}
+
+.registry.unhealthy {
+  background-color: $red;
+}

@@ -1,5 +1,6 @@
 import { default as m, redraw, Vnode } from "mithril";
 import { IgluSchema, ResolvedIgluSchema, Resolver } from "../../ts/iglu";
+import { sorted } from "../../ts/util";
 
 interface SchemaDirectory {
   [vendor: string]: VendorDirectory;
@@ -46,37 +47,41 @@ export const Directory = {
 
     return m(
       "div.directory.column",
-      Object.entries(directory).map(([vendor, schemas]) => {
-        return m("details.vendor", [
-          m("summary", vendor),
-          Object.entries(schemas).map(([name, formats]) =>
-            m("details.name", [
-              m("summary", name),
-              Object.entries(formats).map(([format, versions]) =>
-                m("details.format[open]", [
-                  m("summary", format),
-                  Object.entries(versions).map(([version, deployments]) =>
-                    m("details.version", [
-                      m("summary", version),
-                      m(
-                        "ul.registries",
-                        deployments.map((d) =>
-                          m(
-                            "li",
-                            m("textarea", {
-                              value: JSON.stringify(d.data, null, 4),
-                            })
-                          )
-                        )
+      sorted(Object.entries(directory), (x) => x[0]).map(
+        ([vendor, schemas]) => {
+          return m("details.vendor", [
+            m("summary", vendor),
+            sorted(Object.entries(schemas), (x) => x[0]).map(
+              ([name, formats]) =>
+                m("details.name", [
+                  m("summary", name),
+                  Object.entries(formats).map(([format, versions]) =>
+                    m("details.format[open]", [
+                      m("summary", format),
+                      sorted(Object.entries(versions), (x) => x[0]).map(
+                        ([version, deployments]) =>
+                          m("details.version", [
+                            m("summary", version),
+                            m(
+                              "ul.registries",
+                              deployments.map((d) =>
+                                m(
+                                  "li",
+                                  m("textarea", {
+                                    value: JSON.stringify(d.data, null, 4),
+                                  })
+                                )
+                              )
+                            ),
+                          ])
                       ),
                     ])
                   ),
                 ])
-              ),
-            ])
-          ),
-        ]);
-      })
+            ),
+          ]);
+        }
+      )
     );
   },
 };
