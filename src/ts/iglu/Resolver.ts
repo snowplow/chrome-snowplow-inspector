@@ -6,8 +6,13 @@ import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
 import { ExtensionOptions, RegistrySpec, RegistryStatus } from "../types";
 
 const DEFAULT_REGISTRIES: RegistrySpec[] = [
-  { kind: "local", name: "Local Registry" },
-  { kind: "static", name: "Iglu Central", uri: "http://iglucentral.com" },
+  { kind: "local", name: "Local Registry", priority: 0 },
+  {
+    kind: "static",
+    name: "Iglu Central",
+    uri: "http://iglucentral.com",
+    priority: 0,
+  },
 ];
 
 export class Resolver extends Registry {
@@ -17,46 +22,6 @@ export class Resolver extends Registry {
     super({ kind: "local", name: "Resolver" });
 
     this.registries = [];
-
-    // migrate old local schemas
-    chrome.storage.local.get(
-      ["schemalist", "localSchemas"],
-      (storage: Partial<ExtensionOptions>) => {
-        const MIGRATION_NAME = "Migrated Local Registry";
-
-        const { schemalist, localSchemas } = storage;
-        const ls = localSchemas ? JSON.parse(localSchemas) : {};
-        if (Array.isArray(schemalist) && schemalist.length) {
-          DEFAULT_REGISTRIES.push({ kind: "local", name: MIGRATION_NAME });
-
-          const schemas: ResolvedIgluSchema[] = [];
-          const remainder: any[] = [];
-
-          schemalist.forEach((s) => {
-            const data = typeof s === "string" ? JSON.parse(s) : s;
-            if (typeof s === "object" && s && "self" in s) {
-              const { vendor, name, format, version } = s["self"];
-
-              const built = IgluSchema.fromUri(
-                `iglu:${vendor}/${name}/${format}/${version}`
-              );
-              if (built) {
-                const res = built.resolve(s, this);
-                if (res) schemas.push(res);
-              }
-            } else {
-              remainder.push(JSON.stringify(s));
-            }
-          });
-
-          ls[MIGRATION_NAME] = (ls[MIGRATION_NAME] || []).concat(schemas);
-          chrome.storage.local.set({
-            schemalist: remainder,
-            localSchemas: JSON.stringify(ls),
-          });
-        }
-      }
-    );
 
     chrome.storage.sync.get(
       {
@@ -69,16 +34,103 @@ export class Resolver extends Registry {
         }
 
         // handle legacy repo settings
-        if (this.importLegacy(settings.repolist, this.registries))
-          chrome.storage.sync.set({
-            registries: this.registries.map((r) => JSON.stringify(r)),
-            repolist: [],
-          });
+        this.importLegacyLocalSchemas()
+          .then(() =>
+            this.importLegacyRepos(settings.repolist, this.registries)
+          )
+          .then(
+            (migrated) =>
+              new Promise<void>((fulfil) =>
+                migrated
+                  ? chrome.storage.sync.set(
+                      {
+                        registries: this.registries.map((r) =>
+                          JSON.stringify(r)
+                        ),
+                        repolist: [],
+                      },
+                      fulfil
+                    )
+                  : fulfil()
+              )
+          )
+          .then(() =>
+            this.registries.sort((a, b) => {
+              const ap = a.priority || Number.MAX_SAFE_INTEGER;
+              const bp = b.priority || Number.MAX_SAFE_INTEGER;
+
+              let result = ap - bp;
+
+              const kindPriority: RegistrySpec["kind"][] = [
+                "local",
+                "ds",
+                "iglu",
+                "static",
+              ];
+              if (!result)
+                result +=
+                  kindPriority.indexOf(a.spec.kind) -
+                  kindPriority.indexOf(b.spec.kind);
+
+              return result;
+            })
+          )
+          .then(m.redraw);
       }
     );
   }
 
-  private importLegacy(repolist: string[], current: Registry[]): boolean {
+  private importLegacyLocalSchemas() {
+    return new Promise<void>((fulfil) => {
+      chrome.storage.local.get(
+        ["schemalist", "localSchemas"],
+        (storage: Partial<ExtensionOptions>) => {
+          const MIGRATION_NAME = "Migrated Local Registry";
+
+          const { schemalist, localSchemas } = storage;
+          const ls = localSchemas ? JSON.parse(localSchemas) : {};
+          if (Array.isArray(schemalist) && schemalist.length) {
+            DEFAULT_REGISTRIES.push({
+              kind: "local",
+              name: MIGRATION_NAME,
+              priority: 0,
+            });
+
+            const schemas: ResolvedIgluSchema[] = [];
+            const remainder: any[] = [];
+
+            schemalist.forEach((s) => {
+              const data = typeof s === "string" ? JSON.parse(s) : s;
+              if (typeof data === "object" && data && "self" in data) {
+                const { vendor, name, format, version } = data["self"];
+
+                const built = IgluSchema.fromUri(
+                  `iglu:${vendor}/${name}/${format}/${version}`
+                );
+                if (built) {
+                  const res = built.resolve(data, this);
+                  if (res) schemas.push(res);
+                }
+              } else {
+                remainder.push(JSON.stringify(data));
+              }
+            });
+
+            ls[MIGRATION_NAME] = (ls[MIGRATION_NAME] || []).concat(schemas);
+            chrome.storage.local.set(
+              {
+                schemalist: remainder,
+                localSchemas: JSON.stringify(ls),
+              },
+              fulfil
+            );
+          } else fulfil();
+        }
+      );
+    });
+  }
+
+  private importLegacyRepos(repolist: string[], current: Registry[]): boolean {
     const migrated: Registry[] = [];
 
     for (const legacy of repolist) {
