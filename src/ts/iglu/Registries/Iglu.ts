@@ -4,6 +4,8 @@ import { Registry } from "./Registry";
 import { IgluSchema, IgluUri } from "../IgluSchema";
 import { RegistrySpec, RegistryStatus } from "../../types";
 
+const REQUEST_TIMEOUT_MS = 5000;
+
 export class IgluRegistry extends Registry {
   private manifest: Map<string, IgluSchema> = new Map();
 
@@ -19,14 +21,19 @@ export class IgluRegistry extends Registry {
   }
 
   private fetch(apiPath: string): ReturnType<typeof fetch> {
+    const ac = new AbortController();
+    const id = setTimeout(ac.abort.bind(ac), REQUEST_TIMEOUT_MS);
+
     const opts: Partial<RequestInit> = {
       headers: this.apiKey ? { apikey: this.apiKey } : undefined,
       referrerPolicy: "origin",
+      signal: ac.signal,
     };
 
-    return fetch(new URL(apiPath, this.base).href, opts).then((resp) =>
-      resp.ok ? resp : Promise.reject("HTTP_ERROR")
-    );
+    return fetch(new URL(apiPath, this.base).href, opts).then((resp) => {
+      clearTimeout(id);
+      return resp.ok ? resp : Promise.reject("HTTP_ERROR");
+    });
   }
 
   resolve(schema: IgluSchema) {

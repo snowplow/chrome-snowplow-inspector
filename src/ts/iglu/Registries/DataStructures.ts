@@ -9,6 +9,8 @@ const INSIGHTS_OAUTH_ENDPOINT = "https://id.snowplowanalytics.com/";
 const INSIGHTS_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api";
 const INSIGHTS_API_ENDPOINT = "https://console.snowplowanalytics.com/";
 
+const REQUEST_TIMEOUT_MS = 5000;
+
 type InsightsOauthResponse = {
   access_token: string;
   expires_in: number;
@@ -84,9 +86,13 @@ export class DataStructuresRegistry extends Registry {
 
   private fetch(apiPath: string): ReturnType<typeof fetch> {
     return this.auth().then((headers) => {
+      const ac = new AbortController();
+      const id = setTimeout(ac.abort.bind(ac), REQUEST_TIMEOUT_MS);
+
       const opts: Partial<RequestInit> = {
         headers,
         referrerPolicy: "origin",
+        signal: ac.signal,
       };
 
       return fetch(
@@ -98,7 +104,10 @@ export class DataStructuresRegistry extends Registry {
           this.dsApiEndpoint
         ).href,
         opts
-      ).then((resp) => (resp.ok ? resp : Promise.reject("HTTP_ERROR")));
+      ).then((resp) => {
+        clearTimeout(id);
+        return resp.ok ? resp : Promise.reject("HTTP_ERROR");
+      });
     });
   }
 
