@@ -19,22 +19,24 @@ const hash = (bytes: string): string => {
 };
 
 function sorted<T>(list: Iterable<T>, keycb?: (a: T) => any): T[] {
-  if (!list) return list;
   const sortees: T[] = [];
-  let i = -1;
+  let started = false;
+  let i: number = 0;
   for (const e of list) {
-    if (i >= 0) {
-      let j = i;
-      sortees.push(e);
+    sortees.push(e);
+    if (!started) {
+      continue;
+    }
 
-      const cmp = keycb ? keycb(e) : e;
-      while ((keycb ? keycb(sortees[j]) : sortees[j]) > cmp) j--;
+    let j = i;
 
-      if (i !== j) {
-        sortees.copyWithin(j + 1, j);
-        sortees[j + 1] = e;
-      }
-    } else sortees.push(e);
+    const cmp = keycb ? keycb(e) : e;
+    while ((keycb ? keycb(sortees[j]) : sortees[j]) > cmp) j--;
+
+    if (i !== j) {
+      sortees.copyWithin(j + 1, j);
+      sortees[j + 1] = e;
+    }
     i++;
   }
 
