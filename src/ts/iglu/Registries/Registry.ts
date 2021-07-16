@@ -7,16 +7,21 @@ import { uuidv4 } from "../../util";
 export abstract class Registry {
   id: string;
   spec: RegistrySpec;
+  priority?: number;
+  vendorPrefixes?: string[];
   opts: { [prop: string]: any };
 
   constructor(spec: RegistrySpec) {
-    const { id, name, kind, ...opts } = spec;
+    const { id, name, kind, priority, vendorPrefixes, ...opts } = spec;
     this.id = id || uuidv4();
     this.spec = {
       id: this.id,
       name,
       kind,
     };
+
+    this.priority = priority;
+    this.vendorPrefixes = vendorPrefixes;
 
     this.opts = opts;
   }
