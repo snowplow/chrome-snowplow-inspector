@@ -45,34 +45,47 @@ export const Debugger = (vnode: Vnode<IDebugger>) => {
     return !!(active && active.id === beacon.id);
   }
 
-  function handleNewRequest(req: Entry): void {
-    if (
-      !isSnowplow(req.request) ||
-      req.request.method === "OPTIONS" ||
-      req.response.statusText === "Service Worker Fallback Required"
-    ) {
-      return;
-    }
+  function handleNewRequest(reqs: Entry[]): void {
+    vnode.attrs.addRequests(
+      reqs.filter(
+        (req) =>
+          !(
+            !isSnowplow(req.request) ||
+            req.request.method === "OPTIONS" ||
+            req.response.statusText === "Service Worker Fallback Required"
+          )
+      )
+    );
+  }
 
-    vnode.attrs.addRequests([req]);
+  function handleSingleRequest(req: Entry) {
+    handleNewRequest([req]);
   }
 
   return {
     oninit: () => {
-      if (!vnode.attrs.events.length) {
-        chrome.devtools.network.getHAR((harLog) => {
-          harLog.entries.forEach(handleNewRequest);
-          chrome.devtools.network.onRequestFinished.addListener(
-            handleNewRequest
-          );
-        });
-      } else {
-        chrome.devtools.network.onRequestFinished.addListener(handleNewRequest);
-      }
+      chrome.devtools.network.getHAR((harLog) => {
+        handleNewRequest(
+          harLog.entries.filter(
+            (entry) =>
+              !vnode.attrs.events.find(
+                (event) =>
+                  event.startedDateTime === entry.startedDateTime &&
+                  event.time === entry.time &&
+                  event.request.url === entry.request.url &&
+                  event._request_id === entry._request_id
+              )
+          )
+        );
+      });
+
+      chrome.devtools.network.onRequestFinished.addListener(
+        handleSingleRequest
+      );
     },
     onremove: () => {
       chrome.devtools.network.onRequestFinished.removeListener(
-        handleNewRequest
+        handleSingleRequest
       );
     },
     view: () =>

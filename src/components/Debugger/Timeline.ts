@@ -301,6 +301,43 @@ const extractRequests = (
 export const Timeline = {
   view: (vnode: Vnode<ITimeline>) => {
     const url = getPageUrl(vnode.attrs.requests);
+    let first: IBeaconSummary | undefined = undefined;
+    let active = false;
+    const beacons = vnode.attrs.requests.map((x, i) => {
+      const summary = summariseBeacons(x, i, vnode.attrs.filter);
+      if (!first && summary.length) first = summary[0];
+      return summary.map((y) =>
+        m(
+          "a.panel-block",
+          {
+            class: [
+              vnode.attrs.isActive(y) ? ((active = true), "is-active") : "",
+              // Some race in Firefox where the response information isn't always populated
+              x.response.status === 200 || x.response.status === 0
+                ? ""
+                : "not-ok",
+              colourOf(y),
+              y.validity === "Invalid" ? "is-invalid" : "",
+            ].join(" "),
+            onclick: vnode.attrs.setActive.bind(null, y),
+            title: [
+              `Time: ${y.time}`,
+              `Collector: ${y.collector}`,
+              `App ID: ${y.appId}`,
+              `Status: ${x.response.status} ${x.response.statusText}`,
+              `Validity: ${y.validity}`,
+            ].join("\n"),
+          },
+          m("span.panel-icon.identifier"),
+          y.eventName,
+          m(
+            "span.panel-icon.validity",
+            y.validity === "Invalid" ? "\u26d4\ufe0f" : ""
+          )
+        )
+      );
+    });
+    if (!active && first) vnode.attrs.setActive(first);
     return m(
       "div.panel",
       m(
@@ -308,42 +345,7 @@ export const Timeline = {
         { title: url && url.href },
         url ? url.pathname.slice(0, 34) : "Current Page"
       ),
-      Array.prototype.concat.apply(
-        [],
-        vnode.attrs.requests.map((x, i) => {
-          const summary = summariseBeacons(x, i, vnode.attrs.filter);
-          return summary.map((y) =>
-            m(
-              "a.panel-block",
-              {
-                class: [
-                  vnode.attrs.isActive(y) ? "is-active" : "",
-                  // Some race in Firefox where the response information isn't always populated
-                  x.response.status === 200 || x.response.status === 0
-                    ? ""
-                    : "not-ok",
-                  colourOf(y),
-                  y.validity === "Invalid" ? "is-invalid" : "",
-                ].join(" "),
-                onclick: vnode.attrs.setActive.bind(null, y),
-                title: [
-                  `Time: ${y.time}`,
-                  `Collector: ${y.collector}`,
-                  `App ID: ${y.appId}`,
-                  `Status: ${x.response.status} ${x.response.statusText}`,
-                  `Validity: ${y.validity}`,
-                ].join("\n"),
-              },
-              m("span.panel-icon.identifier"),
-              y.eventName,
-              m(
-                "span.panel-icon.validity",
-                y.validity === "Invalid" ? "\u26d4\ufe0f" : ""
-              )
-            )
-          );
-        })
-      )
+      Array.prototype.concat.apply([], beacons)
     );
   },
 };

@@ -21,7 +21,16 @@ export const SnowplowInspector = () => {
   }
 
   function addRequests(reqs: Entry[]) {
+    if (!reqs.length) return;
+
     events.push.apply(events, reqs);
+    events.sort((a, b) =>
+      a.startedDateTime === b.startedDateTime
+        ? 0
+        : a.startedDateTime < b.startedDateTime
+        ? -1
+        : 1
+    );
     redraw();
   }
 
