@@ -44,7 +44,8 @@ export interface IBeaconSummary {
 }
 
 export type BeaconValidity = "Valid" | "Unrecognised" | "Invalid";
-export type BeaconDetail = [string, any, string];
+export type FieldDetail = [field: string, value: string, classes: string];
+export type BeaconDetail = [group: string, fields: FieldDetail[]];
 
 export interface IBeaconDetails {
   appId: string;

@@ -6,8 +6,9 @@ import {
   IBeaconDetails,
   IBeaconSummary,
   IRowSet,
+  FieldDetail,
 } from "../../ts/types";
-import { hasMembers, nameType, copyToClipboard } from "../../ts/util";
+import { b64d, hasMembers, nameType, copyToClipboard } from "../../ts/util";
 import { validate } from "../../ts/validator";
 
 type ProtocolField = typeof protocol.paramMap[keyof typeof protocol.paramMap];
@@ -22,8 +23,11 @@ function genClasses(finfo: ProtocolField): string {
   return classes.join(" ");
 }
 
-function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
-  const { collector, method, payload } = beacon;
+function parseBeacon({
+  collector,
+  method,
+  payload,
+}: IBeaconSummary): IBeaconDetails {
   const result: IBeaconDetails = {
     appId: printableValue(payload.get("aid"), protocol.paramMap.aid),
     collector,
@@ -41,7 +45,7 @@ function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
   for (const gp of protocol.groupPriorities) {
     const name = gp.name;
     const fields = gp.fields;
-    const rows = [];
+    const rows: FieldDetail[] = [];
 
     for (const field of fields) {
       const finfo = protocol.paramMap[field];
@@ -50,26 +54,26 @@ function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
 
       val = printableValue(val, finfo);
 
-      if (val !== null) {
+      if (val != null) {
         rows.push([finfo.name, val, genClasses(finfo)]);
         seen.add(field);
       }
     }
 
     if (rows.length) {
-      result.data.push([name, rows, ""]);
+      result.data.push([name, rows]);
     }
   }
 
-  const unknownRows = [];
+  const unknownRows: FieldDetail[] = [];
   for (const [k, v] of payload) {
     if (!seen.has(k)) {
-      unknownRows.push([k, v, ""]);
+      unknownRows.push([k, v, "unknown"]);
     }
   }
 
   if (unknownRows.length) {
-    result.data.push(["Unrecognised Fields", unknownRows, ""]);
+    result.data.push(["Unrecognised Fields", unknownRows]);
   }
 
   return result;
@@ -197,24 +201,19 @@ const RowSet = () => {
   };
 };
 
-const toTable = (rowset: BeaconDetail) => {
-  const [setName, rows] = rowset;
-
-  return m(
+const toTable = ([setName, rows]: BeaconDetail) =>
+  m(
     RowSet,
-    { setName, key: setName },
-    rows.map((x: [string, any]) => {
-      if (!/Custom Context|(Unstructured|Self-Describing) Event/.test(x[0])) {
-        return m("tr", [
-          m("th", x[0]),
-          m("td", [labelType(x[1]), contextToTable(x[1])]),
-        ]);
-      } else {
-        return contextToTable(x[1]);
-      }
-    })
+    { setName },
+    rows.map(([name, val, classes]) =>
+      !/Custom Context|(Unstructured|Self-Describing) Event/.test(name)
+        ? m("tr", { class: classes }, [
+            m("th", name),
+            m("td", [labelType(val), contextToTable(val)]),
+          ])
+        : contextToTable(val)
+    )
   );
-};
 
 const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
   if (val === undefined || val === null || val === "") {
@@ -237,7 +236,7 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
     case "json":
       return JSON.parse(val);
     case "ba64":
-      return printableValue(atob(val.replace(/-/g, "+").replace(/_/g, "/")), {
+      return printableValue(b64d(val), {
         name: finfo.name,
         type: finfo.then,
       } as ProtocolField);
@@ -250,16 +249,23 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
   }
 };
 
-const formatBeacon = (d: IBeaconDetails) =>
+const formatBeacon = ({
+  appId,
+  name,
+  time,
+  collector,
+  method,
+  data,
+}: IBeaconDetails) =>
   [
     m("div.level.box", [
       m(
         "div.level-item.has-text-centered",
-        m("div", [m("p.heading", "App"), m("p.title", d.appId)])
+        m("div", [m("p.heading", "App"), m("p.title", appId)])
       ),
       m(
         "div.level-item.has-text-centered",
-        m("div", [m("p.heading", "Event"), m("p.title", d.name)])
+        m("div", [m("p.heading", "Event"), m("p.title", name)])
       ),
     ]),
     m("div.level.box", [
@@ -267,21 +273,21 @@ const formatBeacon = (d: IBeaconDetails) =>
         "div.level-item.has-text-centered",
         m("div", [
           m("p.heading", "Time"),
-          m("time.title", { datetime: d.time }, new Date(d.time).toUTCString()),
+          m("time.title", { datetime: time }, new Date(time).toUTCString()),
         ])
       ),
     ]),
     m("div.level.box", [
       m(
         "div.level-item.has-text-centered",
-        m("div", [m("p.heading", "collector"), m("p.title", d.collector)])
+        m("div", [m("p.heading", "collector"), m("p.title", collector)])
       ),
       m(
         "div.level-item.has-text-centered",
-        m("div", [m("p.heading", "Method"), m("p.title", d.method)])
+        m("div", [m("p.heading", "Method"), m("p.title", method)])
       ),
     ]),
-  ].concat(d.data.map(toTable));
+  ].concat(data.map(toTable));
 
 export const Beacon = {
   view: ({ attrs: { activeBeacon } }: Vnode<IBeacon>) =>
