@@ -54,8 +54,10 @@ const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
 const nameEvent = (params: Map<string, string>): string => {
   const event = params.get("e") || "Unknown Event";
 
-  let result: string;
-  const eventTypes = protocol.paramMap.e.values;
+  const eventDef = protocol.paramMap.e;
+  if (eventDef.type !== "emap") return event;
+
+  const eventTypes = eventDef.values;
   switch (event) {
     case "se":
       return eventTypes[event] + ": " + params.get("se_ca");

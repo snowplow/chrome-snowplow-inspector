@@ -6,10 +6,11 @@ import {
   IBeaconDetails,
   IBeaconSummary,
   IRowSet,
-  ProtocolField,
 } from "../../ts/types";
 import { hasMembers, nameType, copyToClipboard } from "../../ts/util";
 import { validate } from "../../ts/validator";
+
+type ProtocolField = typeof protocol.paramMap[keyof typeof protocol.paramMap];
 
 function genClasses(finfo: ProtocolField): string {
   const classes = [];
@@ -24,20 +25,14 @@ function genClasses(finfo: ProtocolField): string {
 function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
   const { collector, method, payload } = beacon;
   const result: IBeaconDetails = {
-    appId: printableValue(
-      payload.get("aid"),
-      protocol.paramMap.aid as ProtocolField
-    ),
+    appId: printableValue(payload.get("aid"), protocol.paramMap.aid),
     collector,
     data: [],
     method,
-    name: printableValue(
-      payload.get("e"),
-      protocol.paramMap.e as ProtocolField
-    ),
+    name: printableValue(payload.get("e"), protocol.paramMap.e),
     time: printableValue(
       payload.get("stm") || payload.get("dtm"),
-      protocol.paramMap.stm as ProtocolField
+      protocol.paramMap.stm
     ),
   };
 
@@ -49,9 +44,7 @@ function parseBeacon(beacon: IBeaconSummary): IBeaconDetails {
     const rows = [];
 
     for (const field of fields) {
-      const finfo = (
-        protocol.paramMap as { [fieldkey: string]: ProtocolField }
-      )[field];
+      const finfo = protocol.paramMap[field];
 
       let val = payload.get(field);
 
@@ -209,7 +202,7 @@ const toTable = (rowset: BeaconDetail) => {
 
   return m(
     RowSet,
-    { setName },
+    { setName, key: setName },
     rows.map((x: [string, any]) => {
       if (!/Custom Context|(Unstructured|Self-Describing) Event/.test(x[0])) {
         return m("tr", [
@@ -247,7 +240,7 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
       return printableValue(atob(val.replace(/-/g, "+").replace(/_/g, "/")), {
         name: finfo.name,
         type: finfo.then,
-      });
+      } as ProtocolField);
     case "enum":
       return val;
     case "emap":
@@ -291,7 +284,6 @@ const formatBeacon = (d: IBeaconDetails) =>
   ].concat(d.data.map(toTable));
 
 export const Beacon = {
-  view: (vnode: Vnode<IBeacon>) =>
-    vnode.attrs.activeBeacon &&
-    formatBeacon(parseBeacon(vnode.attrs.activeBeacon)),
+  view: ({ attrs: { activeBeacon } }: Vnode<IBeacon>) =>
+    activeBeacon && formatBeacon(parseBeacon(activeBeacon)),
 };
