@@ -115,13 +115,29 @@ $colors: (
   }
 }
 
-.directory details[open] {
+.directory details[open] > details {
   padding-left: 1em;
   border-width: 3px;
 }
 
 .directory details > summary {
   margin-left: -1em;
+}
+
+.directory summary {
+  cursor: pointer;
+}
+
+.directory textarea {
+  display: block;
+  width: 100%;
+}
+
+.registries {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .registries select,

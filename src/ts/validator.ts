@@ -1,5 +1,5 @@
 import { Schema, Validator } from "jsonschema";
-import { default as m, redraw, request } from "mithril";
+import { redraw, request } from "mithril";
 import { repoAnalytics } from "./analytics";
 import { ICache, IErrorMessageSet, ISchemaStatus } from "./types";
 

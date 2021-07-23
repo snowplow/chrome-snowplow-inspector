@@ -1,7 +1,7 @@
-import { default as m } from "mithril";
+import { default as m, Vnode } from "mithril";
 
 import { RegistrySpec, RegistryStatus } from "../../types";
-import { IgluSchema, IgluUri, ResolvedIgluSchema } from "../IgluSchema";
+import { IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 import { uuidv4 } from "../../util";
 
 export abstract class Registry {
@@ -30,7 +30,7 @@ export abstract class Registry {
     return { ...this.spec, ...(this.opts || {}) };
   }
 
-  view() {
+  view(_: Vnode<any>) {
     return m(
       "option",
       {

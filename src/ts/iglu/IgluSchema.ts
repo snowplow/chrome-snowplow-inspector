@@ -64,6 +64,8 @@ export class IgluSchema {
 }
 
 export class ResolvedIgluSchema extends IgluSchema {
+  public searchIndex?: string;
+
   constructor(
     readonly registry: Registry,
     readonly self: IgluSchema,
@@ -72,9 +74,51 @@ export class ResolvedIgluSchema extends IgluSchema {
     super(self.vendor, self.name, self.format, self.version);
   }
 
+  private static buildSearchIndex(schema: ResolvedIgluSchema): string {
+    const fields = new Set<string>([
+      schema.name,
+      schema.vendor,
+      schema.version,
+    ]);
+
+    let data: Schema | undefined;
+    const stack: typeof data[] = [data];
+    const meta: (keyof Schema)[] = ["title", "description", "type"];
+    while (stack.length) {
+      data = stack.pop();
+      if (!data) continue;
+
+      for (const field of meta) {
+        if (data[field]) fields.add(data[field]);
+      }
+
+      if (data.items) {
+        for (const [prop, d] of Object.entries(data.items)) {
+          stack.push(d);
+        }
+      }
+
+      if (data.properties) {
+        for (const [prop, d] of Object.entries(data.properties)) {
+          fields.add(prop);
+          stack.push(d);
+        }
+      }
+
+      if (data.enum) Array.prototype.push.apply(fields, data.enum.map(String));
+    }
+    return Array.from(fields).join("\n");
+  }
+
   uri(): IgluUri {
     return this.self.uri();
   }
 
   validate(data: unknown): void {}
+
+  like(re: RegExp): boolean {
+    if (!this.searchIndex)
+      this.searchIndex = ResolvedIgluSchema.buildSearchIndex(this);
+    return re.test(this.searchIndex);
+  }
 }

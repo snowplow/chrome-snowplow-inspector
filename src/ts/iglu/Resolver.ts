@@ -1,9 +1,9 @@
-import { default as m } from "mithril";
+import { default as m, Vnode } from "mithril";
 
 import { build } from "./Registries";
 import { Registry } from "./Registries/Registry";
 import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
-import { ExtensionOptions, RegistrySpec, RegistryStatus } from "../types";
+import { ExtensionOptions, RegistrySpec } from "../types";
 
 const DEFAULT_REGISTRIES: RegistrySpec[] = [
   { kind: "local", name: "Local Registry", priority: 0 },
@@ -196,11 +196,46 @@ export class Resolver extends Registry {
     );
   }
 
-  view() {
+  view(
+    vnode: Vnode<{
+      selectRegistries: (selected: Registry[]) => void;
+      shouldClear: boolean;
+      setClear: (_: boolean) => void;
+    }>
+  ) {
     return m(
       "select[multiple]",
-      { size: this.registries.length },
-      this.registries.map((reg) => m(reg))
+      {
+        onupdate: (vnode) => {
+          if (vnode.attrs.shouldClear) {
+            if (
+              typeof vnode.tag === "string" &&
+              vnode.tag.toLowerCase() === "select"
+            ) {
+              (vnode.dom as HTMLSelectElement).selectedIndex = -1;
+              vnode.attrs.selectRegistries([]);
+              vnode.attrs.setClear(false);
+              m.redraw();
+            }
+          }
+        },
+        onchange: (event: Event) => {
+          if (!event.target) return;
+          const el = event.target as HTMLSelectElement;
+          const opts = Array.from(el.selectedOptions);
+          vnode.attrs.selectRegistries(
+            Array.from(el.selectedOptions)
+              .map((opt) =>
+                this.registries.findIndex((r) => r.id === opt.value)
+              )
+              .filter((i) => i !== -1)
+              .map((i) => this.registries[i])
+          );
+        },
+        size: this.registries.length,
+        ...vnode.attrs,
+      },
+      this.registries.map((reg) => m(reg, { key: reg.id }))
     );
   }
 

@@ -1,7 +1,7 @@
 import { default as m } from "mithril";
 
 import { Registry } from "./Registry";
-import { IgluSchema, IgluUri } from "../IgluSchema";
+import { IgluSchema } from "../IgluSchema";
 import { RegistrySpec, RegistryStatus } from "../../types";
 
 const REQUEST_TIMEOUT_MS = 5000;
