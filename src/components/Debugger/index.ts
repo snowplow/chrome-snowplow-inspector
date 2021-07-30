@@ -33,7 +33,9 @@ function isSnowplow(request: Request): boolean {
   return false;
 }
 
-export const Debugger = (vnode: Vnode<IDebugger>) => {
+export const Debugger = ({
+  attrs: { addRequests, events, resolver },
+}: Vnode<IDebugger>) => {
   let active: IBeaconSummary | undefined;
   let filter: RegExp | undefined;
 
@@ -46,7 +48,7 @@ export const Debugger = (vnode: Vnode<IDebugger>) => {
   }
 
   function handleNewRequest(reqs: Entry[]): void {
-    vnode.attrs.addRequests(
+    addRequests(
       reqs.filter(
         (req) =>
           !(
@@ -68,7 +70,7 @@ export const Debugger = (vnode: Vnode<IDebugger>) => {
         handleNewRequest(
           harLog.entries.filter(
             (entry) =>
-              !vnode.attrs.events.find(
+              !events.find(
                 (event) =>
                   event.startedDateTime === entry.startedDateTime &&
                   event.time === entry.time &&
@@ -112,14 +114,15 @@ export const Debugger = (vnode: Vnode<IDebugger>) => {
             setActive,
             isActive,
             filter,
-            requests: vnode.attrs.events,
+            requests: events,
+            resolver,
           })
         ),
         m(
           "div#beacon.column",
           m(
             "div.tile.is-ancestor.is-vertical.inspector",
-            m(Beacon, { activeBeacon: active })
+            m(Beacon, { activeBeacon: active, resolver })
           )
         ),
       ]),

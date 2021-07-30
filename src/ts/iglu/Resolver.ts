@@ -177,13 +177,13 @@ export class Resolver extends Registry {
     return Promise.all(
       candidates.map((r) =>
         r.resolve(schema).then(
-          (res) => Promise.reject(res),
+          (res) => Promise.reject<ResolvedIgluSchema>(res),
           () => Promise.resolve()
         )
       )
     ).then(
       () => Promise.reject(), // everything rejected
-      (res) => Promise.resolve(res) // successfully found schema
+      (res: ResolvedIgluSchema) => Promise.resolve(res) // successfully found schema
     );
   }
 

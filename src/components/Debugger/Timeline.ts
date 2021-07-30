@@ -1,6 +1,7 @@
 import { Entry } from "har-format";
 import { default as m, Vnode } from "mithril";
 import { trackerAnalytics } from "../../ts/analytics";
+import { IgluSchema, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
 import { b64d, hash, tryb64 } from "../../ts/util";

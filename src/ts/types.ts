@@ -84,11 +84,13 @@ export interface ITimeline {
   isActive: (beacon: IBeaconSummary) => boolean;
   filter?: RegExp;
   requests: Entry[];
+  resolver: Resolver;
   setActive: (beacon: IBeaconSummary) => void;
 }
 
 export interface IBeacon {
   activeBeacon?: IBeaconSummary;
+  resolver: Resolver;
 }
 
 export interface IBadRowsSummary {
