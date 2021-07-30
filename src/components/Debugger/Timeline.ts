@@ -99,63 +99,53 @@ const nameEvent = (params: Map<string, string>): string => {
 const validateEvent = (params: Map<string, string>): BeaconValidity => {
   let unrec = false;
   let valid = true;
-  let status;
+  const toValidate: [string, object][] = [];
 
-  if (params.get("e") === "ue") {
-    const payload = params.get("ue_pr") || params.get("ue_px") || "";
+  const ctxKeys = ["cx", "co"];
+  const ueKeys = ["ue_pr", "ue_px"];
+  const validatableKeys = ctxKeys.concat(ueKeys);
+
+  validatableKeys.forEach((key) => {
+    const payload = params.get(key);
+    if (!payload) return;
+    let sdj;
 
     try {
-      const sde = JSON.parse(tryb64(payload));
-      if (
-        typeof sde === "object" &&
-        sde !== null &&
-        sde.hasOwnProperty("schema") &&
-        sde.hasOwnProperty("data")
-      ) {
-        status = validate(sde.schema, sde.data);
-        unrec = unrec || status.location === null;
-        valid = valid && status.valid;
-
-        status = validate(sde.data.schema, sde.data.data);
-        unrec = unrec || status.location === null;
-        valid = valid && status.valid;
-      } else {
-        unrec = true;
-        valid = false;
-      }
+      sdj = JSON.parse(tryb64(payload));
     } catch (e) {
       console.log(e);
     }
-  }
 
-  if (params.has("cx") || params.has("co")) {
-    const payload = params.get("co") || params.get("cx") || "";
+    if (
+      typeof sdj === "object" &&
+      sdj !== null &&
+      sdj.hasOwnProperty("schema") &&
+      sdj.hasOwnProperty("data")
+    ) {
+      const schema = IgluSchema.fromUri(sdj.schema);
+      toValidate.push([sdj.schema, sdj.data]);
 
-    try {
-      const ctx = JSON.parse(tryb64(payload));
-      if (
-        typeof ctx === "object" &&
-        ctx !== null &&
-        ctx.hasOwnProperty("schema") &&
-        ctx.hasOwnProperty("data")
-      ) {
-        status = validate(ctx.schema, ctx.data);
-        unrec = unrec || status.location === null;
-        valid = valid && status.valid;
-
-        ctx.data.forEach((c: { schema: string; data: object }) => {
-          status = validate(c.schema, c.data);
-          unrec = unrec || status.location === null;
-          valid = valid && status.valid;
-        });
+      if (ueKeys.includes(key)) {
+        toValidate.push([sdj.data.schema, sdj.data.data]);
       } else {
-        unrec = true;
-        valid = false;
+        toValidate.push(
+          ...sdj.data.map((c: { schema: string; data: object }) => [
+            c.schema,
+            c.data,
+          ])
+        );
       }
-    } catch (e) {
-      console.log(e);
+    } else {
+      unrec = true;
+      valid = false;
     }
-  }
+  });
+
+  toValidate.forEach(([schema, data]) => {
+    const status = validate(schema, data);
+    unrec = unrec || status.location === null;
+    valid = valid && status.valid;
+  });
 
   return valid ? "Valid" : unrec ? "Unrecognised" : "Invalid";
 };
@@ -163,6 +153,7 @@ const validateEvent = (params: Map<string, string>): BeaconValidity => {
 const summariseBeacons = (
   entry: Entry,
   index: number,
+  resolver: Resolver,
   filter?: RegExp
 ): IBeaconSummary[] => {
   const reqs = extractRequests(entry, index);
@@ -300,19 +291,21 @@ const extractRequests = (
 };
 
 export const Timeline = {
-  view: (vnode: Vnode<ITimeline>) => {
-    const url = getPageUrl(vnode.attrs.requests);
+  view: ({
+    attrs: { filter, isActive, requests, resolver, setActive },
+  }: Vnode<ITimeline>) => {
+    const url = getPageUrl(requests);
     let first: IBeaconSummary | undefined = undefined;
     let active = false;
-    const beacons = vnode.attrs.requests.map((x, i) => {
-      const summary = summariseBeacons(x, i, vnode.attrs.filter);
+    const beacons = requests.map((x, i) => {
+      const summary = summariseBeacons(x, i, resolver, filter);
       if (!first && summary.length) first = summary[0];
       return summary.map((y) =>
         m(
           "a.panel-block",
           {
             class: [
-              vnode.attrs.isActive(y) ? ((active = true), "is-active") : "",
+              isActive(y) ? ((active = true), "is-active") : "",
               // Some race in Firefox where the response information isn't always populated
               x.response.status === 200 || x.response.status === 0
                 ? ""
@@ -320,7 +313,7 @@ export const Timeline = {
               colourOf(y),
               y.validity === "Invalid" ? "is-invalid" : "",
             ].join(" "),
-            onclick: vnode.attrs.setActive.bind(null, y),
+            onclick: setActive.bind(null, y),
             title: [
               `Time: ${y.time}`,
               `Collector: ${y.collector}`,
@@ -338,7 +331,7 @@ export const Timeline = {
         )
       );
     });
-    if (!active && first) vnode.attrs.setActive(first);
+    if (!active && first) setActive(first);
     return m(
       "div.panel",
       m(
