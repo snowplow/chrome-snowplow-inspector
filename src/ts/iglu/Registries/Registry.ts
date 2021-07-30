@@ -1,3 +1,4 @@
+import { Validator } from "jsonschema";
 import { default as m, Vnode } from "mithril";
 
 import { RegistrySpec, RegistryStatus } from "../../types";
@@ -10,6 +11,8 @@ export abstract class Registry {
   priority?: number;
   vendorPrefixes?: string[];
   opts: { [prop: string]: any };
+  lastStatus?: RegistryStatus;
+  validator: Validator;
 
   constructor(spec: RegistrySpec) {
     const { id, name, kind, priority, vendorPrefixes, ...opts } = spec;
@@ -24,6 +27,7 @@ export abstract class Registry {
     this.vendorPrefixes = vendorPrefixes;
 
     this.opts = opts;
+    this.validator = new Validator();
   }
 
   toJSON() {

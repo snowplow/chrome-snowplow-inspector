@@ -1,4 +1,5 @@
-import { Schema } from "jsonschema";
+import { Schema, ValidatorResult } from "jsonschema";
+
 import { Registry } from "./Registries";
 
 const $SCHEMA =
@@ -114,7 +115,9 @@ export class ResolvedIgluSchema extends IgluSchema {
     return this.self.uri();
   }
 
-  validate(data: unknown): void {}
+  validate(data: unknown): ValidatorResult {
+    return this.registry.validator.validate(data, this.data);
+  }
 
   like(re: RegExp): boolean {
     if (!this.searchIndex)

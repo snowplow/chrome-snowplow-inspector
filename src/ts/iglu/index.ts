@@ -1,5 +1,5 @@
 import { Registry } from "./Registries";
 import { Resolver } from "./Resolver";
-import { IgluSchema, ResolvedIgluSchema } from "./IgluSchema";
+import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
 
-export { IgluSchema, Registry, ResolvedIgluSchema, Resolver };
+export { IgluSchema, IgluUri, Registry, ResolvedIgluSchema, Resolver };

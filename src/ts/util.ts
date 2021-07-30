@@ -49,7 +49,7 @@ function sorted<T>(
   return sortees;
 }
 
-const hasMembers = (obj: object) => {
+const hasMembers = (obj: unknown) => {
   if (typeof obj !== "object" || obj === null) {
     return false;
   }
@@ -76,7 +76,7 @@ const b64d = (s: string): string => {
   }
 };
 
-const nameType = (val: any): string => {
+const nameType = (val: unknown) => {
   if (val === null) {
     return "null";
   }

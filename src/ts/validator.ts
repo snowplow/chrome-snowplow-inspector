@@ -1,5 +1,11 @@
-import { Schema, Validator } from "jsonschema";
+import {
+  Schema,
+  Validator,
+  ValidationError,
+  ValidatorResult,
+} from "jsonschema";
 import { redraw, request } from "mithril";
+
 import { repoAnalytics } from "./analytics";
 import { ICache, IErrorMessageSet, ISchemaStatus } from "./types";
 
@@ -88,7 +94,13 @@ chrome.storage.onChanged.addListener((changes) => {
 
 syncRepos();
 
-export const validate = (schema: string, data: object) => {
+type ValidationResult = {
+  valid: ValidatorResult["valid"];
+  location?: string | null;
+  errors: (ValidationError | string)[];
+};
+
+export const validate = (schema: string, data: object): ValidationResult => {
   const match = SCHEMA_PATTERN.exec(schema);
   if (!match) {
     return {
@@ -99,7 +111,7 @@ export const validate = (schema: string, data: object) => {
   }
 
   if (schema in cache) {
-    const result = jsv.validate(data, cache[schema]) as any;
+    const result: ValidationResult = jsv.validate(data, cache[schema]);
     result.location = status[schema];
     return result;
   }

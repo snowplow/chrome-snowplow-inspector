@@ -1,7 +1,6 @@
 import { default as m, Vnode } from "mithril";
 import { protocol } from "../../ts/protocol";
 import {
-  BeaconDetail,
   IBeacon,
   IBeaconDetails,
   IBeaconSummary,
@@ -9,7 +8,7 @@ import {
   FieldDetail,
 } from "../../ts/types";
 import { b64d, hasMembers, nameType, copyToClipboard } from "../../ts/util";
-import { validate } from "../../ts/validator";
+import { IgluUri, IgluSchema, Resolver } from "../../ts/iglu";
 
 type ProtocolField = typeof protocol.paramMap[keyof typeof protocol.paramMap];
 
@@ -79,108 +78,172 @@ function parseBeacon({
   return result;
 }
 
-const labelType = (val: string) =>
+const labelType = (val: unknown) =>
   m(
     "button.typeinfo.button.is-pulled-right.is-info",
-    { onclick: () => copyToClipboard(val), title: "Click to copy" },
+    {
+      onclick: () => typeof val === "string" && copyToClipboard(val),
+      title: "Click to copy",
+    },
     nameType(val)
   );
-const contextToTable = (obj: any): Vnode | string => {
-  if (typeof obj !== "object" || obj === null) {
-    return JSON.stringify(obj).replace(/^"|"$/g, "");
-  }
 
-  const rows = [];
-  let p;
+type ValidityState = {
+  validity: "Unrecognised" | "Valid" | "Invalid";
+  errorText?: string;
+  schema?: IgluSchema;
+};
 
-  if ("schema" in obj && "data" in obj) {
-    const validation = validate(obj.schema, obj.data);
-    const validity = validation.valid
-      ? "Valid"
-      : validation.location === null
-      ? "Unrecognised"
-      : "Invalid";
-    const errorText = validation.errors.join("\n") || validation.location;
+type BeaconValueParams = Vnode<{ obj: unknown; resolver: Resolver }>;
 
-    if ("schema" in obj.data) {
-      rows.push(contextToTable(obj.data));
-    } else {
-      for (p in obj.data) {
-        if (obj.data.hasOwnProperty(p)) {
-          const type = nameType(obj.data[p]);
-          if (
-            (type === "object" || type === "array") &&
-            hasMembers(obj.data[p])
-          ) {
-            rows.push(
-              m("tr", [m("th", p), m("td", contextToTable(obj.data[p]))])
-            );
-          } else {
-            rows.push(
-              m("tr", [
-                m("th", p),
-                m("td", [labelType(obj.data[p]), contextToTable(obj.data[p])]),
-              ])
-            );
+function isSDJ(obj: unknown): obj is { data: unknown; schema: string } {
+  return (
+    typeof obj === "object" && obj != null && "data" in obj && "schema" in obj
+  );
+}
+
+const BeaconValue = () => {
+  let schemaValidity: ValidityState | null = null;
+
+  return {
+    oninit: ({ attrs: { obj, resolver } }: BeaconValueParams) => {
+      if (isSDJ(obj)) {
+        const schema = IgluSchema.fromUri(obj.schema as IgluUri);
+        if (schema) {
+          resolver
+            .resolve(schema)
+            .then(
+              (schema): ValidityState => {
+                const validation = schema.validate(obj.data);
+                return validation.valid
+                  ? {
+                      validity: "Valid",
+                      schema,
+                    }
+                  : {
+                      validity: "Invalid",
+                      errorText: validation.errors.join("\n"),
+                      schema,
+                    };
+              },
+              (): ValidityState => ({
+                validity: "Unrecognised",
+                errorText:
+                  "Could not find or access schema definition in any configured repositories.",
+                schema,
+              })
+            )
+            .then((vs) => {
+              schemaValidity = vs;
+              m.redraw();
+            });
+        } else {
+          schemaValidity = {
+            validity: "Invalid",
+            errorText: "Invalid Iglu URI identifying schema.",
+          };
+        }
+      }
+    },
+    view: ({ attrs: { obj, resolver } }: BeaconValueParams) => {
+      if (typeof obj !== "object" || obj === null)
+        return JSON.stringify(obj).replace(/^"|"$/g, "");
+
+      const children: (BeaconValueParams | string)[] = [];
+      let p;
+
+      if (isSDJ(obj)) {
+        if (isSDJ(obj.data)) {
+          children.push(m(BeaconValue, { obj: obj.data, resolver }));
+        } else if (typeof obj.data === "object" && obj.data !== null) {
+          for (p in obj.data) {
+            const nested = obj.data as { [f: string]: unknown };
+            if (nested.hasOwnProperty(p)) {
+              if (hasMembers(nested[p])) {
+                children.push(
+                  m("tr", [
+                    m("th", p),
+                    m("td", m(BeaconValue, { obj: nested[p], resolver })),
+                  ])
+                );
+              } else {
+                children.push(
+                  m("tr", [
+                    m("th", p),
+                    m("td", [
+                      labelType(nested[p]),
+                      m(BeaconValue, { obj: nested[p], resolver }),
+                    ]),
+                  ])
+                );
+              }
+            }
           }
         }
-      }
-    }
 
-    return m(
-      "div.card.iglu",
-      { class: validity.toLowerCase() },
-      m(
-        "header.card-header",
-        m(
-          "a.card-header-title",
-          {
-            target: "_blank",
-            href: validation.location || "javascript:void(0);",
-          },
-          obj.schema
-        ),
-        m("span.card-header-icon", "")
-      ),
-      m("div.card-content", m("table.table.is-fullwidth", rows)),
-      m(
-        "footer.card-footer",
-        m(
-          "abbr.card-footer-item.validation",
-          {
-            onclick: () => {
-              if (validity === "Unrecognised") {
-                chrome.runtime.openOptionsPage();
-              } else {
-                copyToClipboard(errorText);
-              }
-            },
-            title: errorText,
-          },
-          validity
-        ),
-        m("textarea.card-footer-item[readonly]", { value: JSON.stringify(obj) })
-      )
-    );
-  } else {
-    for (p in obj) {
-      if (obj.hasOwnProperty(p)) {
-        const type = nameType(obj[p]);
-        if ((type === "object" || type === "array") && hasMembers(obj[p])) {
-          rows.push(m("tr", [m("th", p), m("td", contextToTable(obj[p]))]));
-        } else {
-          rows.push(
-            m("tr", [
-              m("th", p),
-              m("td", [labelType(obj[p]), contextToTable(obj[p])]),
-            ])
-          );
+        const { validity, errorText } = schemaValidity || {
+          validity: "Unrecognised",
+        };
+
+        return m(
+          "div.card.iglu",
+          { class: validity.toLowerCase() },
+          m(
+            "header.card-header",
+            m("span.card-header-title", obj.schema),
+            m("span.card-header-icon", "")
+          ),
+          m("div.card-content", m("table.table.is-fullwidth", children)),
+          m(
+            "footer.card-footer",
+            m(
+              "abbr.card-footer-item.validation",
+              {
+                onclick: () => {
+                  if (validity === "Unrecognised") {
+                    chrome.runtime.openOptionsPage();
+                  } else if (errorText) {
+                    copyToClipboard(errorText);
+                  }
+                },
+                title: errorText,
+              },
+              validity
+            ),
+            m("textarea.card-footer-item[readonly]", {
+              value: JSON.stringify(obj),
+            })
+          )
+        );
+      } else {
+        const nested = obj as { [f: string]: unknown };
+        for (p in nested) {
+          if (obj.hasOwnProperty(p)) {
+            if (hasMembers(nested[p])) {
+              children.push(
+                m("tr", [
+                  m("th", p),
+                  m("td", m(BeaconValue, { obj: nested[p], resolver })),
+                ])
+              );
+            } else {
+              children.push(
+                m("tr", [
+                  m("th", p),
+                  m("td", [
+                    labelType(nested[p]),
+                    m(BeaconValue, { obj: nested[p], resolver }),
+                  ]),
+                ])
+              );
+            }
+          }
         }
-      }
-    }
 
-    return m("table.table.is-fullwidth", rows);
-  }
+        return m("table.table.is-fullwidth", children);
+      }
+    },
+  };
 };
 
 const RowSet = () => {
@@ -200,20 +263,6 @@ const RowSet = () => {
       ),
   };
 };
-
-const toTable = ([setName, rows]: BeaconDetail) =>
-  m(
-    RowSet,
-    { setName },
-    rows.map(([name, val, classes]) =>
-      !/Custom Context|(Unstructured|Self-Describing) Event/.test(name)
-        ? m("tr", { class: classes }, [
-            m("th", name),
-            m("td", [labelType(val), contextToTable(val)]),
-          ])
-        : contextToTable(val)
-    )
-  );
 
 const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
   if (val === undefined || val === null || val === "") {
@@ -249,14 +298,10 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
   }
 };
 
-const formatBeacon = ({
-  appId,
-  name,
-  time,
-  collector,
-  method,
-  data,
-}: IBeaconDetails) =>
+const formatBeacon = (
+  { appId, name, time, collector, method, data }: IBeaconDetails,
+  resolver: Resolver
+) =>
   [
     m("div.level.box", [
       m(
@@ -287,9 +332,27 @@ const formatBeacon = ({
         m("div", [m("p.heading", "Method"), m("p.title", method)])
       ),
     ]),
-  ].concat(data.map(toTable));
+  ].concat(
+    data.map(([setName, rows]) =>
+      m(
+        RowSet,
+        { setName },
+        rows.map(([name, val, classes]) =>
+          !/Custom Context|(Unstructured|Self-Describing) Event/.test(name)
+            ? m("tr", { class: classes }, [
+                m("th", name),
+                m("td", [
+                  labelType(val),
+                  m(BeaconValue, { obj: val, resolver }),
+                ]),
+              ])
+            : m(BeaconValue, { obj: val, resolver })
+        )
+      )
+    )
+  );
 
 export const Beacon = {
-  view: ({ attrs: { activeBeacon } }: Vnode<IBeacon>) =>
-    activeBeacon && formatBeacon(parseBeacon(activeBeacon)),
+  view: ({ attrs: { activeBeacon, resolver } }: Vnode<IBeacon>) =>
+    activeBeacon && formatBeacon(parseBeacon(activeBeacon), resolver),
 };
