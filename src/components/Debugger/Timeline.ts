@@ -1,11 +1,10 @@
 import { Entry } from "har-format";
 import { default as m, Vnode } from "mithril";
 import { trackerAnalytics } from "../../ts/analytics";
-import { IgluSchema, Resolver } from "../../ts/iglu";
+import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
 import { b64d, hash, tryb64 } from "../../ts/util";
-import { validate } from "../../ts/validator";
 
 const COLLECTOR_COLOURS = [
   "turquoise",
@@ -96,58 +95,93 @@ const nameEvent = (params: Map<string, string>): string => {
   }
 };
 
-const validateEvent = (params: Map<string, string>): BeaconValidity => {
-  let unrec = false;
-  let valid = true;
-  const toValidate: [string, object][] = [];
+const validationCache = new Map<string, BeaconValidity>();
+const validateEvent = (
+  id: string,
+  params: Map<string, string>,
+  resolver: Resolver
+) => {
+  type SDJ = { schema: IgluUri; data: object | SDJ[] };
+
+  if (validationCache.has(id)) {
+    return validationCache.get(id)!;
+  } else {
+    validationCache.set(id, "Unrecognised");
+  }
 
   const ctxKeys = ["cx", "co"];
   const ueKeys = ["ue_pr", "ue_px"];
   const validatableKeys = ctxKeys.concat(ueKeys);
 
+  const validate = (
+    schema: IgluSchema | null,
+    data: SDJ["data"]
+  ): Promise<BeaconValidity> =>
+    schema
+      ? resolver
+          .resolve(schema)
+          .then((res) =>
+            Promise.resolve(res.validate(data).valid ? "Valid" : "Invalid")
+          )
+      : Promise.resolve("Invalid");
+  const validations: Promise<BeaconValidity>[] = [];
   validatableKeys.forEach((key) => {
     const payload = params.get(key);
     if (!payload) return;
-    let sdj;
+
+    let json: unknown;
+    let schema: IgluSchema | null;
 
     try {
-      sdj = JSON.parse(tryb64(payload));
+      json = JSON.parse(tryb64(payload));
     } catch (e) {
       console.log(e);
     }
 
     if (
-      typeof sdj === "object" &&
-      sdj !== null &&
-      sdj.hasOwnProperty("schema") &&
-      sdj.hasOwnProperty("data")
+      typeof json === "object" &&
+      json !== null &&
+      "schema" in json &&
+      "data" in json
     ) {
-      const schema = IgluSchema.fromUri(sdj.schema);
-      toValidate.push([sdj.schema, sdj.data]);
+      const sdj = json as SDJ;
+      schema = IgluSchema.fromUri(sdj.schema);
+      validations.push(validate(schema, sdj.data));
 
       if (ueKeys.includes(key)) {
-        toValidate.push([sdj.data.schema, sdj.data.data]);
+        schema = IgluSchema.fromUri((sdj.data as SDJ).schema);
+        validations.push(validate(schema, (sdj.data as SDJ).data));
+      } else if (Array.isArray(sdj.data)) {
+        sdj.data.forEach((ctx: SDJ) => {
+          schema = IgluSchema.fromUri(ctx.schema);
+          validations.push(validate(schema, ctx.data));
+        });
       } else {
-        toValidate.push(
-          ...sdj.data.map((c: { schema: string; data: object }) => [
-            c.schema,
-            c.data,
-          ])
-        );
+        console.error("Expected Contexts SDJ to contain Array data");
+        validations.push(Promise.resolve("Invalid"));
       }
     } else {
-      unrec = true;
-      valid = false;
+      validations.push(Promise.resolve("Invalid"));
     }
   });
 
-  toValidate.forEach(([schema, data]) => {
-    const status = validate(schema, data);
-    unrec = unrec || status.location === null;
-    valid = valid && status.valid;
+  Promise.all(validations).then((results) => {
+    let unrec = false;
+    let valid = true;
+
+    for (const result of results) {
+      unrec = unrec || result === "Unrecognised";
+      valid = valid && result === "Valid";
+    }
+
+    validationCache.set(
+      id,
+      unrec ? "Unrecognised" : valid ? "Valid" : "Invalid"
+    );
+    m.redraw();
   });
 
-  return valid ? "Valid" : unrec ? "Unrecognised" : "Invalid";
+  return validationCache.get(id)!;
 };
 
 const summariseBeacons = (
@@ -173,7 +207,7 @@ const summariseBeacons = (
       time: new Date(
         parseInt(req.get("stm") || req.get("dtm") || "", 10) || +new Date()
       ).toJSON(),
-      validity: validateEvent(req),
+      validity: validateEvent(`#${id}-${i}`, req, resolver),
     };
 
     trackerAnalytics(collector, result.page, result.appId);
