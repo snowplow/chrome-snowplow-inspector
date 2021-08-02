@@ -1,5 +1,10 @@
-import { default as m, redraw, Vnode } from "mithril";
-import { Registry, ResolvedIgluSchema, Resolver } from "../../ts/iglu";
+import { default as m, Vnode } from "mithril";
+import {
+  Registry,
+  IgluSchema,
+  ResolvedIgluSchema,
+  Resolver,
+} from "../../ts/iglu";
 import { sorted } from "../../ts/util";
 
 interface SchemaDirectory {
@@ -15,7 +20,7 @@ interface NameDirectory {
 }
 
 interface VersionDirectory {
-  [version: string]: ResolvedIgluSchema[];
+  [version: string]: IgluSchema[];
 }
 
 type DirectoryAttrs = {
@@ -24,25 +29,20 @@ type DirectoryAttrs = {
   selections: Registry[];
 };
 
-const catalog: ResolvedIgluSchema[] = [];
+const catalog: (IgluSchema | ResolvedIgluSchema)[] = [];
 
 export const Directory = {
-  oninit: (vnode: Vnode<DirectoryAttrs>) => {
-    catalog.length = 0;
-    const { resolver } = vnode.attrs;
-    resolver.walk().then((discovered) =>
-      Promise.all(
-        discovered.map((s) =>
-          vnode.attrs.resolver
-            .resolve(s)
-            .then((res: ResolvedIgluSchema) => {
-              catalog.push(res);
-              redraw();
-            })
-            .catch((reason) => console.log("resolving", s, "failed", reason))
-        )
-      )
-    );
+  oninit: ({ attrs: { resolver } }: Vnode<DirectoryAttrs>) => {
+    resolver.walk().then((discovered) => {
+      catalog.length = 0;
+      discovered.map((ds, i) => {
+        catalog[i] = ds;
+        resolver.resolve(ds).then((res) => {
+          catalog[i] = res;
+          m.redraw();
+        });
+      });
+    });
   },
   view: (vnode: Vnode<DirectoryAttrs>) => {
     const { search, selections } = vnode.attrs;
@@ -50,7 +50,10 @@ export const Directory = {
       selections.length || search
         ? catalog.filter((s) => {
             const filterHit =
-              !selections.length || selections.includes(s.registry);
+              !selections.length ||
+              (s instanceof ResolvedIgluSchema
+                ? selections.includes(s.registry)
+                : false);
             const searchHit = !search || s.like(search);
             return filterHit && searchHit;
           })
@@ -93,7 +96,10 @@ export const Directory = {
                         m(
                           "ul.registries",
                           deployments.map((d) => {
-                            const json = JSON.stringify(d.data, null, 4);
+                            const json =
+                              d instanceof ResolvedIgluSchema
+                                ? JSON.stringify(d.data, null, 4)
+                                : d.uri();
                             return m(
                               "li",
                               m(

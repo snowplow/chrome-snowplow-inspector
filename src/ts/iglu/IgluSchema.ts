@@ -19,6 +19,8 @@ export type IgluUri =
   `iglu:${IgluSchema["vendor"]}/${IgluSchema["name"]}/${IgluSchema["format"]}/${IgluSchema["version"]}`;
 
 export class IgluSchema {
+  public searchIndex?: string;
+
   constructor(
     readonly vendor: string,
     readonly name: string,
@@ -62,11 +64,30 @@ export class IgluSchema {
   uri(): IgluUri {
     return `iglu:${this.vendor}/${this.name}/${this.format}/${this.version}`;
   }
+
+  toString(): IgluUri {
+    return this.uri();
+  }
+
+  protected static buildSearchIndex(schema: IgluSchema): string {
+    const fields = new Set<string>([
+      schema.name,
+      schema.vendor,
+      schema.version,
+    ]);
+
+    return Array.from(fields).join("\n");
+  }
+
+  like(re: RegExp): boolean {
+    if (!this.searchIndex)
+      this.searchIndex = Object.getPrototypeOf(this).buildSearchIndex(this);
+
+    return re.test(this.searchIndex!);
+  }
 }
 
 export class ResolvedIgluSchema extends IgluSchema {
-  public searchIndex?: string;
-
   constructor(
     readonly registry: Registry,
     readonly self: IgluSchema,
@@ -75,12 +96,9 @@ export class ResolvedIgluSchema extends IgluSchema {
     super(self.vendor, self.name, self.format, self.version);
   }
 
-  private static buildSearchIndex(schema: ResolvedIgluSchema): string {
-    const fields = new Set<string>([
-      schema.name,
-      schema.vendor,
-      schema.version,
-    ]);
+  protected static buildSearchIndex(schema: ResolvedIgluSchema): string {
+    const base = super.buildSearchIndex(schema);
+    const fields = new Set<string>([base]);
 
     let data: Schema | undefined;
     const stack: typeof data[] = [data];
@@ -117,11 +135,5 @@ export class ResolvedIgluSchema extends IgluSchema {
 
   validate(data: unknown): ValidatorResult {
     return this.registry.validator.validate(data, this.data);
-  }
-
-  like(re: RegExp): boolean {
-    if (!this.searchIndex)
-      this.searchIndex = ResolvedIgluSchema.buildSearchIndex(this);
-    return re.test(this.searchIndex);
   }
 }
