@@ -4,6 +4,7 @@ import { Schema } from "jsonschema";
 import { Resolver } from "./iglu";
 
 export type Application = "debugger" | "schemaManager";
+export type Modal = "badRows" | "stream";
 
 export type RegistryStatus = "OK" | "UNHEALTHY";
 
@@ -73,7 +74,7 @@ export interface IToolbar {
   addRequests: (requests: Entry[]) => void;
   changeApp: (app: Application) => void;
   clearRequests: () => void;
-  setModal: (modalName: string) => void;
+  setModal: (modalName?: Modal) => void;
 }
 
 export interface IRowSet {
@@ -95,8 +96,7 @@ export interface IBeacon {
 
 export interface IBadRowsSummary {
   addRequests: (requests: Entry[]) => void;
-  modal?: string;
-  setModal: (modalName?: string) => void;
+  setModal: (modalName?: Modal) => void;
 }
 
 export interface ITomcatImport {

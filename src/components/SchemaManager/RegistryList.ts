@@ -38,6 +38,7 @@ export const RegistryList = (
               m("option[selected][disabled]", "Registries..."),
               m("option", "Add"),
               m("option", "Edit"),
+              m("option", "Import"),
               m("option", "Remove"),
             ]
           ),

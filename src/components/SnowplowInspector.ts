@@ -1,7 +1,7 @@
 import { Entry } from "har-format";
 import { redraw, default as m } from "mithril";
 
-import { Application } from "../ts/types";
+import { Application, Modal } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
 
 import { BadRowsModal, LiveStreamModal } from "./Modals";
@@ -10,15 +10,11 @@ import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
 
 export const SnowplowInspector = () => {
-  let modal: string | undefined;
   let application: Application = "debugger";
+  let activeModal: Modal | undefined = undefined;
   const resolver = new Resolver();
 
   const events: Entry[] = [];
-
-  function setModal(modalName?: string) {
-    modal = modalName;
-  }
 
   function addRequests(reqs: Entry[]) {
     if (!reqs.length) return;
@@ -37,10 +33,13 @@ export const SnowplowInspector = () => {
   function changeApp(app: Application) {
     application = app;
   }
+  function changeModal(modalName?: Modal) {
+    activeModal = modalName;
+  }
 
   return {
     view: () => {
-      let app;
+      let app, modal;
       switch (application) {
         case "debugger":
           app = m(Debugger, { addRequests, events, resolver });
@@ -50,25 +49,33 @@ export const SnowplowInspector = () => {
           break;
       }
 
+      switch (activeModal) {
+        case "badRows":
+          modal = m(BadRowsModal, {
+            addRequests,
+            setModal: changeModal,
+          });
+          break;
+        case "stream":
+          modal = m(LiveStreamModal, {
+            addRequests,
+            setModal: changeModal,
+          });
+          break;
+        default:
+          modal = undefined;
+      }
+
       return [
         m(Toolbar, {
           addRequests,
           changeApp,
           application,
           clearRequests: () => (events.length = 0),
-          setModal,
+          setModal: changeModal,
         }),
         app,
-        m(BadRowsModal, {
-          addRequests,
-          modal,
-          setModal,
-        }),
-        m(LiveStreamModal, {
-          addRequests,
-          modal,
-          setModal,
-        }),
+        modal,
       ];
     },
   };
