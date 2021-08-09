@@ -34,7 +34,7 @@ const catalog: (IgluSchema | ResolvedIgluSchema)[] = [];
 export const Directory = {
   oninit: ({ attrs: { resolver } }: Vnode<DirectoryAttrs>) => {
     resolver.walk().then((discovered) => {
-      catalog.length = 0;
+      catalog.splice(0);
       discovered.map((ds, i) => {
         catalog[i] = ds;
         resolver.resolve(ds).then((res) => {
