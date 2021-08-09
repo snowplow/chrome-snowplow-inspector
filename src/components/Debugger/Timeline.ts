@@ -221,28 +221,16 @@ const summariseBeacons = (
 };
 
 const getPageUrl = (entries: Entry[]) => {
-  const urls = entries.reduce((ac, cv) => {
-    const page = cv.request.headers.filter((x) => /referr?er/i.test(x.name))[0];
-    if (page) {
-      const pageVal = page.value;
-      ac[pageVal] = (ac[pageVal] || 0) + 1;
-    }
-    return ac;
-  }, {} as { [referrer: string]: number });
-
-  let url: string | null = null;
-  let max = -1;
-  for (const p in urls) {
-    if (urls[p] >= max) {
-      (url = p), (max = urls[p]);
-    }
+  let page: Entry["request"]["headers"][number] | undefined;
+  entries.find(
+    (entry) =>
+      (page = entry.request.headers.find((x) => /referr?er/i.test(x.name)))
+  );
+  if (page) {
+    return new URL(page.value);
   }
 
-  if (url !== null) {
-    return new URL(url);
-  }
-
-  return url;
+  return null;
 };
 
 const extractRequests = (
@@ -328,13 +316,14 @@ export const Timeline = {
   view: ({
     attrs: { filter, isActive, requests, resolver, setActive },
   }: Vnode<ITimeline>) => {
-    const url = getPageUrl(requests);
+    const fallbackUrl = getPageUrl(requests);
     let first: IBeaconSummary | undefined = undefined;
     let active = false;
     const beacons = requests.map((x, i) => {
       const summary = summariseBeacons(x, i, resolver, filter);
-      if (!first && summary.length) first = summary[0];
-      return summary.map((y) =>
+      first = first || summary[0];
+      return summary.map((y): [URL | null, Vnode] => [
+        y.page ? new URL(y.page) : fallbackUrl,
         m(
           "a.panel-block",
           {
@@ -362,18 +351,33 @@ export const Timeline = {
             "span.panel-icon.validity",
             y.validity === "Invalid" ? "\u26d4\ufe0f" : ""
           )
-        )
-      );
+        ),
+      ]);
     });
     if (!active && first) setActive(first);
-    return m(
-      "div.panel",
-      m(
-        "p.panel-heading",
-        { title: url && url.href },
-        url ? url.pathname.slice(0, 34) : "Current Page"
-      ),
-      Array.prototype.concat.apply([], beacons)
-    );
+    return beacons
+      .reduce(
+        (acc, batch) =>
+          batch.reduce((acc, [url, beacon]) => {
+            const key = url ? url.pathname.slice(0, 34) : "Current Page";
+            const tail = acc.pop() || [key, []];
+            if (tail[0] === key) {
+              tail[1].push(beacon);
+              acc.push(tail);
+            } else {
+              acc.push(tail);
+              acc.push([key, [beacon]]);
+            }
+            return acc;
+          }, acc),
+        [] as [string, Vnode[]][]
+      )
+      .map(([pageName, beacons]) =>
+        m(
+          "div.panel",
+          m("p.panel-heading", { title: pageName }, pageName),
+          beacons
+        )
+      );
   },
 };
