@@ -25,6 +25,38 @@ export const RegistryList = (
             },
             "Clear Selection"
           ),
+          m(
+            "select.registries",
+            {
+              onchange: (event: InputEvent) => {
+                if (event.target instanceof HTMLSelectElement) {
+                  event.target.selectedIndex = 0;
+                }
+              },
+            },
+            [
+              m("option[selected][disabled]", "Registries..."),
+              m("option", "Add"),
+              m("option", "Edit"),
+              m("option", "Remove"),
+            ]
+          ),
+          m(
+            "select.schemas",
+            {
+              onchange: (event: InputEvent) => {
+                if (event.target instanceof HTMLSelectElement) {
+                  event.target.selectedIndex = 0;
+                }
+              },
+            },
+            [
+              m("option[selected][disabled]", "Schemas..."),
+              m("option", "Add"),
+              m("option", "Edit"),
+              m("option", "Remove"),
+            ]
+          ),
         ])
       );
     },
