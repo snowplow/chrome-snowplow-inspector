@@ -3,30 +3,37 @@ import { Registry, Resolver } from "../../ts/iglu";
 
 export const RegistryList = (
   vnode: Vnode<{
+    clearSearch: () => void;
     resolver: Resolver;
-    selectRegistries: (selected: Registry[]) => void;
+    filterRegistries: (selected: Registry[]) => void;
   }>
 ) => {
-  const { resolver, ...rest } = vnode.attrs;
-  let shouldClear = false;
-  const setClear = (should: boolean) => (shouldClear = should);
+  const { resolver, clearSearch, filterRegistries, ...rest } = vnode.attrs;
+  let selectedRegistries: Registry[] = [];
+
+  const setRegistries = (registries: Registry[]) => {
+    selectedRegistries = registries;
+    filterRegistries(selectedRegistries);
+  };
+
   return {
     view: () => {
       return m(
         "div.registries.column.is-narrow",
-        m(resolver, { shouldClear, setClear, ...rest }),
+        m(resolver, { setRegistries, registries: selectedRegistries, ...rest }),
         m("menu", [
           m(
-            "button.clear",
+            "button.button.clear",
             {
               onclick: () => {
-                shouldClear = true;
+                setRegistries([]);
+                clearSearch();
               },
             },
-            "Clear Selection"
+            "Clear Filters"
           ),
           m(
-            "select.registries",
+            "select.button.registries",
             {
               onchange: (event: InputEvent) => {
                 if (event.target instanceof HTMLSelectElement) {
@@ -43,7 +50,7 @@ export const RegistryList = (
             ]
           ),
           m(
-            "select.schemas",
+            "select.button.schemas",
             {
               onchange: (event: InputEvent) => {
                 if (event.target instanceof HTMLSelectElement) {
@@ -54,8 +61,7 @@ export const RegistryList = (
             [
               m("option[selected][disabled]", "Schemas..."),
               m("option", "Add"),
-              m("option", "Edit"),
-              m("option", "Remove"),
+              m("option", "Compare"),
             ]
           ),
         ])

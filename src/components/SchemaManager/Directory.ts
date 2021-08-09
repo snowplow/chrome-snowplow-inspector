@@ -73,7 +73,7 @@ export const Directory = {
     );
 
     return m(
-      "div.directory.column",
+      "div.directory.column.box",
       vnode.children,
       Object.entries(directory).map(([vendor, schemas]) => {
         return m(

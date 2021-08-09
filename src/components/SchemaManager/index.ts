@@ -16,8 +16,11 @@ export const SchemaManager = (vnode: Vnode<{ resolver: Resolver }>) => {
     selections: [],
   };
 
-  const selectRegistries = (selected: Registry[]) =>
+  const filterRegistries = (selected: Registry[]) =>
     (filters.selections = selected);
+
+  const clearSearch = () => (filters.search = undefined);
+
   return {
     view: () =>
       m(
@@ -45,7 +48,7 @@ export const SchemaManager = (vnode: Vnode<{ resolver: Resolver }>) => {
             },
           })
         ),
-        m(RegistryList, { selectRegistries, ...vnode.attrs })
+        m(RegistryList, { filterRegistries, clearSearch, ...vnode.attrs })
       ),
   };
 };
