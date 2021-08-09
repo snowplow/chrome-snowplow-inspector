@@ -200,23 +200,22 @@ export class Resolver extends Registry {
 
   view(
     vnode: Vnode<{
-      selectRegistries: (selected: Registry[]) => void;
-      shouldClear: boolean;
-      setClear: (_: boolean) => void;
+      setRegistries: (selected: Registry[]) => void;
+      registries: Registry[];
     }>
   ) {
     return m(
       "select[multiple]",
       {
         onupdate: (vnode) => {
-          if (vnode.attrs.shouldClear) {
+          if (!vnode.attrs.registries.length) {
+            const sel = vnode.dom as HTMLSelectElement;
             if (
               typeof vnode.tag === "string" &&
-              vnode.tag.toLowerCase() === "select"
+              vnode.tag.toLowerCase() === "select" &&
+              sel.selectedIndex !== -1
             ) {
-              (vnode.dom as HTMLSelectElement).selectedIndex = -1;
-              vnode.attrs.selectRegistries([]);
-              vnode.attrs.setClear(false);
+              sel.selectedIndex = -1;
               m.redraw();
             }
           }
@@ -224,8 +223,7 @@ export class Resolver extends Registry {
         onchange: (event: Event) => {
           if (!event.target) return;
           const el = event.target as HTMLSelectElement;
-          const opts = Array.from(el.selectedOptions);
-          vnode.attrs.selectRegistries(
+          vnode.attrs.setRegistries(
             Array.from(el.selectedOptions)
               .map((opt) =>
                 this.registries.findIndex((r) => r.id === opt.value)

@@ -5,7 +5,7 @@ import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 
 export class LocalRegistry extends Registry {
   private readonly defaultOptions: Pick<ExtensionOptions, "localSchemas">;
-  private readonly manifest: Map<IgluSchema, ResolvedIgluSchema> = new Map();
+  private readonly manifest: Map<IgluUri, ResolvedIgluSchema> = new Map();
 
   constructor(spec: RegistrySpec) {
     super(spec);
@@ -21,7 +21,7 @@ export class LocalRegistry extends Registry {
       return s ? this.resolve(s) : Promise.reject();
     }
 
-    const r = this.manifest.get(schema);
+    const r = this.manifest.get(schema.uri());
     return r ? Promise.resolve(r) : Promise.reject();
   }
 
@@ -41,11 +41,16 @@ export class LocalRegistry extends Registry {
                 : { [this.spec.name]: [] };
             (ls[this.spec.name] || []).forEach(
               (s: Omit<ResolvedIgluSchema, "registry">) =>
-                this.manifest.set(s, Object.assign(s, { registry: this }))
+                this.manifest.set(
+                  s.uri(),
+                  Object.assign(Object.create(ResolvedIgluSchema), s, {
+                    registry: this,
+                  })
+                )
             );
           }
 
-          fulfil(Array.from(this.manifest.keys()));
+          fulfil(Array.from(this.manifest.values()));
         }
       )
     );

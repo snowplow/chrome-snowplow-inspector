@@ -69,7 +69,7 @@ export class IgluSchema {
     return this.uri();
   }
 
-  protected static buildSearchIndex(schema: IgluSchema): string {
+  protected buildSearchIndex(schema: IgluSchema): string {
     const fields = new Set<string>([
       schema.name,
       schema.vendor,
@@ -80,8 +80,7 @@ export class IgluSchema {
   }
 
   like(re: RegExp): boolean {
-    if (!this.searchIndex)
-      this.searchIndex = Object.getPrototypeOf(this).buildSearchIndex(this);
+    if (!this.searchIndex) this.searchIndex = this.buildSearchIndex(this);
 
     return re.test(this.searchIndex!);
   }
@@ -96,7 +95,7 @@ export class ResolvedIgluSchema extends IgluSchema {
     super(self.vendor, self.name, self.format, self.version);
   }
 
-  protected static buildSearchIndex(schema: ResolvedIgluSchema): string {
+  protected buildSearchIndex(schema: ResolvedIgluSchema): string {
     const base = super.buildSearchIndex(schema);
     const fields = new Set<string>([base]);
 

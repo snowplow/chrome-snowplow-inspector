@@ -115,13 +115,13 @@ $colors: (
   }
 }
 
+.directory.column {
+  overflow-y: auto;
+}
+
 .directory details[open] > details {
   padding-left: 1em;
   border-width: 3px;
-}
-
-.directory details > summary {
-  margin-left: -1em;
 }
 
 .directory summary {
@@ -140,8 +140,8 @@ $colors: (
   flex-direction: column;
 }
 
-.registries select,
-.registries select:focus-visible {
+.registries > select,
+.registries > select:focus-visible {
   border: 0;
   outline: 0;
   overflow-y: auto;
@@ -150,6 +150,11 @@ $colors: (
 
 .registries .registry {
   padding: 1em 0;
+}
+
+.registries menu {
+  display: flex;
+  justify-content: space-around;
 }
 
 .registry.waiting {
