@@ -7,7 +7,7 @@ import { RegistrySpec } from "../../types";
 const REQUEST_TIMEOUT_MS = 5000;
 
 export class StaticRegistry extends Registry {
-  private cache: Map<IgluSchema, ResolvedIgluSchema> = new Map();
+  private cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
   private readonly base: URL;
   private readonly manifest?: URL;
 
@@ -34,8 +34,8 @@ export class StaticRegistry extends Registry {
   }
 
   resolve(schema: IgluSchema) {
-    if (this.cache.has(schema)) {
-      return Promise.resolve(this.cache.get(schema)!);
+    if (this.cache.has(schema.uri())) {
+      return Promise.resolve(this.cache.get(schema.uri())!);
     } else {
       this.lastStatus = "WAITING";
       m.redraw();
@@ -45,7 +45,7 @@ export class StaticRegistry extends Registry {
           const resolved = schema.resolve(result, this);
           this.lastStatus = "OK";
           if (resolved) {
-            this.cache.set(schema, resolved);
+            this.cache.set(schema.uri(), resolved);
             return Promise.resolve(resolved);
           } else return Promise.reject();
         });
