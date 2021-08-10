@@ -1,11 +1,17 @@
-import { default as m, Vnode } from "mithril";
-import { IBadRowsSummary } from "../../ts/types";
+import { Entry } from "har-format";
+import { default as m, Component } from "mithril";
+
 import { badToRequests } from "../../ts/util";
+import { ModalOptions } from ".";
 
 let badRows: string[] = [];
 
-export const BadRowsModal = {
-  view: (vnode: Vnode<IBadRowsSummary>) =>
+export interface BadRowsOptions extends ModalOptions {
+  addRequests: (reqs: Entry[]) => void;
+}
+
+export const BadRowsModal: Component<BadRowsOptions, {}> = {
+  view: (vnode) =>
     m("div.modal.is-active", [
       m("div.modal-background"),
       m("div.modal-card", [
