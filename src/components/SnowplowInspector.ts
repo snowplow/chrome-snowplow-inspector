@@ -1,10 +1,10 @@
 import { Entry } from "har-format";
-import { redraw, default as m } from "mithril";
+import { redraw, default as m, Vnode } from "mithril";
 
-import { Application, Modal } from "../ts/types";
+import { Application } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
 
-import { BadRowsModal, LiveStreamModal } from "./Modals";
+import { modals, Modal, ModalOptions } from "./Modals";
 import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
@@ -33,13 +33,13 @@ export const SnowplowInspector = () => {
   function changeApp(app: Application) {
     application = app;
   }
-  function changeModal(modalName?: Modal) {
+  function setModal(modalName?: Modal, modalOpts?: ModalOptions) {
     activeModal = modalName;
   }
 
   return {
     view: () => {
-      let app, modal;
+      let app: Vnode<any>, modal: Vnode<any> | undefined;
       switch (application) {
         case "debugger":
           app = m(Debugger, { addRequests, events, resolver });
@@ -49,21 +49,12 @@ export const SnowplowInspector = () => {
           break;
       }
 
-      switch (activeModal) {
-        case "badRows":
-          modal = m(BadRowsModal, {
-            addRequests,
-            setModal: changeModal,
-          });
-          break;
-        case "stream":
-          modal = m(LiveStreamModal, {
-            addRequests,
-            setModal: changeModal,
-          });
-          break;
-        default:
-          modal = undefined;
+      if (activeModal) {
+        modal = m(modals[activeModal], {
+          kind: activeModal,
+          addRequests,
+          setModal,
+        });
       }
 
       return [
@@ -72,7 +63,7 @@ export const SnowplowInspector = () => {
           changeApp,
           application,
           clearRequests: () => (events.length = 0),
-          setModal: changeModal,
+          setModal,
         }),
         app,
         modal,

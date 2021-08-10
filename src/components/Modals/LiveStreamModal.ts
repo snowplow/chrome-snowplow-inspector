@@ -1,12 +1,18 @@
 import { SearchResponse } from "elasticsearch";
-import { default as m, request, Vnode } from "mithril";
-import { IBadRowsSummary } from "../../ts/types";
+import { Entry } from "har-format";
+import { default as m, request, Component } from "mithril";
+
 import { esToRequests } from "../../ts/util";
+import { ModalOptions } from ".";
 
 let streamLock: number = -1;
 
-export const LiveStreamModal = {
-  view: (vnode: Vnode<IBadRowsSummary>) =>
+export interface LiveStreamOptions extends ModalOptions {
+  addRequests: (reqs: Entry[]) => void;
+}
+
+export const LiveStreamModal: Component<LiveStreamOptions> = {
+  view: (vnode) =>
     m("div.modal.is-active", [
       m("div.modal-background"),
       m(

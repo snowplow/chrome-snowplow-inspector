@@ -2,9 +2,9 @@ import { Entry } from "har-format";
 import { Schema } from "jsonschema";
 
 import { Resolver } from "./iglu";
+import { Modal } from "../components/Modals";
 
 export type Application = "debugger" | "schemaManager";
-export type Modal = "badRows" | "stream";
 
 export type RegistryStatus = "OK" | "UNHEALTHY";
 
