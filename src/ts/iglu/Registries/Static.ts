@@ -47,7 +47,11 @@ export class StaticRegistry extends Registry {
 
     return fetch(new URL(schemaPath, this.base).href, opts).then((resp) => {
       clearTimeout(id);
-      return resp.ok ? resp : Promise.reject("HTTP_ERROR");
+      return resp.ok
+        ? resp
+        : resp.status === 404
+        ? Promise.reject("NOT_FOUND")
+        : Promise.reject("HTTP_ERROR");
     });
   }
 
@@ -55,8 +59,6 @@ export class StaticRegistry extends Registry {
     if (this.cache.has(schema.uri())) {
       return Promise.resolve(this.cache.get(schema.uri())!);
     } else {
-      this.lastStatus = "WAITING";
-      m.redraw();
       return this.fetch(schema.uri().replace("iglu:", "schemas/"))
         .then((res) => res.json())
         .then((result) => {
@@ -66,6 +68,13 @@ export class StaticRegistry extends Registry {
             this.cache.set(schema.uri(), resolved);
             return Promise.resolve(resolved);
           } else return Promise.reject();
+        })
+        .catch((reason) => {
+          if (reason !== "NOT_FOUND") {
+            this.lastStatus = "UNHEALTHY";
+          }
+
+          return Promise.reject(reason);
         });
     }
   }
