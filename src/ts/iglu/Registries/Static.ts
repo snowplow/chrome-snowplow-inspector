@@ -70,33 +70,36 @@ export class StaticRegistry extends Registry {
             } else {
               for (const p of fileListProps) {
                 if (man.hasOwnProperty(p) && Array.isArray(man[p])) {
-                  list.push(...man[p]);
+                  list = list.concat(man[p]);
                 }
               }
             }
 
-            return list
-              .filter(
-                (val: unknown): val is string | { path: string } =>
-                  typeof val === "string" ||
-                  (typeof val === "object" &&
-                    !!val &&
-                    typeof (val as any)["path"] === "string")
-              )
-              .map((almostSchema): IgluUri | null => {
-                const maybeUri =
-                  typeof almostSchema === "string"
-                    ? almostSchema
-                    : almostSchema.path;
-                const schemaparts =
-                  /(([^\/+])\/([^\/+])\/jsonschema\/([\d+]-[\d+]-[\d+]))(\.json(schema)?)?$/.exec(
-                    maybeUri
-                  );
-                return schemaparts && (("iglu:" + schemaparts[1]) as IgluUri);
-              })
-              .map((uri) => uri && IgluSchema.fromUri(uri))
-              .filter((schema): schema is IgluSchema => schema !== null);
-          } else return [];
+            return Promise.resolve(
+              list
+                .filter(
+                  (val: unknown): val is string | { path: string } =>
+                    typeof val === "string" ||
+                    (typeof val === "object" &&
+                      !!val &&
+                      objHasProperty(val, "path") &&
+                      typeof val["path"] === "string")
+                )
+                .map((almostSchema): IgluUri | null => {
+                  const maybeUri =
+                    typeof almostSchema === "string"
+                      ? almostSchema
+                      : almostSchema.path;
+                  const schemaparts =
+                    /(([^\/]+)\/([^\/]+)\/jsonschema\/([\d+]-[\d+]-[\d+]))(\.json(schema)?)?$/i.exec(
+                      maybeUri
+                    );
+                  return schemaparts && (("iglu:" + schemaparts[1]) as IgluUri);
+                })
+                .map((uri) => uri && IgluSchema.fromUri(uri))
+                .filter((schema): schema is IgluSchema => schema !== null)
+            );
+          } else return Promise.resolve([]);
         });
     } else return Promise.resolve([]);
   }
