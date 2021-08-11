@@ -1,6 +1,6 @@
 import { default as m, Vnode } from "mithril";
 
-import { build } from "./Registries";
+import { buildRegistry } from ".";
 import { Registry } from "./Registries/Registry";
 import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
 import { ExtensionOptions, RegistrySpec } from "../types";
@@ -31,9 +31,9 @@ export class Resolver extends Registry {
         registries: DEFAULT_REGISTRIES.map((r) => JSON.stringify(r)),
         repolist: [],
       },
-      (settings) => {
-        for (const repo of settings.registries as string[]) {
-          this.registries.push(build(JSON.parse(repo)));
+      ({ registries, repolist }) => {
+        for (const repo of registries as string[]) {
+          this.registries.push(buildRegistry(JSON.parse(repo)));
         }
 
         // handle legacy repo settings
@@ -153,7 +153,7 @@ export class Resolver extends Registry {
       if (!handled) {
         if (/\/api$/i.test(legacy)) {
           migrated.push(
-            build({
+            buildRegistry({
               kind: "iglu",
               name: legacy,
               uri: uri.origin + uri.pathname,
@@ -162,7 +162,7 @@ export class Resolver extends Registry {
           );
         } else {
           migrated.push(
-            build({ kind: "static", name: uri.hostname, uri: uri.href })
+            buildRegistry({ kind: "static", name: uri.hostname, uri: uri.href })
           );
         }
       }
