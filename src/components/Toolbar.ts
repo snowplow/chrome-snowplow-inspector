@@ -2,7 +2,6 @@ import { Har } from "har-format";
 import { default as m, Vnode } from "mithril";
 import { landingUrl } from "../ts/analytics";
 import { IToolbar } from "../ts/types";
-import { clearCache } from "../ts/validator";
 
 const toolbarView = (vnode: Vnode<IToolbar>) => {
   let toolbar_view;
@@ -11,18 +10,13 @@ const toolbarView = (vnode: Vnode<IToolbar>) => {
       toolbar_view = [
         m(
           "a.button.is-outlined.is-small.control",
-          { onclick: () => vnode.attrs.changeApp("schemaManager") },
-          "Manage Schemas"
-        ),
-        m(
-          "a.button.is-outlined.is-small.control",
           { onclick: vnode.attrs.clearRequests },
           "Clear Events"
         ),
         m(
           "a.button.is-outlined.is-small.control",
-          { onclick: clearCache },
-          "Clear Schema Cache"
+          { onclick: () => vnode.attrs.changeApp("schemaManager") },
+          "Manage Schemas"
         ),
         m(
           "a.button.is-outlined.is-small.control",
@@ -77,7 +71,7 @@ const toolbarView = (vnode: Vnode<IToolbar>) => {
         m(
           "a.button.is-outlined.is-small.control",
           { onclick: () => vnode.attrs.changeApp("debugger") },
-          "Back to Debugger."
+          "Back to Debugger"
         ),
       ];
       break;
