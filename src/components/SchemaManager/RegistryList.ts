@@ -1,14 +1,23 @@
 import { default as m, Vnode } from "mithril";
 import { Registry, Resolver } from "../../ts/iglu";
 
+import { ModalSetter } from "../../components/Modals";
+
 export const RegistryList = (
   vnode: Vnode<{
     clearSearch: () => void;
     resolver: Resolver;
     filterRegistries: (selected: Registry[]) => void;
+    setModal: ModalSetter;
   }>
 ) => {
-  const { resolver, clearSearch, filterRegistries, ...rest } = vnode.attrs;
+  const {
+    resolver,
+    clearSearch,
+    filterRegistries,
+    setModal,
+    ...rest
+  } = vnode.attrs;
   let selectedRegistries: Registry[] = [];
 
   const setRegistries = (registries: Registry[]) => {

@@ -9,6 +9,11 @@ export const modals = {
 export type Modal = keyof typeof modals;
 
 export interface ModalOptions {
-  kind: Modal;
   setModal: (modal?: Modal, opts?: ModalOptions) => void;
+  [opt: string]: any;
 }
+
+export type ModalSetter = (
+  modal?: Modal,
+  opts?: Omit<ModalOptions, "setModal">
+) => void;
