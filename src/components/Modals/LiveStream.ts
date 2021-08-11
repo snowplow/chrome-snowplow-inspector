@@ -11,8 +11,8 @@ export interface LiveStreamOptions extends ModalOptions {
   addRequests: (reqs: Entry[]) => void;
 }
 
-export const LiveStreamModal: Component<LiveStreamOptions> = {
-  view: (vnode) =>
+export const LiveStream: Component<LiveStreamOptions> = {
+  view: ({ attrs: { setModal, addRequests } }) =>
     m("div.modal.is-active", [
       m("div.modal-background"),
       m(
@@ -59,9 +59,7 @@ export const LiveStreamModal: Component<LiveStreamOptions> = {
                 hits.forEach((x) => seenEvents.add(x._id));
 
                 if (hits.length) {
-                  vnode.attrs.addRequests(
-                    esToRequests(hits.map((x) => x._source))
-                  );
+                  addRequests(esToRequests(hits.map((x) => x._source)));
                 }
 
                 if (streamLock === timeoutId) {
@@ -71,14 +69,14 @@ export const LiveStreamModal: Component<LiveStreamOptions> = {
             }, 1000);
             streamLock = timeoutId;
 
-            vnode.attrs.setModal(undefined);
+            setModal();
           },
         },
         [
           m("header.modal-card-head", [
             m("p.modal-card-title", "Stream Live Data"),
             m("button.delete[type=reset]", {
-              onclick: () => vnode.attrs.setModal(undefined),
+              onclick: () => setModal(),
             }),
           ]),
           m("section.modal-card-body", [
