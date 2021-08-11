@@ -46,6 +46,11 @@ export const RegistryList = (
             {
               onchange: (event: InputEvent) => {
                 if (event.target instanceof HTMLSelectElement) {
+                  switch (event.target.value) {
+                    case "Import":
+                      setModal("importRegistries", { resolver });
+                      break;
+                  }
                   event.target.selectedIndex = 0;
                 }
               },
