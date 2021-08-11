@@ -27,13 +27,19 @@ export const SchemaManager = (
 
   const clearSearch = () => (filters.search = undefined);
 
+  let doUpdate = false;
+  const requestUpdate = (request?: boolean): boolean => {
+    if (typeof request === "undefined") return doUpdate;
+    return (doUpdate = request);
+  };
+
   return {
     view: () =>
       m(
         "section.schema-manager.columns.section",
         m(
           Directory,
-          { ...filters, ...vnode.attrs },
+          { ...filters, requestUpdate, ...vnode.attrs },
           m("input.filterPanel[search]", {
             placeholder: "Filter Pattern",
             title: "Regular expression to search schemas for",
@@ -54,7 +60,12 @@ export const SchemaManager = (
             },
           })
         ),
-        m(RegistryList, { filterRegistries, clearSearch, ...vnode.attrs })
+        m(RegistryList, {
+          filterRegistries,
+          clearSearch,
+          requestUpdate,
+          ...vnode.attrs,
+        })
       ),
   };
 };
