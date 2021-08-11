@@ -302,8 +302,13 @@ export class Resolver extends Registry {
   }
 
   persist() {
-    return chrome.storage.sync.set({
-      registries: this.registries.map((r) => JSON.stringify(r)),
-    });
+    return new Promise<void>((fulfil) =>
+      chrome.storage.sync.set(
+        {
+          registries: this.registries.map((r) => JSON.stringify(r)),
+        },
+        fulfil
+      )
+    );
   }
 }

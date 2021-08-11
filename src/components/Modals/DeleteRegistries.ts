@@ -40,7 +40,7 @@ export const DeleteRegistries: Component<DeleteRegistriesOptions, {}> = {
                 const toRemove = registries.length;
                 const removed = resolver.remove(...registries).length;
                 console.assert(toRemove === removed);
-                setModal();
+                resolver.persist().then(() => setModal());
               },
             },
             "Yes, delete"
