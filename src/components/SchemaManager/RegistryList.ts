@@ -2,6 +2,7 @@ import { default as m, Vnode } from "mithril";
 import { Registry, Resolver } from "../../ts/iglu";
 
 import { ModalSetter } from "../../components/Modals";
+import { LocalRegistry } from "../../ts/iglu/Registries/Local";
 
 export const RegistryList = (
   vnode: Vnode<{
@@ -47,6 +48,23 @@ export const RegistryList = (
               onchange: (event: InputEvent) => {
                 if (event.target instanceof HTMLSelectElement) {
                   switch (event.target.value) {
+                    case "Edit":
+                      if (selectedRegistries)
+                        setModal("editRegistries", {
+                          registries: selectedRegistries,
+                          resolver,
+                        });
+                      break;
+                    case "Add":
+                      const newReg = new LocalRegistry({
+                        kind: "local",
+                        name: "My New Registry",
+                      });
+                      setModal("editRegistries", {
+                        registries: [newReg],
+                        resolver,
+                      });
+                      break;
                     case "Remove":
                       if (selectedRegistries)
                         setModal("deleteRegistries", {

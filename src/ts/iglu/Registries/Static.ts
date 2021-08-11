@@ -3,17 +3,35 @@ import { default as m } from "mithril";
 import { Registry } from "./Registry";
 import { IgluSchema, IgluUri, ResolvedIgluSchema } from "../IgluSchema";
 import { RegistrySpec } from "../../types";
+import { objHasProperty } from "../../util";
 
 const REQUEST_TIMEOUT_MS = 5000;
 
 export class StaticRegistry extends Registry {
+  fields = {
+    uri: {
+      title: "Base URI",
+      type: "url",
+      description: "Base URL, path to root that contains /schemas directory",
+      required: true,
+      default: "http://iglucentral.com/",
+    },
+    manifestUri: {
+      title: "Manifest URI",
+      type: "url",
+      description:
+        "URI to a JSON object listing all the schemas served by this registry",
+      required: false,
+    },
+  };
+
   private cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
   private readonly base: URL;
   private readonly manifest?: URL;
 
   constructor(spec: RegistrySpec) {
     super(spec);
-    this.base = new URL(spec["uri"]);
+    this.base = new URL(spec["uri"] || this.fields.uri.default);
     this.manifest = spec["manifestUri"] && new URL(spec["manifestUri"]);
   }
 

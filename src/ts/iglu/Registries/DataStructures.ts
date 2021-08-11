@@ -48,6 +48,66 @@ type DataStructuresMetaData = {
 } & DataStructuresSchema["meta"];
 
 export class DataStructuresRegistry extends Registry {
+  fields = {
+    clientId: {
+      title: "OAuth Client ID",
+      type: "text",
+      description:
+        "Insights Console password to requrest OAuth credentials for",
+      required: true,
+      pattern: "^\\w{32}$",
+    },
+    clientSecret: {
+      title: "OAuth Client Secret",
+      type: "password",
+      description:
+        "Insights Console password to requrest OAuth credentials for",
+      required: true,
+    },
+    organizationId: {
+      title: "Organization ID",
+      type: "text",
+      description: "Insights Console Organization UUID",
+      required: true,
+      pattern: "^[a-fA-F0-9-]{36}$",
+    },
+    oauthUsername: {
+      title: "Insights Console Username",
+      type: "email",
+      description:
+        "Insights Console username to requrest OAuth credentials for",
+      required: true,
+    },
+    oauthPassword: {
+      title: "Insights Console Password",
+      type: "password",
+      description:
+        "Insights Console password to requrest OAuth credentials for",
+      required: true,
+    },
+    dsApiEndpoint: {
+      title: "API Endpoint",
+      type: "url",
+      description: "Primary Data Structures API endpoint",
+      required: false,
+      placeholder: INSIGHTS_API_ENDPOINT,
+    },
+    oauthApiEndpoint: {
+      title: "OAuth Endpoint",
+      type: "url",
+      description: "OAuth authorization endpoint",
+      required: false,
+      placeholder: INSIGHTS_OAUTH_ENDPOINT,
+    },
+    oauthAudience: {
+      title: "OAuth Audience",
+      type: "text",
+      description: "OAuth audience scope",
+      required: false,
+      placeholder: INSIGHTS_OAUTH_AUDIENCE,
+    },
+  };
+
   private readonly dsApiEndpoint: URL;
 
   private readonly oauthApiEndpoint: URL;
