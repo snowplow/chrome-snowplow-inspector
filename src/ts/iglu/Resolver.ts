@@ -38,25 +38,8 @@ export class Resolver extends Registry {
 
         // handle legacy repo settings
         this.importLegacyLocalSchemas()
-          .then(() =>
-            this.importLegacyRepos(settings.repolist, this.registries)
-          )
-          .then(
-            (migrated) =>
-              new Promise<void>((fulfil) =>
-                migrated
-                  ? chrome.storage.sync.set(
-                      {
-                        registries: this.registries.map((r) =>
-                          JSON.stringify(r)
-                        ),
-                        repolist: [],
-                      },
-                      fulfil
-                    )
-                  : fulfil()
-              )
-          )
+          .then(() => this.importLegacyRepos(repolist, this.registries))
+          .then((migrated) => void (migrated && this.persist()))
           .then(() =>
             this.registries.sort((a, b) => {
               const ap = a.priority || Number.MAX_SAFE_INTEGER;
@@ -86,18 +69,10 @@ export class Resolver extends Registry {
     return new Promise<void>((fulfil) => {
       chrome.storage.local.get(
         ["schemalist", "localSchemas"],
-        (storage: Partial<ExtensionOptions>) => {
+        ({ schemalist, localSchemas }: Partial<ExtensionOptions>) => {
           const MIGRATION_NAME = "Migrated Local Registry";
-
-          const { schemalist, localSchemas } = storage;
           const ls = localSchemas ? JSON.parse(localSchemas) : {};
           if (Array.isArray(schemalist) && schemalist.length) {
-            DEFAULT_REGISTRIES.push({
-              kind: "local",
-              name: MIGRATION_NAME,
-              priority: 0,
-            });
-
             const schemas: ResolvedIgluSchema[] = [];
             const remainder: any[] = [];
 
@@ -118,7 +93,21 @@ export class Resolver extends Registry {
               }
             });
 
-            ls[MIGRATION_NAME] = (ls[MIGRATION_NAME] || []).concat(schemas);
+            let registry = this.registries.find(
+              ({ spec: { kind, name } }) =>
+                kind === "local" && name === MIGRATION_NAME
+            );
+            if (!registry)
+              this.registries.push(
+                (registry = buildRegistry({
+                  kind: "local",
+                  name: MIGRATION_NAME,
+                  priority: 0,
+                }))
+              );
+
+            ls[registry.id] = (ls[registry.id] || []).concat(schemas);
+
             chrome.storage.local.set(
               {
                 schemalist: remainder,
@@ -257,6 +246,12 @@ export class Resolver extends Registry {
       )
     ).then((args) => {
       return ([] as IgluSchema[]).concat(...args);
+    });
+  }
+
+  persist() {
+    return chrome.storage.sync.set({
+      registries: this.registries.map((r) => JSON.stringify(r)),
     });
   }
 }
