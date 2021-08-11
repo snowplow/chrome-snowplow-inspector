@@ -27,7 +27,6 @@ export class IgluRegistry extends Registry {
 
   private readonly base: URL;
   private readonly apiKey?: string;
-  private lastStatus?: RegistryStatus;
 
   constructor(spec: RegistrySpec) {
     super(spec);
@@ -60,6 +59,7 @@ export class IgluRegistry extends Registry {
         return Promise.reject();
       })
       .then((result) => {
+        this.lastStatus = "OK";
         const resolved = schema.resolve(result, this);
         return resolved ? Promise.resolve(resolved) : Promise.reject();
       });

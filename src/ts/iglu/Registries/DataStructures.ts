@@ -122,7 +122,6 @@ export class DataStructuresRegistry extends Registry {
   private accessToken?: string;
   private accessExpiry?: Date;
 
-  private lastStatus?: RegistryStatus;
   private readonly metadata: Map<IgluUri, DataStructuresMetaData> = new Map();
 
   constructor(spec: RegistrySpec) {

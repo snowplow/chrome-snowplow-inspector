@@ -180,10 +180,7 @@ export class Resolver extends Registry {
 
   status() {
     return Promise.all(this.registries.map((r) => r.status())).then((s) =>
-      s.reduce(
-        (res, s) => (s === "OK" || s === "WAITING" ? res : "UNHEALTHY"),
-        "OK"
-      )
+      s.reduce((res, s) => (s === "OK" ? res : "UNHEALTHY"), "OK")
     );
   }
 
