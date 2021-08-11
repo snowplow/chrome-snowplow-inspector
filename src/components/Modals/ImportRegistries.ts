@@ -149,8 +149,10 @@ export const ImportRegistries: Component<ImportRegistriesOptions, {}> = {
             "button.button",
             {
               onclick: () => {
+                let p = Promise.resolve();
                 if (results) {
                   resolver.import(false, ...results);
+                  p = resolver.persist();
                 }
 
                 setModal();

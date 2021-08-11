@@ -49,12 +49,14 @@ export const RegistryList = (
             {
               onchange: (event: InputEvent) => {
                 if (event.target instanceof HTMLSelectElement) {
+                  const callback = () => requestUpdate(true);
                   switch (event.target.value) {
                     case "Edit":
                       if (selectedRegistries)
                         setModal("editRegistries", {
                           registries: selectedRegistries,
                           resolver,
+                          callback,
                         });
                       break;
                     case "Add":
@@ -65,6 +67,7 @@ export const RegistryList = (
                       setModal("editRegistries", {
                         registries: [newReg],
                         resolver,
+                        callback,
                       });
                       break;
                     case "Remove":
@@ -72,17 +75,17 @@ export const RegistryList = (
                         setModal("deleteRegistries", {
                           registries: selectedRegistries,
                           resolver,
+                          callback,
                         });
 
                       setRegistries([]);
                       clearSearch();
                       break;
                     case "Import":
-                      setModal("importRegistries", { resolver });
+                      setModal("importRegistries", { resolver, callback });
                       break;
                   }
                   event.target.selectedIndex = 0;
-                  requestUpdate(true);
                 }
               },
             },

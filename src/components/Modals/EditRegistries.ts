@@ -97,7 +97,7 @@ export const EditRegistries: Component<
                 }
 
                 resolver.import(true, ...modelRegistries(form, state.editing));
-                setModal();
+                resolver.persist().then(() => setModal());
               },
             },
             (state.editing || registries).map((reg) =>

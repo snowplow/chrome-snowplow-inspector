@@ -16,6 +16,7 @@ export type Modal = keyof typeof modals;
 
 export interface ModalOptions {
   setModal: (modal?: Modal, opts?: ModalOptions) => void;
+  callback?: () => void;
   [opt: string]: any;
 }
 
