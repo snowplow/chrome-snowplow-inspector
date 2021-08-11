@@ -47,6 +47,16 @@ export const RegistryList = (
               onchange: (event: InputEvent) => {
                 if (event.target instanceof HTMLSelectElement) {
                   switch (event.target.value) {
+                    case "Remove":
+                      if (selectedRegistries)
+                        setModal("deleteRegistries", {
+                          registries: selectedRegistries,
+                          resolver,
+                        });
+
+                      setRegistries([]);
+                      clearSearch();
+                      break;
                     case "Import":
                       setModal("importRegistries", { resolver });
                       break;

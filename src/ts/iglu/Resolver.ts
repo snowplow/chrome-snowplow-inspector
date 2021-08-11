@@ -249,6 +249,20 @@ export class Resolver extends Registry {
     });
   }
 
+  remove(...registries: Registry[]) {
+    const removed: Registry[] = [];
+    for (const reg of registries) {
+      for (let i = 0; i < this.registries.length; i++) {
+        if (this.registries[i].id === reg.id) {
+          removed.push(...this.registries.splice(i, 1));
+          break;
+        }
+      }
+    }
+
+    return removed;
+  }
+
   persist() {
     return chrome.storage.sync.set({
       registries: this.registries.map((r) => JSON.stringify(r)),

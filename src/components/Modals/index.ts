@@ -1,9 +1,11 @@
 import { BadRows } from "./BadRows";
+import { DeleteRegistries } from "./DeleteRegistries";
 import { ImportRegistries } from "./ImportRegistries";
 import { LiveStream } from "./LiveStream";
 
 export const modals = {
   badRows: BadRows,
+  deleteRegistries: DeleteRegistries,
   importRegistries: ImportRegistries,
   stream: LiveStream,
 } as const;
