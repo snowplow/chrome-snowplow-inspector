@@ -138,6 +138,7 @@ $colors: (
   top: 0;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
 .registries > select,
@@ -184,6 +185,7 @@ $colors: (
 
 .registry-import select,
 .registry-import textarea,
+.registry-delete select,
 .registry-definition select,
 .registry-definition div.select,
 .registry-definition textarea {

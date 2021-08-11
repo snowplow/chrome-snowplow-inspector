@@ -10,7 +10,7 @@ export interface DeleteRegistriesOptions extends ModalOptions {
 
 export const DeleteRegistries: Component<DeleteRegistriesOptions, {}> = {
   view: ({ attrs: { setModal, registries, resolver } }) =>
-    m("div.modal.is-active", [
+    m("div.modal.is-active.registry-delete", [
       m("div.modal-background", { onclick: () => setModal() }),
       m("div.modal-card", [
         m("header.modal-card-head", [
