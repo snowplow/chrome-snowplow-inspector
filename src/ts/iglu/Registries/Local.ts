@@ -11,8 +11,36 @@ export class LocalRegistry extends Registry {
     super(spec);
 
     this.defaultOptions = {
-      localSchemas: JSON.stringify({ [this.spec.name]: [] }),
+      localSchemas: JSON.stringify({ [this.id]: [] }),
     };
+  }
+
+  fetch() {
+    return new Promise<void>((fulfil) =>
+      chrome.storage.local.get(
+        "localSchemas",
+        ({ localSchemas }: Partial<ExtensionOptions>) => {
+          if (localSchemas && typeof localSchemas === "string") {
+            const ls = JSON.parse(localSchemas);
+            (ls[this.id] || []).forEach(
+              ({
+                vendor,
+                name,
+                format,
+                version,
+                data,
+              }: Record<keyof ResolvedIgluSchema, any>) => {
+                const schema = new IgluSchema(vendor, name, format, version);
+                const resolved = schema.resolve(data, this);
+                if (resolved) this.manifest.set(resolved.uri(), resolved);
+              }
+            );
+          }
+
+          fulfil();
+        }
+      )
+    );
   }
 
   resolve(schema: IgluUri | IgluSchema): Promise<ResolvedIgluSchema> {
@@ -30,29 +58,6 @@ export class LocalRegistry extends Registry {
   }
 
   walk() {
-    return new Promise<IgluSchema[]>((fulfil) =>
-      chrome.storage.local.get(
-        "localSchemas",
-        (items: Partial<ExtensionOptions>) => {
-          if (items.localSchemas) {
-            const ls =
-              typeof items.localSchemas === "string"
-                ? JSON.parse(items.localSchemas)
-                : { [this.spec.name]: [] };
-            (ls[this.spec.name] || []).forEach(
-              (s: Omit<ResolvedIgluSchema, "registry">) =>
-                this.manifest.set(
-                  s.uri(),
-                  Object.assign(Object.create(ResolvedIgluSchema), s, {
-                    registry: this,
-                  })
-                )
-            );
-          }
-
-          fulfil(Array.from(this.manifest.values()));
-        }
-      )
-    );
+    return this.fetch().then(() => Array.from(this.manifest.values()));
   }
 }
