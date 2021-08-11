@@ -10,15 +10,15 @@ export interface BadRowsOptions extends ModalOptions {
   addRequests: (reqs: Entry[]) => void;
 }
 
-export const BadRowsModal: Component<BadRowsOptions, {}> = {
-  view: (vnode) =>
+export const BadRows: Component<BadRowsOptions, {}> = {
+  view: ({ attrs: { addRequests, setModal } }) =>
     m("div.modal.is-active", [
       m("div.modal-background"),
       m("div.modal-card", [
         m("header.modal-card-head", [
           m("p.modal-card-title", "Bad Rows Import"),
           m("button.delete", {
-            onclick: () => vnode.attrs.setModal(undefined),
+            onclick: () => setModal(),
           }),
         ]),
         m("section.modal-card-body", [
@@ -51,9 +51,9 @@ export const BadRowsModal: Component<BadRowsOptions, {}> = {
             {
               onclick: () => {
                 if (badRows.length) {
-                  vnode.attrs.addRequests(badToRequests(badRows));
+                  addRequests(badToRequests(badRows));
                   badRows = [];
-                  vnode.attrs.setModal(undefined);
+                  setModal();
                 }
               },
             },

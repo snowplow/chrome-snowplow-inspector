@@ -1,10 +1,9 @@
-import { BadRowsModal } from "./BadRowsModal";
 import { LiveStreamModal } from "./LiveStreamModal";
-
+import { BadRows } from "./BadRows";
 
 export const modals = {
-  badRows: BadRowsModal,
   stream: LiveStreamModal,
+  badRows: BadRows,
 } as const;
 
 export type Modal = keyof typeof modals;
