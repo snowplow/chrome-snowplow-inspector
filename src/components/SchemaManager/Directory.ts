@@ -27,25 +27,34 @@ type DirectoryAttrs = {
   resolver: Resolver;
   search?: RegExp;
   selections: Registry[];
+  requestUpdate: (request?: boolean) => boolean;
 };
 
 const catalog: (IgluSchema | ResolvedIgluSchema)[] = [];
+const refreshSchemas = (resolver: Resolver) => {
+  resolver.walk().then((discovered) => {
+    catalog.splice(0);
+    discovered.map((ds, i) => {
+      catalog[i] = ds;
+      resolver.resolve(ds).then((res) => {
+        catalog[i] = res;
+        m.redraw();
+      });
+    });
+  });
+};
 
 export const Directory = {
   oninit: ({ attrs: { resolver } }: Vnode<DirectoryAttrs>) => {
-    resolver.walk().then((discovered) => {
-      catalog.splice(0);
-      discovered.map((ds, i) => {
-        catalog[i] = ds;
-        resolver.resolve(ds).then((res) => {
-          catalog[i] = res;
-          m.redraw();
-        });
-      });
-    });
+    refreshSchemas(resolver);
   },
   view: (vnode: Vnode<DirectoryAttrs>) => {
-    const { search, selections } = vnode.attrs;
+    const { search, selections, requestUpdate, resolver } = vnode.attrs;
+    if (requestUpdate()) {
+      requestUpdate(false);
+      refreshSchemas(resolver);
+    }
+
     const filtered =
       selections.length || search
         ? catalog.filter((s) => {

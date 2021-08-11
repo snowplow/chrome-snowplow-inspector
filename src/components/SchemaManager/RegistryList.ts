@@ -10,6 +10,7 @@ export const RegistryList = (
     resolver: Resolver;
     filterRegistries: (selected: Registry[]) => void;
     setModal: ModalSetter;
+    requestUpdate: (request?: boolean) => boolean;
   }>
 ) => {
   const {
@@ -17,6 +18,7 @@ export const RegistryList = (
     clearSearch,
     filterRegistries,
     setModal,
+    requestUpdate,
     ...rest
   } = vnode.attrs;
   let selectedRegistries: Registry[] = [];
@@ -80,6 +82,7 @@ export const RegistryList = (
                       break;
                   }
                   event.target.selectedIndex = 0;
+                  requestUpdate(true);
                 }
               },
             },
