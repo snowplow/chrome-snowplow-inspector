@@ -49,6 +49,11 @@ function sorted<T>(
   return sortees;
 }
 
+const objHasProperty = <T extends {}, K extends PropertyKey>(
+  obj: T,
+  prop: K
+): obj is T & Record<K, unknown> => obj.hasOwnProperty(prop);
+
 const hasMembers = (obj: unknown) => {
   if (typeof obj !== "object" || obj === null) {
     return false;
@@ -460,6 +465,7 @@ export {
   esToRequests,
   hash,
   hasMembers,
+  objHasProperty,
   nameType,
   copyToClipboard,
   thriftToRequest,
