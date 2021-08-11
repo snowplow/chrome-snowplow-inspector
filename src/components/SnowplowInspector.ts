@@ -1,10 +1,10 @@
 import { Entry } from "har-format";
-import { redraw, default as m, Vnode } from "mithril";
+import { redraw, default as m, Component, Vnode } from "mithril";
 
 import { Application } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
 
-import { modals, Modal, ModalOptions } from "./Modals";
+import { modals, Modal, ModalOptions, ModalSetter } from "./Modals";
 import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
@@ -12,6 +12,7 @@ import { Toolbar } from "./Toolbar";
 export const SnowplowInspector = () => {
   let application: Application = "debugger";
   let activeModal: Modal | undefined = undefined;
+  let modalOpts: ModalOptions | undefined = undefined;
   const resolver = new Resolver();
 
   const events: Entry[] = [];
@@ -33,9 +34,15 @@ export const SnowplowInspector = () => {
   function changeApp(app: Application) {
     application = app;
   }
-  function setModal(modalName?: Modal, modalOpts?: ModalOptions) {
+  const setModal: ModalSetter = (modalName, opts) => {
     activeModal = modalName;
-  }
+    if (modalName) {
+      modalOpts = { kind: modalName, setModal, ...opts };
+    } else {
+      modalOpts = undefined;
+    }
+    redraw();
+  };
 
   return {
     view: () => {
@@ -45,16 +52,12 @@ export const SnowplowInspector = () => {
           app = m(Debugger, { addRequests, events, resolver });
           break;
         case "schemaManager":
-          app = m(SchemaManager, { resolver });
+          app = m(SchemaManager, { resolver, setModal });
           break;
       }
 
       if (activeModal) {
-        modal = m(modals[activeModal], {
-          kind: activeModal,
-          addRequests,
-          setModal,
-        });
+        modal = m(modals[activeModal] as Component<any>, { ...modalOpts });
       }
 
       return [

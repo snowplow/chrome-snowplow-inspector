@@ -1,6 +1,7 @@
 import { default as m, Vnode } from "mithril";
 
 import { Registry, Resolver } from "../../ts/iglu";
+import { ModalSetter } from "../../components/Modals";
 
 import { Directory } from "./Directory";
 import { RegistryList } from "./RegistryList";
@@ -10,7 +11,12 @@ type Filter = {
   selections: Registry[];
 };
 
-export const SchemaManager = (vnode: Vnode<{ resolver: Resolver }>) => {
+export const SchemaManager = (
+  vnode: Vnode<{
+    resolver: Resolver;
+    setModal: ModalSetter;
+  }>
+) => {
   const filters: Filter = {
     search: undefined,
     selections: [],
