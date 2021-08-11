@@ -263,6 +263,47 @@ export class Resolver extends Registry {
     return removed;
   }
 
+  import(strict: boolean, ...registries: Registry[]) {
+    for (const reg of registries) {
+      const { id } = reg;
+      let replaced = false;
+      for (let i = 0; i < this.registries.length; i++) {
+        const existing = this.registries[i];
+        if (strict) {
+          if (existing.id === id) {
+            this.registries[i] = reg;
+            replaced = true;
+            break;
+          }
+        } else if (existing.spec.kind === reg.spec.kind) {
+          switch (reg.spec.kind) {
+            case "local":
+              replaced = true;
+              continue;
+            case "static":
+            case "iglu":
+            case "ds":
+              let matches = 0;
+              let opts = 0;
+              for (const [p, v] of Object.entries(existing.opts)) {
+                opts++;
+                if (reg.opts[p] === v) {
+                  matches++;
+                }
+              }
+
+              if (matches) {
+                if (opts !== matches) this.registries[i] = reg;
+                replaced = true;
+              }
+          }
+        }
+      }
+
+      if (!replaced) this.registries.push(reg);
+    }
+  }
+
   persist() {
     return chrome.storage.sync.set({
       registries: this.registries.map((r) => JSON.stringify(r)),

@@ -7,7 +7,23 @@ import { RegistrySpec, RegistryStatus } from "../../types";
 const REQUEST_TIMEOUT_MS = 5000;
 
 export class IgluRegistry extends Registry {
-  private manifest: Map<string, IgluSchema> = new Map();
+  fields = {
+    uri: {
+      title: "Iglu API Endpoint",
+      type: "url",
+      description: "Iglu URI, usually ending in /endpoint",
+      required: true,
+      default: "http://example.com/api",
+    },
+    apiKey: {
+      title: "Iglu API Key",
+      type: "password",
+      description:
+        "API key, required to access non-public schemas in the registry",
+      required: false,
+      pattern: "^[a-fA-F0-9-]{36}$",
+    },
+  };
 
   private readonly base: URL;
   private readonly apiKey?: string;
@@ -16,7 +32,7 @@ export class IgluRegistry extends Registry {
   constructor(spec: RegistrySpec) {
     super(spec);
 
-    this.base = new URL(spec["uri"]);
+    this.base = new URL(spec["uri"] || this.fields.uri.default);
     this.apiKey = spec["apiKey"];
   }
 
