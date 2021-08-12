@@ -1,18 +1,8 @@
-declare global {
-  var GlobalSnowplowNamespace: string[] | undefined;
-  var snowplow: ((command: string, ..._: any) => void) & { q: IArguments[] };
-}
+import { newTracker, trackStructEvent } from "@snowplow/browser-tracker";
 
-window.GlobalSnowplowNamespace = window.GlobalSnowplowNamespace || ["snowplow"];
-window.snowplow =
-  window.snowplow ||
-  Object.assign(
-    function () {
-      snowplow.q.push(arguments);
-    },
-    { q: [] }
-  );
-snowplow("newTracker", "sp", "d.poplindata.com", {
+const SNOWPLOW_ENDPOINT = "https://d.poplindata.com";
+
+newTracker("sp", SNOWPLOW_ENDPOINT, {
   appId: "snowplow-chrome-extension",
   platform: "app",
 });
@@ -52,7 +42,12 @@ export const trackerAnalytics = (
 
     chrome.storage.sync.get({ enableTracking: true }, (settings) => {
       if (settings.enableTracking) {
-        snowplow("trackStructEvent", "New Tracker", collector, pageUrl, appId);
+        trackStructEvent({
+          category: "New Tracker",
+          action: collector,
+          label: pageUrl,
+          property: appId,
+        });
       }
     });
   }
@@ -67,7 +62,11 @@ export const repoAnalytics = (repo: string) => {
         repoUrl.username = "";
         repoUrl.password = "";
 
-        snowplow("trackStructEvent", "Custom Repo", "Loaded", repoUrl.href);
+        trackStructEvent({
+          category: "Custom Repo",
+          action: "Loaded",
+          label: repoUrl.href,
+        });
       }
     });
   }
