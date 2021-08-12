@@ -155,7 +155,7 @@ export const ImportRegistries: Component<ImportRegistriesOptions, {}> = {
                   p = resolver.persist();
                 }
 
-                setModal();
+                p.then(() => setModal());
               },
             },
             "Save Registries"
