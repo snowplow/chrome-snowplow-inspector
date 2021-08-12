@@ -1,5 +1,7 @@
 import { newTracker, trackStructEvent } from "@snowplow/browser-tracker";
 
+import { RegistrySpec } from "./iglu/Registries";
+
 const SNOWPLOW_ENDPOINT = "https://d.poplindata.com";
 
 newTracker("sp", SNOWPLOW_ENDPOINT, {
@@ -53,23 +55,27 @@ export const trackerAnalytics = (
   }
 };
 
-export const repoAnalytics = (repo: string) => {
-  if (repo !== "http://iglucentral.com") {
-    chrome.storage.sync.get({ enableTracking: true }, (settings) => {
-      if (settings.enableTracking) {
-        const repoUrl = new URL(repo);
-        // Don't steal credentials if present
-        repoUrl.username = "";
-        repoUrl.password = "";
-
-        trackStructEvent({
-          category: "Custom Repo",
-          action: "Loaded",
-          label: repoUrl.href,
-        });
+export const repoAnalytics = (
+  kind: RegistrySpec["kind"],
+  name: string,
+  uri?: URL
+) => {
+  chrome.storage.sync.get({ enableTracking: true }, (settings) => {
+    if (settings.enableTracking) {
+      // Don't steal credentials if present
+      if (uri) {
+        uri.username = "";
+        uri.password = "";
       }
-    });
-  }
+
+      trackStructEvent({
+        category: "Custom Repo",
+        action: "Loaded",
+        label: uri ? uri.href : kind,
+        property: name,
+      });
+    }
+  });
 };
 
 export const landingUrl =
