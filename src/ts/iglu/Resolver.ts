@@ -3,6 +3,7 @@ import { default as m, Vnode } from "mithril";
 import { buildRegistry } from ".";
 import { Registry } from "./Registries/Registry";
 import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
+import { repoAnalytics } from "../analytics";
 import { ExtensionOptions, RegistrySpec } from "../types";
 
 const DEFAULT_REGISTRIES: RegistrySpec[] = [
@@ -33,7 +34,13 @@ export class Resolver extends Registry {
       },
       ({ registries, repolist }) => {
         for (const repo of registries as string[]) {
-          this.registries.push(buildRegistry(JSON.parse(repo)));
+          const built = buildRegistry(JSON.parse(repo));
+          repoAnalytics(
+            built.spec.kind,
+            built.spec.name,
+            built.spec.uri && new URL(built.spec.uri)
+          );
+          this.registries.push(built);
         }
 
         // handle legacy repo settings
