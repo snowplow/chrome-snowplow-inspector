@@ -7,6 +7,9 @@ const SNOWPLOW_ENDPOINT = "https://d.poplindata.com";
 newTracker("sp", SNOWPLOW_ENDPOINT, {
   appId: "snowplow-chrome-extension",
   platform: "app",
+  anonymousTracking: { withSessionTracking: true },
+  stateStorageStrategy: "localStorage",
+  eventMethod: "post",
 });
 
 const seenCollectors: { [collector: string]: string[] } = {};
