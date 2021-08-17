@@ -12,16 +12,17 @@ export interface ImportRegistriesOptions extends ModalOptions {
 const resolverSchema =
   "iglu:com.snowplowanalytics.iglu/resolver-config/jsonschema/1";
 
-let error: string | undefined = undefined;
-let results: Registry[] | null = null;
-
 const parseResolverConfig = (input: string) => {
-  const text = tryb64(input);
-  const json: unknown = JSON.parse(text);
+  let json: unknown;
+  try {
+    json = JSON.parse(input);
+  } catch {
+    json = JSON.parse(tryb64(input));
+  }
   if (typeof json !== "object" || !json)
     throw Error("Couldn't parse config as object");
   if (!objHasProperty(json, "schema"))
-    throw Error("Couldn't parse config as object");
+    throw Error("Couldn't parse config as Self Describing JSON");
   if (typeof json["schema"] !== "string")
     throw Error("Missing resolver-config schema");
   if (json["schema"].indexOf(resolverSchema) !== 0)
@@ -94,8 +95,11 @@ const parseResolverConfig = (input: string) => {
   return imported.map(buildRegistry);
 };
 
-export const ImportRegistries: Component<ImportRegistriesOptions, {}> = {
-  view: ({ attrs: { setModal, resolver } }) =>
+export const ImportRegistries: Component<
+  ImportRegistriesOptions,
+  { error?: string; results?: Registry[] }
+> = {
+  view: ({ attrs: { setModal, resolver }, state }) =>
     m("div.modal.is-active.registry-import", [
       m("div.modal-background", { onclick: () => setModal() }),
       m("div.modal-card", [
@@ -119,27 +123,28 @@ export const ImportRegistries: Component<ImportRegistriesOptions, {}> = {
             ),
             " configuration used in your pipeline to register all the Registries used by your pipeline."
           ),
-          m("textarea", {
-            class: "resolver-import",
+          m("textarea.textarea.resolver-import", {
+            rows: 8,
             oninput: (event: InputEvent) => {
               if (event.target instanceof HTMLTextAreaElement) {
-                results = null;
+                state.results = undefined;
                 if (event.target.value) {
                   try {
-                    results = parseResolverConfig(event.target.value);
+                    state.results = parseResolverConfig(event.target.value);
+                    state.error = undefined;
                   } catch (e) {
-                    error = e.message;
+                    state.error = e.message;
                   }
                 }
               }
             },
           }),
-          error && m("p.error", error),
-          results
+          state.error && m("p.error", state.error),
+          state.results
             ? m(
                 "select[disabled][multiple]",
                 { size: 5 },
-                results?.map((r) => m(r))
+                state.results?.map((r) => m(r))
               )
             : undefined,
         ]),
@@ -150,8 +155,8 @@ export const ImportRegistries: Component<ImportRegistriesOptions, {}> = {
             {
               onclick: () => {
                 let p = Promise.resolve();
-                if (results) {
-                  resolver.import(false, ...results);
+                if (state.results) {
+                  resolver.import(false, ...state.results);
                   p = resolver.persist();
                 }
 

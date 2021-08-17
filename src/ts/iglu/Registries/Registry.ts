@@ -74,7 +74,9 @@ export abstract class Registry {
           "label.label",
           { title: "Name for this registry. Used only in the extension" },
           "Name",
-          m("input.input[type=text][name=name]", { value: this.spec.name })
+          m("input.input[type=text][name=name][required][pattern=.+]", {
+            value: this.spec.name,
+          })
         ),
         m("label.label", "Kind"),
         m(
@@ -117,7 +119,7 @@ export abstract class Registry {
               "Priority, lower is higher. Not used by the extension, which prefers the fastest registry configured",
           },
           "Priority",
-          m("input.input[type=number][name=priority]", {
+          m("input.input[type=number][name=priority][min=0]", {
             value: this.priority || 0,
           })
         ),
