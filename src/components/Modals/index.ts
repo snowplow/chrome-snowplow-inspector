@@ -1,6 +1,7 @@
 import { BadRows } from "./BadRows";
 import { DeleteRegistries } from "./DeleteRegistries";
 import { EditRegistries } from "./EditRegistries";
+import { EditSchemas } from "./EditSchemas";
 import { ImportRegistries } from "./ImportRegistries";
 import { LiveStream } from "./LiveStream";
 
@@ -8,6 +9,7 @@ export const modals = {
   badRows: BadRows,
   deleteRegistries: DeleteRegistries,
   editRegistries: EditRegistries,
+  editSchemas: EditSchemas,
   importRegistries: ImportRegistries,
   stream: LiveStream,
 } as const;

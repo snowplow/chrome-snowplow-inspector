@@ -98,19 +98,24 @@ export const RegistryList = (
             ]
           ),
           m(
-            "select.button.schemas",
+            "button.button",
             {
-              onchange: (event: InputEvent) => {
-                if (event.target instanceof HTMLSelectElement) {
-                  event.target.selectedIndex = 0;
+              disabled: selectedRegistries.reduce((acc, reg) => {
+                return acc && reg.spec.kind !== "local";
+              }, true),
+              onclick: (event: MouseEvent) => {
+                if (event.target instanceof HTMLButtonElement) {
+                  if (selectedRegistries)
+                    setModal("editSchemas", {
+                      registries: selectedRegistries.filter(
+                        (reg) => reg.spec.kind === "local"
+                      ),
+                      callback: () => requestUpdate(true),
+                    });
                 }
               },
             },
-            [
-              m("option[selected][disabled]", "Schemas..."),
-              m("option", "Add"),
-              m("option", "Compare"),
-            ]
+            "Schemas..."
           ),
         ])
       );
