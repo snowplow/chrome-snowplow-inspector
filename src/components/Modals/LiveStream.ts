@@ -14,7 +14,7 @@ export interface LiveStreamOptions extends ModalOptions {
 export const LiveStream: Component<LiveStreamOptions> = {
   view: ({ attrs: { setModal, addRequests } }) =>
     m("div.modal.is-active", [
-      m("div.modal-background"),
+      m("div.modal-background", { onclick: () => setModal() }),
       m(
         "form.modal-card",
         {

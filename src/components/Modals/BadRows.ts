@@ -13,7 +13,7 @@ export interface BadRowsOptions extends ModalOptions {
 export const BadRows: Component<BadRowsOptions, {}> = {
   view: ({ attrs: { addRequests, setModal } }) =>
     m("div.modal.is-active", [
-      m("div.modal-background"),
+      m("div.modal-background", { onclick: () => setModal() }),
       m("div.modal-card", [
         m("header.modal-card-head", [
           m("p.modal-card-title", "Bad Rows Import"),
