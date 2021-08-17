@@ -28,6 +28,7 @@ type DirectoryAttrs = {
   search?: RegExp;
   selections: Registry[];
   requestUpdate: (request?: boolean) => boolean;
+  setCollapsed: (c: boolean) => boolean;
 };
 
 const catalog: (IgluSchema | ResolvedIgluSchema)[] = [];
@@ -49,7 +50,8 @@ export const Directory = {
     refreshSchemas(resolver);
   },
   view: (vnode: Vnode<DirectoryAttrs>) => {
-    const { search, selections, requestUpdate, resolver } = vnode.attrs;
+    const { search, selections, requestUpdate, resolver, setCollapsed } =
+      vnode.attrs;
     if (requestUpdate()) {
       requestUpdate(false);
       refreshSchemas(resolver);
@@ -87,20 +89,41 @@ export const Directory = {
       Object.entries(directory).map(([vendor, schemas]) => {
         return m(
           "details.vendor[open]",
-          { key: vendor },
+          {
+            key: vendor,
+            onclick: (event: MouseEvent) => {
+              if (
+                event.target instanceof HTMLElement &&
+                event.eventPhase == Event.BUBBLING_PHASE
+              ) {
+                if (event.target instanceof HTMLDetailsElement) {
+                  setCollapsed(event.target.open);
+                  event.stopPropagation();
+                } else if (
+                  event.target.parentNode instanceof HTMLDetailsElement
+                ) {
+                  setCollapsed(event.target.parentNode.open);
+                  event.stopPropagation();
+                }
+              }
+            },
+          },
           m("summary", vendor),
           sorted(Object.entries(schemas), (x) => x[0]).map(([name, formats]) =>
             m(
               "details.name",
+              { key: name },
               m("summary", name),
               Object.entries(formats).map(([format, versions]) =>
                 m(
                   "details.format[open]",
+                  { key: format },
                   m("summary", format),
                   sorted(Object.entries(versions), (x) => x[0], true).map(
                     ([version, deployments]) =>
                       m(
                         "details.version",
+                        { key: version },
                         m("summary", version),
                         m(
                           "ul.registries",

@@ -1,4 +1,4 @@
-import { default as m, Vnode } from "mithril";
+import { default as m, ClosureComponent, VnodeDOM } from "mithril";
 
 import { Registry, Resolver } from "../../ts/iglu";
 import { ModalSetter } from "../../components/Modals";
@@ -11,12 +11,11 @@ type Filter = {
   selections: Registry[];
 };
 
-export const SchemaManager = (
-  vnode: Vnode<{
-    resolver: Resolver;
-    setModal: ModalSetter;
-  }>
-) => {
+type SchemaManagerAttributes = {
+  resolver: Resolver;
+  setModal: ModalSetter;
+};
+export const SchemaManager: ClosureComponent<SchemaManagerAttributes> = () => {
   const filters: Filter = {
     search: undefined,
     selections: [],
@@ -33,32 +32,63 @@ export const SchemaManager = (
     return (doUpdate = request);
   };
 
+  let collapsed = true;
+
   return {
-    view: () =>
+    view: (vnode) =>
       m(
         "section.schema-manager.columns.section",
         m(
           Directory,
-          { ...filters, requestUpdate, ...vnode.attrs },
-          m("input.filterPanel[search]", {
-            placeholder: "Filter Pattern",
-            title: "Regular expression to search schemas for",
-            onkeyup: (event: KeyboardEvent) => {
-              const target = event.target;
-              if (!(target instanceof HTMLInputElement)) return;
-              const val = target.value;
-              if (!val.trim()) return (filters.search = undefined);
+          {
+            ...filters,
+            requestUpdate,
+            setCollapsed: (c) => (collapsed = c),
+            ...vnode.attrs,
+          },
+          m(
+            ".field.is-grouped.filterPanel",
+            m("input.input[search]", {
+              placeholder: "Filter Pattern",
+              title: "Regular expression to search schemas for",
+              onkeyup: (event: KeyboardEvent) => {
+                const target = event.target;
+                if (!(target instanceof HTMLInputElement)) return;
+                const val = target.value;
+                if (!val.trim()) return (filters.search = undefined);
 
-              try {
-                const re = new RegExp(val, "im");
-                target.setCustomValidity("");
-                filters.search = re;
-              } catch {
-                target.setCustomValidity("Invalid regular expression");
-                target.reportValidity();
-              }
-            },
-          })
+                try {
+                  const re = new RegExp(val, "im");
+                  target.setCustomValidity("");
+                  filters.search = re;
+                } catch {
+                  target.setCustomValidity("Invalid regular expression");
+                  target.reportValidity();
+                }
+              },
+            }),
+            m(
+              "button.button",
+              {
+                onclick: () => {
+                  if ("dom" in vnode) {
+                    const details = (
+                      vnode as VnodeDOM<SchemaManagerAttributes>
+                    ).dom.querySelectorAll("details");
+
+                    Array.prototype.forEach.call(details, (det) => {
+                      if (det instanceof HTMLDetailsElement) {
+                        det.open = collapsed;
+                      }
+                    });
+
+                    collapsed = !collapsed;
+                  }
+                },
+              },
+              collapsed ? "Expand All" : "Collapse All"
+            )
+          )
         ),
         m(RegistryList, {
           filterRegistries,
