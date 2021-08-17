@@ -1,5 +1,5 @@
 import { Entry } from "har-format";
-import { default as m, Vnode } from "mithril";
+import { default as m, Component, Vnode } from "mithril";
 import { trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
@@ -312,10 +312,8 @@ const extractRequests = (
   return [[id, collector, method], beacons];
 };
 
-export const Timeline = {
-  view: ({
-    attrs: { filter, isActive, requests, resolver, setActive },
-  }: Vnode<ITimeline>) => {
+export const Timeline: Component<ITimeline> = {
+  view: ({ attrs: { filter, isActive, requests, resolver, setActive } }) => {
     const fallbackUrl = getPageUrl(requests);
     let first: IBeaconSummary | undefined = undefined;
     let active = false;

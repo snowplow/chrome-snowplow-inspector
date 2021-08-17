@@ -1,4 +1,4 @@
-import { default as m, Vnode } from "mithril";
+import { default as m, Component, ClosureComponent, Vnode } from "mithril";
 import { protocol } from "../../ts/protocol";
 import {
   IBeacon,
@@ -94,7 +94,7 @@ type ValidityState = {
   schema?: IgluSchema;
 };
 
-type BeaconValueParams = Vnode<{ obj: unknown; resolver: Resolver }>;
+type BeaconValueAttrs = { obj: unknown; resolver: Resolver };
 
 function isSDJ(obj: unknown): obj is { data: unknown; schema: string } {
   return (
@@ -102,11 +102,11 @@ function isSDJ(obj: unknown): obj is { data: unknown; schema: string } {
   );
 }
 
-const BeaconValue = () => {
+const BeaconValue: ClosureComponent<BeaconValueAttrs> = () => {
   let schemaValidity: ValidityState | null = null;
 
   return {
-    oninit: ({ attrs: { obj, resolver } }: BeaconValueParams) => {
+    oninit: ({ attrs: { obj, resolver } }) => {
       if (isSDJ(obj)) {
         const schema = IgluSchema.fromUri(obj.schema as IgluUri);
         if (schema) {
@@ -145,11 +145,11 @@ const BeaconValue = () => {
         }
       }
     },
-    view: ({ attrs: { obj, resolver } }: BeaconValueParams) => {
+    view: ({ attrs: { obj, resolver } }) => {
       if (typeof obj !== "object" || obj === null)
         return JSON.stringify(obj).replace(/^"|"$/g, "");
 
-      const children: (BeaconValueParams | string)[] = [];
+      const children: (Vnode<BeaconValueAttrs> | string)[] = [];
       let p;
 
       if (isSDJ(obj)) {
@@ -246,10 +246,10 @@ const BeaconValue = () => {
   };
 };
 
-const RowSet = () => {
+const RowSet: ClosureComponent<IRowSet> = () => {
   let visible = true;
   return {
-    view: (vnode: Vnode<IRowSet>) =>
+    view: (vnode) =>
       m(
         "div.card.tile.is-child",
         { class: visible ? "show-rows" : "hide-rows" },
@@ -352,7 +352,7 @@ const formatBeacon = (
     )
   );
 
-export const Beacon = {
-  view: ({ attrs: { activeBeacon, resolver } }: Vnode<IBeacon>) =>
+export const Beacon: Component<IBeacon> = {
+  view: ({ attrs: { activeBeacon, resolver } }) =>
     activeBeacon && formatBeacon(parseBeacon(activeBeacon), resolver),
 };

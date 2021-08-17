@@ -1,18 +1,16 @@
-import { default as m, Vnode } from "mithril";
+import { default as m, ClosureComponent } from "mithril";
 import { Registry, Resolver } from "../../ts/iglu";
 
 import { ModalSetter } from "../../components/Modals";
 import { LocalRegistry } from "../../ts/iglu/Registries/Local";
 
-export const RegistryList = (
-  vnode: Vnode<{
-    clearSearch: () => void;
-    resolver: Resolver;
-    filterRegistries: (selected: Registry[]) => void;
-    setModal: ModalSetter;
-    requestUpdate: (request?: boolean) => boolean;
-  }>
-) => {
+export const RegistryList: ClosureComponent<{
+  clearSearch: () => void;
+  resolver: Resolver;
+  filterRegistries: (selected: Registry[]) => void;
+  setModal: ModalSetter;
+  requestUpdate: (request?: boolean) => boolean;
+}> = (vnode) => {
   const {
     resolver,
     clearSearch,

@@ -1,4 +1,4 @@
-import { default as m, Vnode } from "mithril";
+import { default as m, Component } from "mithril";
 import {
   Registry,
   IgluSchema,
@@ -45,11 +45,11 @@ const refreshSchemas = (resolver: Resolver) => {
   });
 };
 
-export const Directory = {
-  oninit: ({ attrs: { resolver } }: Vnode<DirectoryAttrs>) => {
+export const Directory: Component<DirectoryAttrs> = {
+  oninit: ({ attrs: { resolver } }) => {
     refreshSchemas(resolver);
   },
-  view: (vnode: Vnode<DirectoryAttrs>) => {
+  view: (vnode) => {
     const { search, selections, requestUpdate, resolver, setCollapsed } =
       vnode.attrs;
     if (requestUpdate()) {
