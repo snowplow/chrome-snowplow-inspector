@@ -1,5 +1,11 @@
 import { Entry } from "har-format";
-import { redraw, default as m, Component, Vnode } from "mithril";
+import {
+  redraw,
+  default as m,
+  ClosureComponent,
+  Component,
+  Vnode,
+} from "mithril";
 
 import { Application } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
@@ -9,7 +15,7 @@ import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
 
-export const SnowplowInspector = () => {
+export const SnowplowInspector: ClosureComponent = () => {
   let application: Application = "debugger";
   let activeModal: Modal | undefined = undefined;
   let modalOpts: ModalOptions | undefined = undefined;

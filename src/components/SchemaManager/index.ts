@@ -15,6 +15,7 @@ type SchemaManagerAttributes = {
   resolver: Resolver;
   setModal: ModalSetter;
 };
+
 export const SchemaManager: ClosureComponent<SchemaManagerAttributes> = () => {
   const filters: Filter = {
     search: undefined,

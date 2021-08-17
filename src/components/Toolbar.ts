@@ -1,5 +1,5 @@
 import { Har } from "har-format";
-import { default as m, Vnode } from "mithril";
+import { default as m, Component, Vnode } from "mithril";
 import { landingUrl } from "../ts/analytics";
 import { IToolbar } from "../ts/types";
 
@@ -79,8 +79,8 @@ const toolbarView = (vnode: Vnode<IToolbar>) => {
   return toolbar_view;
 };
 
-export const Toolbar = {
-  view: (vnode: Vnode<IToolbar>) =>
+export const Toolbar: Component<IToolbar> = {
+  view: (vnode) =>
     m("nav.navbar.is-flex-touch", [
       m(
         "div.navbar-brand",

@@ -1,5 +1,5 @@
 import { Entry, Request } from "har-format";
-import { default as m, Vnode } from "mithril";
+import { default as m, ClosureComponent } from "mithril";
 
 import { IBeaconSummary, IDebugger } from "../../ts/types";
 
@@ -33,9 +33,9 @@ function isSnowplow(request: Request): boolean {
   return false;
 }
 
-export const Debugger = ({
+export const Debugger: ClosureComponent<IDebugger> = ({
   attrs: { addRequests, events, resolver },
-}: Vnode<IDebugger>) => {
+}) => {
   let active: IBeaconSummary | undefined;
   let filter: RegExp | undefined;
 
