@@ -90,9 +90,17 @@ export const RegistryList: ClosureComponent<{
             [
               m("option[selected][disabled]", "Registries..."),
               m("option", "Add"),
-              m("option", "Edit"),
+              m(
+                "option",
+                { disabled: selectedRegistries.length === 0 },
+                "Edit"
+              ),
               m("option", "Import"),
-              m("option", "Remove"),
+              m(
+                "option",
+                { disabled: selectedRegistries.length === 0 },
+                "Remove"
+              ),
             ]
           ),
           m(
