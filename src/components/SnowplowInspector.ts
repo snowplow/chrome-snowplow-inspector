@@ -42,8 +42,8 @@ export const SnowplowInspector: ClosureComponent = () => {
   }
   const setModal: ModalSetter = (modalName, opts) => {
     activeModal = modalName;
+    if (modalOpts && modalOpts.callback) modalOpts.callback();
     if (modalName) {
-      if (modalOpts && modalOpts.callback) modalOpts.callback();
       modalOpts = { kind: modalName, setModal, ...opts };
     } else {
       modalOpts = undefined;
