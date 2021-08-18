@@ -7,7 +7,7 @@ import {
   StaticRegistry,
 } from "./Registries";
 import { Resolver } from "./Resolver";
-import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
+import { $SCHEMA, IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
 
 const build = (spec: RegistrySpec): Registry => {
   switch (spec.kind) {
@@ -24,6 +24,7 @@ const build = (spec: RegistrySpec): Registry => {
 };
 
 export {
+  $SCHEMA,
   build as buildRegistry,
   IgluSchema,
   IgluUri,

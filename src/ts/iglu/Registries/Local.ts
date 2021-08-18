@@ -4,15 +4,10 @@ import { ExtensionOptions, RegistrySpec, RegistryStatus } from "../../types";
 import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 
 export class LocalRegistry extends Registry {
-  private readonly defaultOptions: Pick<ExtensionOptions, "localSchemas">;
   private readonly manifest: Map<IgluUri, ResolvedIgluSchema> = new Map();
 
   constructor(spec: RegistrySpec) {
     super(spec);
-
-    this.defaultOptions = {
-      localSchemas: JSON.stringify({ [this.id]: [] }),
-    };
   }
 
   fetch() {
@@ -59,5 +54,29 @@ export class LocalRegistry extends Registry {
 
   walk() {
     return this.fetch().then(() => Array.from(this.manifest.values()));
+  }
+
+  update(schemas: ResolvedIgluSchema[]) {
+    return new Promise<void>((fulfil) =>
+      chrome.storage.local.get(
+        "localSchemas",
+        ({ localSchemas }: Partial<ExtensionOptions>) => {
+          if (localSchemas && typeof localSchemas === "string") {
+            const ls = JSON.parse(localSchemas);
+            ls[this.id] = schemas;
+            chrome.storage.local.set(
+              { localSchemas: JSON.stringify(ls) },
+              () => {
+                this.manifest.clear();
+                schemas.forEach((s) => {
+                  this.manifest.set(s.uri(), s);
+                });
+                fulfil();
+              }
+            );
+          }
+        }
+      )
+    );
   }
 }
