@@ -2,7 +2,7 @@ import { Schema, ValidatorResult } from "jsonschema";
 
 import { Registry } from "./Registries";
 
-const $SCHEMA =
+export const $SCHEMA =
   "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#";
 
 type SelfDescribingSchema = Schema & {
