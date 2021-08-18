@@ -63,10 +63,9 @@ export const Directory: Component<DirectoryAttrs> = {
             const filterHit =
               !selections.length ||
               (s instanceof ResolvedIgluSchema
-                ? selections.includes(s.registry)
+                ? !!selections.find((r) => r.id === s.registry.id)
                 : false);
-            const searchHit = !search || s.like(search);
-            return filterHit && searchHit;
+            return filterHit && (!search || s.like(search));
           })
         : catalog;
 

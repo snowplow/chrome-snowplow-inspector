@@ -264,6 +264,14 @@ export class Resolver extends Registry {
       }
     }
 
+    const remIds = new Set(removed.map((r) => r.id));
+    for (const [key, regs] of this.hitCache) {
+      this.hitCache.set(
+        key,
+        regs.filter((reg) => !remIds.has(reg.id))
+      );
+    }
+
     return removed;
   }
 
