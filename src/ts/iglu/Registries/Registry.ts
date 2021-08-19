@@ -1,5 +1,5 @@
 import { Validator } from "jsonschema";
-import { default as m, Vnode } from "mithril";
+import { default as m, redraw, ClassComponent, Vnode } from "mithril";
 
 import { RegistrySpec, RegistryStatus } from "../../types";
 import { IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
@@ -24,7 +24,7 @@ type OptFields = {
   };
 };
 
-export abstract class Registry {
+export abstract class Registry implements ClassComponent {
   id: string;
   spec: RegistrySpec;
   priority?: number;
@@ -137,6 +137,23 @@ export abstract class Registry {
             ),
             value: (this.vendorPrefixes || []).join("\n"),
           })
+        ),
+        m(
+          "label.label",
+          {
+            title: "Current status of the registry",
+            for: "registry-status",
+          },
+          "Status",
+          m(
+            "output[name=registry-status]",
+            {
+              title: this.opts.statusReason,
+            },
+            `${this.lastStatus || "UNCERTAIN"} (${
+              vnode.attrs.schemaCount || 0
+            } schemas) `
+          )
         )
       );
     }

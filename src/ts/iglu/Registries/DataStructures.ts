@@ -268,46 +268,33 @@ export class DataStructuresRegistry extends Registry {
   }
 
   status() {
-    const last = this.lastStatus;
-    let undefined;
+    this.lastStatus = this.lastStatus || "OK";
 
-    switch (last) {
-      case "UNHEALTHY":
-        this.lastStatus = undefined;
-      // fall through
-      case "OK":
-        return Promise.resolve(last);
-      case undefined:
-        return new Promise<RegistryStatus>((fulfil, fail) =>
-          chrome.permissions.contains(
-            {
-              origins: [
-                `${this.oauthApiEndpoint.origin}/*`,
-                `${this.dsApiEndpoint.origin}/*`,
-              ],
-            },
-            (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
-          )
-        )
-          .then(() => this.auth())
-          .then(() => {
-            const now = new Date();
-            if (
-              this.accessToken &&
-              this.accessExpiry &&
-              now < this.accessExpiry
-            ) {
-              return "OK";
-            } else {
-              return Promise.reject("AUTH_EXPIRED");
-            }
-          })
-          .catch((reason) => {
-            this.opts["statusReason"] = reason;
-            this.lastStatus = "UNHEALTHY";
-            return Promise.resolve(this.lastStatus);
-          });
-    }
+    return new Promise<RegistryStatus>((fulfil, fail) =>
+      chrome.permissions.contains(
+        {
+          origins: [
+            `${this.oauthApiEndpoint.origin}/*`,
+            `${this.dsApiEndpoint.origin}/*`,
+          ],
+        },
+        (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
+      )
+    )
+      .then(() => this.auth())
+      .then(() => {
+        const now = new Date();
+        if (this.accessToken && this.accessExpiry && now < this.accessExpiry) {
+          return "OK";
+        } else {
+          return Promise.reject("AUTH_EXPIRED");
+        }
+      })
+      .catch((reason) => {
+        this.opts["statusReason"] = reason;
+        this.lastStatus = "UNHEALTHY";
+        return Promise.resolve(this.lastStatus);
+      });
   }
 
   walk() {

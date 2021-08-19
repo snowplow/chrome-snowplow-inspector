@@ -66,43 +66,34 @@ export class IgluRegistry extends Registry {
   }
 
   status() {
-    const last = this.lastStatus;
-    let undefined;
+    this.lastStatus = this.lastStatus || "OK";
 
-    switch (last) {
-      case "UNHEALTHY":
-        this.lastStatus = undefined;
-      // fall through
-      case "OK":
-        return Promise.resolve(last);
-      case undefined:
-        return new Promise<RegistryStatus>((fulfil, fail) =>
-          chrome.permissions.contains(
-            { origins: [`*://${this.base.host}/*`] },
-            (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
-          )
-        )
-          .then(() => this.fetch("api/meta/health").then((resp) => resp.text()))
-          .then((text) =>
-            text === "OK"
-              ? this.fetch("api/meta/health/db").then((resp) => resp.text())
-              : Promise.reject("REGISTRY_ERROR")
-          )
-          .then((text) =>
-            text === "OK"
-              ? this.fetch("api/meta/server").then((resp) => resp.json())
-              : Promise.reject("REGISTRY_DB_ERROR")
-          )
-          .then<RegistryStatus>((json) => {
-            Object.assign(this.opts, json);
-            return "OK";
-          })
-          .catch((reason) => {
-            this.opts["statusReason"] = reason;
-            this.lastStatus = "UNHEALTHY";
-            return Promise.resolve(this.lastStatus);
-          });
-    }
+    return new Promise<RegistryStatus>((fulfil, fail) =>
+      chrome.permissions.contains(
+        { origins: [`*://${this.base.host}/*`] },
+        (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
+      )
+    )
+      .then(() => this.fetch("api/meta/health").then((resp) => resp.text()))
+      .then((text) =>
+        text === "OK"
+          ? this.fetch("api/meta/health/db").then((resp) => resp.text())
+          : Promise.reject("REGISTRY_ERROR")
+      )
+      .then((text) =>
+        text === "OK"
+          ? this.fetch("api/meta/server").then((resp) => resp.json())
+          : Promise.reject("REGISTRY_DB_ERROR")
+      )
+      .then<RegistryStatus>((json) => {
+        Object.assign(this.opts, json);
+        return "OK";
+      })
+      .catch((reason) => {
+        this.opts["statusReason"] = reason;
+        this.lastStatus = "UNHEALTHY";
+        return Promise.resolve(this.lastStatus);
+      });
   }
 
   walk() {
@@ -113,7 +104,10 @@ export class IgluRegistry extends Registry {
           return data
             .map(IgluSchema.fromUri)
             .filter((s): s is IgluSchema => s !== null);
-        } else return Promise.reject();
+        } else {
+          this.lastStatus = "UNHEALTHY";
+          return Promise.reject();
+        }
       });
   }
 }

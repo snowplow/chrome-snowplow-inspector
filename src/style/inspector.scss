@@ -194,3 +194,8 @@ $colors: (
   width: 100%;
   margin-bottom: 1em;
 }
+
+output[name="registry-status"] {
+  display: block;
+  font-weight: normal;
+}

@@ -80,7 +80,8 @@ export class StaticRegistry extends Registry {
   }
 
   status() {
-    return Promise.resolve(this.lastStatus || "OK");
+    this.lastStatus = this.lastStatus || "OK";
+    return Promise.resolve(this.lastStatus);
   }
 
   parseManifest(): Promise<IgluSchema[]> {
@@ -88,6 +89,11 @@ export class StaticRegistry extends Registry {
     if (this.manifest) {
       return this.fetch(this.manifest.href)
         .then((res) => res.json())
+        .catch((reason) => {
+          this.lastStatus = "UNHEALTHY";
+          this.opts.statusReason = reason || "Manifest error";
+          return Promise.resolve(null);
+        })
         .then((man) => {
           let list: unknown[] = [];
 
@@ -132,16 +138,22 @@ export class StaticRegistry extends Registry {
   }
 
   walk() {
-    return this.parseManifest().then((claimed) => {
-      const claimedUris = claimed.map(String);
-      const cachedSchemas: IgluSchema[] = [];
-      for (const cached of this.cache.values()) {
-        if (!claimedUris.includes(cached.toString())) {
-          cachedSchemas.push(cached);
+    return this.parseManifest()
+      .then((claimed) => {
+        const claimedUris = claimed.map(String);
+        const cachedSchemas: IgluSchema[] = [];
+        for (const cached of this.cache.values()) {
+          if (!claimedUris.includes(cached.toString())) {
+            cachedSchemas.push(cached);
+          }
         }
-      }
 
-      return claimed.concat(cachedSchemas);
-    });
+        return claimed.concat(cachedSchemas);
+      })
+      .catch((reason) => {
+        this.lastStatus = "UNHEALTHY";
+        this.opts.statusReason = reason;
+        return Promise.reject();
+      });
   }
 }
