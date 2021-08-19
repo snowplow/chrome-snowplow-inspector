@@ -1,12 +1,10 @@
-import { default as m } from "mithril";
-
 import { IgluSchema } from "../";
 import { Registry } from "./Registry";
 import { RegistrySpec, RegistryStatus } from "../../types";
 import { IgluUri, ResolvedIgluSchema } from "../IgluSchema";
 
 const INSIGHTS_OAUTH_ENDPOINT = "https://id.snowplowanalytics.com/";
-const INSIGHTS_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api";
+const INSIGHTS_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api/";
 const INSIGHTS_API_ENDPOINT = "https://console.snowplowanalytics.com/";
 
 const REQUEST_TIMEOUT_MS = 5000;
@@ -173,8 +171,11 @@ export class DataStructuresRegistry extends Registry {
   private auth(): Promise<RequestInit["headers"]> {
     const now = new Date();
     if (this.accessToken && this.accessExpiry && now < this.accessExpiry) {
-      return Promise.resolve({ Authorization: `Bearer ${this.accessToken}` });
+      return Promise.resolve({ Authorization: this.accessToken });
     }
+
+    if (!this.clientId || !this.clientSecret || !this.organizationId)
+      return Promise.reject("Missing credentials");
 
     const data = new URLSearchParams({
       audience: this.oauthAudience,
