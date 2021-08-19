@@ -117,11 +117,12 @@ export class DataStructuresRegistry extends Registry {
   private readonly clientId: string;
   private readonly clientSecret: string;
 
-  private readonly cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
+  private readonly cache: Map<IgluUri, Promise<ResolvedIgluSchema>> = new Map();
   private accessToken?: string;
   private accessExpiry?: Date;
 
   private readonly metadata: Map<IgluUri, DataStructuresMetaData> = new Map();
+  private authLock?: Promise<RequestInit["headers"]>;
 
   constructor(spec: RegistrySpec) {
     super(spec);
@@ -140,6 +141,9 @@ export class DataStructuresRegistry extends Registry {
     this.organizationId = spec["organizationId"];
     this.clientId = spec["clientId"];
     this.clientSecret = spec["clientSecret"];
+
+    this.accessToken = spec["accessToken"];
+    this.accessExpiry = spec["accessExpiry"];
   }
 
   private fetch(apiPath: string): ReturnType<typeof fetch> {
@@ -170,6 +174,8 @@ export class DataStructuresRegistry extends Registry {
   }
 
   private auth(): Promise<RequestInit["headers"]> {
+    if (this.authLock) return this.authLock;
+
     const now = new Date();
     if (this.accessToken && this.accessExpiry && now < this.accessExpiry) {
       return Promise.resolve({ Authorization: this.accessToken });
@@ -196,7 +202,7 @@ export class DataStructuresRegistry extends Registry {
       referrerPolicy: "origin",
     };
 
-    return this.requestPermissions(
+    return (this.authLock = this.requestPermissions(
       `${this.oauthApiEndpoint.origin}/*`,
       `${this.dsApiEndpoint.origin}/*`
     )
@@ -205,15 +211,21 @@ export class DataStructuresRegistry extends Registry {
       )
       .then((resp) => (resp.ok ? resp.json() : Promise.reject("AUTH_ERROR")))
       .then((resp: InsightsOauthResponse) => {
-        this.accessToken = `${resp.token_type} ${resp.access_token}`;
-        this.accessExpiry = new Date(Date.now() + resp.expires_in);
+        this.opts.accessToken =
+          this.accessToken = `${resp.token_type} ${resp.access_token}`;
+        this.opts.accessExpiry = this.accessExpiry = new Date(
+          Date.now() + resp.expires_in * 1000
+        );
+        this.updated = true;
+        this.authLock = undefined;
         return { Authorization: this.accessToken };
       })
       .catch((reason) => {
         this.opts["statusReason"] = reason;
         this.lastStatus = "UNHEALTHY";
+        this.authLock = undefined;
         return Promise.reject();
-      });
+      }));
   }
 
   private pickPatch(metadata: DataStructuresMetaData) {
@@ -242,30 +254,33 @@ export class DataStructuresRegistry extends Registry {
   }
 
   resolve(schema: IgluSchema): Promise<ResolvedIgluSchema> {
-    if (this.cache.has(schema.uri()))
-      return Promise.resolve(this.cache.get(schema.uri())!);
+    if (this.cache.has(schema.uri())) return this.cache.get(schema.uri())!;
 
     if (this.metadata.has(schema.uri())) {
       const md = this.metadata.get(schema.uri())!;
       const patchEnv = this.pickPatch(md);
 
-      return this.fetch(
+      const p = this.fetch(
         `api/schemas/v1/organizations/schemas/${md.hash}/versions/${schema.version}${patchEnv}`
       )
         .then((resp) => resp.json())
         .then((data) => schema.resolve(data, this))
         .then((res) => {
           if (res) {
-            this.cache.set(res.uri(), res);
+            this.lastStatus = "OK";
             return res;
           } else return Promise.reject();
         });
-    } else
+
+      this.cache.set(schema.uri(), p);
+      return p;
+    } else if (!this.metadata.size) {
       return this.walk().then(() =>
         this.metadata.has(schema.uri())
           ? this.resolve(schema)
           : Promise.reject()
       );
+    } else return Promise.reject();
   }
 
   status() {
@@ -298,7 +313,7 @@ export class DataStructuresRegistry extends Registry {
       });
   }
 
-  walk() {
+  _walk() {
     return this.fetch("api/schemas/v1/organizations/schemas")
       .then((resp) => resp.json())
       .then((resp) => {

@@ -42,6 +42,7 @@ export class IgluRegistry extends Registry {
       headers: this.apiKey ? { apikey: this.apiKey } : undefined,
       referrerPolicy: "origin",
       signal: ac.signal,
+      cache: "no-cache",
     };
 
     return fetch(new URL(apiPath, this.base).href, opts).then((resp) => {
@@ -61,10 +62,10 @@ export class IgluRegistry extends Registry {
         return Promise.reject();
       })
       .then((result) => {
-        this.lastStatus = "OK";
         const resolved = schema.resolve(result, this);
         if (resolved) {
           this.cache.set(resolved.uri(), resolved);
+          this.lastStatus = "OK";
           return Promise.resolve(resolved);
         } else return Promise.reject();
       });
@@ -96,7 +97,7 @@ export class IgluRegistry extends Registry {
       });
   }
 
-  walk() {
+  _walk() {
     return this.fetch("api/schemas")
       .then((resp) => resp.json())
       .then((data) => {

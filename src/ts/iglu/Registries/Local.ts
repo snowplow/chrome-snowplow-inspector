@@ -53,7 +53,7 @@ export class LocalRegistry extends Registry {
     return Promise.resolve(this.lastStatus);
   }
 
-  walk() {
+  _walk() {
     return this.fetch().then(() => Array.from(this.manifest.values()));
   }
 
