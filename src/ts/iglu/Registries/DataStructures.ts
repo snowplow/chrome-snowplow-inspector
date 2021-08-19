@@ -117,6 +117,7 @@ export class DataStructuresRegistry extends Registry {
   private readonly clientId: string;
   private readonly clientSecret: string;
 
+  private readonly cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
   private accessToken?: string;
   private accessExpiry?: Date;
 
@@ -250,6 +251,9 @@ export class DataStructuresRegistry extends Registry {
   }
 
   resolve(schema: IgluSchema): Promise<ResolvedIgluSchema> {
+    if (this.cache.has(schema.uri()))
+      return Promise.resolve(this.cache.get(schema.uri())!);
+
     if (this.metadata.has(schema.uri())) {
       const md = this.metadata.get(schema.uri())!;
       const patchEnv = this.pickPatch(md);
@@ -259,7 +263,12 @@ export class DataStructuresRegistry extends Registry {
       )
         .then((resp) => resp.json())
         .then((data) => schema.resolve(data, this))
-        .then((res) => (res ? res : Promise.reject()));
+        .then((res) => {
+          if (res) {
+            this.cache.set(res.uri(), res);
+            return res;
+          } else return Promise.reject();
+        });
     } else
       return this.walk().then(() =>
         this.metadata.has(schema.uri())

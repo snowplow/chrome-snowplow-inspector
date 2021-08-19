@@ -1,7 +1,5 @@
-import { default as m } from "mithril";
-
-import { Registry } from "./Registry";
-import { IgluSchema } from "../IgluSchema";
+import { Registry } from ".";
+import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 import { RegistrySpec, RegistryStatus } from "../../types";
 
 const REQUEST_TIMEOUT_MS = 5000;
@@ -25,6 +23,7 @@ export class IgluRegistry extends Registry {
     },
   };
 
+  private readonly cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
   private readonly base: URL;
   private readonly apiKey?: string;
 
@@ -52,6 +51,9 @@ export class IgluRegistry extends Registry {
   }
 
   resolve(schema: IgluSchema) {
+    if (this.cache.has(schema.uri()))
+      return Promise.resolve(this.cache.get(schema.uri())!);
+
     return this.fetch(schema.uri().replace("iglu:", "api/schemas/"))
       .then((res) => res.json())
       .catch(() => {
