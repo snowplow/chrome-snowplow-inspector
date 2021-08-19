@@ -195,23 +195,14 @@ export class DataStructuresRegistry extends Registry {
       body: data,
       referrerPolicy: "origin",
     };
-    return new Promise<Response>((fulfil, fail) =>
-      chrome.permissions.contains(
-        {
-          origins: [
-            `${this.oauthApiEndpoint.origin}/*`,
-            `${this.dsApiEndpoint.origin}/*`,
-          ],
-        },
-        (allowed) =>
-          allowed
-            ? fetch(
-                new URL("oauth/token", this.oauthApiEndpoint).href,
-                opts
-              ).then(fulfil)
-            : fail("EXTENSION_ERROR")
-      )
+
+    return this.requestPermissions(
+      `${this.oauthApiEndpoint.origin}/*`,
+      `${this.dsApiEndpoint.origin}/*`
     )
+      .then(() =>
+        fetch(new URL("oauth/token", this.oauthApiEndpoint).href, opts)
+      )
       .then((resp) => (resp.ok ? resp.json() : Promise.reject("AUTH_ERROR")))
       .then((resp: InsightsOauthResponse) => {
         this.accessToken = `${resp.token_type} ${resp.access_token}`;

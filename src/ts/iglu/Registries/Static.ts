@@ -45,14 +45,19 @@ export class StaticRegistry extends Registry {
       credentials: this.base.username ? "include" : "omit",
     };
 
-    return fetch(new URL(schemaPath, this.base).href, opts).then((resp) => {
-      clearTimeout(id);
-      return resp.ok
-        ? resp
-        : resp.status === 404
-        ? Promise.reject("NOT_FOUND")
-        : Promise.reject("HTTP_ERROR");
-    });
+    const origins = [`*://${this.base.host}/*`];
+    if (this.manifest) origins.push(`*://${this.manifest.host}/*`);
+
+    return this.requestPermissions(...origins).then(() =>
+      fetch(new URL(schemaPath, this.base).href, opts).then((resp) => {
+        clearTimeout(id);
+        return resp.ok
+          ? resp
+          : resp.status === 404
+          ? Promise.reject("NOT_FOUND")
+          : Promise.reject("HTTP_ERROR");
+      })
+    );
   }
 
   resolve(schema: IgluSchema) {
