@@ -5,6 +5,7 @@ import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 
 export class LocalRegistry extends Registry {
   private readonly manifest: Map<IgluUri, ResolvedIgluSchema> = new Map();
+  lastStatus: RegistryStatus = "OK";
 
   constructor(spec: RegistrySpec) {
     super(spec);
@@ -49,7 +50,7 @@ export class LocalRegistry extends Registry {
   }
 
   status() {
-    return Promise.resolve<RegistryStatus>("OK");
+    return Promise.resolve(this.lastStatus);
   }
 
   walk() {

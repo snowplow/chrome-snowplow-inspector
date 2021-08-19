@@ -1,4 +1,4 @@
-import { default as m, Component, Vnode } from "mithril";
+import { default as m, Component, redraw } from "mithril";
 
 import { ModalOptions } from ".";
 import { buildRegistry, Registry, Resolver } from "../../ts/iglu";
@@ -8,6 +8,19 @@ export interface EditRegistriesOptions extends ModalOptions {
   registries: Registry[];
   resolver: Resolver;
 }
+
+const checkRegistries = (existing: Registry[], counts: number[]) =>
+  Promise.all(
+    existing.map((r, i) =>
+      r
+        .status()
+        .then(() => r.walk())
+        .then((x) => {
+          counts[i] = x.length;
+        })
+        .catch()
+    )
+  ).finally(() => redraw());
 
 const modelRegistries = (form: HTMLFormElement, existing: Registry[]) =>
   Array.from(form.elements)
@@ -50,7 +63,7 @@ const modelRegistries = (form: HTMLFormElement, existing: Registry[]) =>
 
 export const EditRegistries: Component<
   EditRegistriesOptions,
-  { editing: Registry[] }
+  { editing: Registry[]; counts: number[] }
 > = {
   view: ({ attrs: { setModal, registries, resolver }, state }) =>
     m("div.modal.is-active", [
@@ -71,6 +84,8 @@ export const EditRegistries: Component<
                 state.editing = registries.map((reg) =>
                   buildRegistry({ ...reg.spec, ...reg.opts, id: reg.id })
                 );
+                state.counts = [];
+                checkRegistries(state.editing, state.counts);
               },
               onchange: (event: Event) => {
                 if (!(event.currentTarget instanceof HTMLFormElement)) return;
@@ -81,6 +96,8 @@ export const EditRegistries: Component<
 
                 const form = event.currentTarget;
                 state.editing = modelRegistries(form, state.editing);
+                if (form.checkValidity())
+                  checkRegistries(state.editing, state.counts);
               },
               onsubmit: (event: Event) => {
                 if (!(event.target instanceof HTMLFormElement)) return;
@@ -100,8 +117,8 @@ export const EditRegistries: Component<
                 resolver.persist().then(() => setModal());
               },
             },
-            (state.editing || registries).map((reg) =>
-              m(reg, { editing: true })
+            (state.editing || registries).map((reg, i) =>
+              m(reg, { editing: true, schemaCount: (state.counts || [])[i] })
             )
           )
         ),
