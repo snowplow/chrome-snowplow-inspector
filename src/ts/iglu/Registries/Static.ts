@@ -25,7 +25,7 @@ export class StaticRegistry extends Registry {
     },
   };
 
-  private cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
+  private readonly cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
   private readonly base: URL;
   private readonly manifest?: URL;
 
