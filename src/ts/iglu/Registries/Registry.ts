@@ -159,6 +159,22 @@ export abstract class Registry implements ClassComponent {
     }
   }
 
+  protected requestPermissions(...origins: string[]): Promise<void> {
+    const perms = { origins };
+
+    return new Promise<void>((fulfil, fail) =>
+      chrome.permissions.contains(perms, (allowed) =>
+        allowed
+          ? fulfil()
+          : new Promise<void>((reqfulfil, reqfail) =>
+              chrome.permissions.request(perms, (granted) =>
+                granted ? reqfulfil() : reqfail("EXTENSION_PERMISSION_DENIED")
+              )
+            ).catch((reason) => fail(reason))
+      )
+    );
+  }
+
   abstract resolve(_: IgluSchema): Promise<ResolvedIgluSchema>;
   abstract status(): Promise<RegistryStatus>;
   abstract walk(): Promise<IgluSchema[]>;

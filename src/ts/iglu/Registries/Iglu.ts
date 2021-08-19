@@ -63,19 +63,17 @@ export class IgluRegistry extends Registry {
       .then((result) => {
         this.lastStatus = "OK";
         const resolved = schema.resolve(result, this);
-        return resolved ? Promise.resolve(resolved) : Promise.reject();
+        if (resolved) {
+          this.cache.set(resolved.uri(), resolved);
+          return Promise.resolve(resolved);
+        } else return Promise.reject();
       });
   }
 
   status() {
     this.lastStatus = this.lastStatus || "OK";
 
-    return new Promise<RegistryStatus>((fulfil, fail) =>
-      chrome.permissions.contains(
-        { origins: [`*://${this.base.host}/*`] },
-        (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
-      )
-    )
+    return this.requestPermissions(`*://${this.base.host}/*`)
       .then(() => this.fetch("api/meta/health").then((resp) => resp.text()))
       .then((text) =>
         text === "OK"
