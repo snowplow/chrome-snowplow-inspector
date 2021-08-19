@@ -146,15 +146,19 @@ const validateEvent = (
     ) {
       const sdj = json as SDJ;
       schema = IgluSchema.fromUri(sdj.schema);
-      validations.push(validate(schema, sdj.data));
+      validations.push(validate(schema, sdj.data).catch(() => "Unrecognised"));
 
       if (ueKeys.includes(key)) {
         schema = IgluSchema.fromUri((sdj.data as SDJ).schema);
-        validations.push(validate(schema, (sdj.data as SDJ).data));
+        validations.push(
+          validate(schema, (sdj.data as SDJ).data).catch(() => "Unrecognised")
+        );
       } else if (Array.isArray(sdj.data)) {
         sdj.data.forEach((ctx: SDJ) => {
           schema = IgluSchema.fromUri(ctx.schema);
-          validations.push(validate(schema, ctx.data));
+          validations.push(
+            validate(schema, ctx.data).catch(() => "Unrecognised")
+          );
         });
       } else {
         console.error("Expected Contexts SDJ to contain Array data");
