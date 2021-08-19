@@ -33,6 +33,9 @@ export abstract class Registry implements ClassComponent {
   lastStatus?: RegistryStatus;
   validator: Validator;
   fields: OptFields = {};
+  updated: boolean = false;
+
+  private walkLock?: ReturnType<Registry["walk"]>;
 
   constructor(spec: RegistrySpec) {
     const { id, name, kind, priority, vendorPrefixes, ...opts } = spec;
@@ -175,7 +178,14 @@ export abstract class Registry implements ClassComponent {
     );
   }
 
+  walk(): ReturnType<Registry["_walk"]> {
+    if (this.walkLock) return this.walkLock;
+    return (this.walkLock = this._walk().finally(
+      () => (this.walkLock = undefined)
+    ));
+  }
+
   abstract resolve(_: IgluSchema): Promise<ResolvedIgluSchema>;
   abstract status(): Promise<RegistryStatus>;
-  abstract walk(): Promise<IgluSchema[]>;
+  abstract _walk(): Promise<IgluSchema[]>;
 }

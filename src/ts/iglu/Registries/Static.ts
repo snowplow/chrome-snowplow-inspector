@@ -43,6 +43,7 @@ export class StaticRegistry extends Registry {
       referrerPolicy: "origin",
       signal: ac.signal,
       credentials: this.base.username ? "include" : "omit",
+      cache: "default",
     };
 
     const origins = [`*://${this.base.host}/*`];
@@ -68,9 +69,9 @@ export class StaticRegistry extends Registry {
         .then((res) => res.json())
         .then((result) => {
           const resolved = schema.resolve(result, this);
-          this.lastStatus = "OK";
           if (resolved) {
             this.cache.set(schema.uri(), resolved);
+            this.lastStatus = "OK";
             return Promise.resolve(resolved);
           } else return Promise.reject();
         })
@@ -142,7 +143,7 @@ export class StaticRegistry extends Registry {
     } else return Promise.resolve([]);
   }
 
-  walk() {
+  _walk() {
     return this.parseManifest()
       .then((claimed) => {
         const claimedUris = claimed.map(String);

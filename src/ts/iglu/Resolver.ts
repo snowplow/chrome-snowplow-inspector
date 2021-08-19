@@ -179,10 +179,16 @@ export class Resolver extends Registry {
           () => Promise.resolve()
         )
       )
-    ).then(
-      () => Promise.reject(), // everything rejected
-      (res: ResolvedIgluSchema) => Promise.resolve(res) // successfully found schema
-    );
+    )
+      .then(
+        () => Promise.reject(), // everything rejected
+        (res: ResolvedIgluSchema) => Promise.resolve(res) // successfully found schema
+      )
+      .then((res) => {
+        if (res.registry.updated)
+          this.persist().then(() => (res.registry.updated = false));
+        return res;
+      });
   }
 
   status() {
@@ -251,6 +257,10 @@ export class Resolver extends Registry {
     ).then((args) => {
       return ([] as IgluSchema[]).concat(...args);
     });
+  }
+
+  _walk() {
+    return this.walk();
   }
 
   remove(...registries: Registry[]) {
