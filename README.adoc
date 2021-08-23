@@ -20,31 +20,23 @@ To install the extension, visit the page on the link:https://chrome.google.com/w
 You can get builds for Firefox v60+ in link:https://github.com/poplindata/chrome-snowplow-inspector/releases[Releases].
 
 === Schema Validation
-The extension options should let you load in local JSON Schema files during development, and you can also add your production or Snowplow Mini Iglu Repositories to test against what you have in production.
+The Schema Manager inside the extension should let you load in local JSON Schema files during development, and you can also add your production or Snowplow Mini Iglu Repositories to test against what you have in production.
 
-Both link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories] and link:https://github.com/snowplow/iglu/wiki/Iglu-server[Iglu Servers] (like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini]) are supported.
+All of
+. Local Registries (embedded into the extensionn)
+. link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories]
+. link:https://github.com/snowplow/iglu/wiki/Iglu-server[Iglu Servers] (like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini])
+. link:https://docs.snowplowanalytics.com/docs/understanding-tracking-design/managing-data-structures-via-the-api/[Data Structures API]
+are supported.
 
 ==== Adding an Iglu Repository
-. Right-click the extension icon in the main browser toolbar
-. Select Options
-. Paste the URL to your repository in the Iglu Repositories field (if you're adding Snowplow Mini, you need to keep the `/iglu-server/api` suffix)
-. Repository URLs can be separated by spaces, lines, or commas
+. Head to the extension pane in the Dev Tools, and hit the `Manage Schemas` button in the top toolbar
+. In the bottom right, hit `Registries...`, then `Add`
+. Fill out the details for you new Regsitry and save
+. Note your browser will request permission for the Extension to access the registries' Domain, this may happen in the main browser window rather than the Dev Tools window if it's not docked
+. You can also import your pipeline's configuration using Import and supplying a link:https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/iglu/iglu-resolver/[resolver-config]
 
 By default we include the URL for link:https://github.com/snowplow/iglu-central[Iglu Central], which includes schemas for the built-in tracking JSONs. You can add as many repositories as you like.
-
-For newer versions of Iglu Server, you need to include a UUID API key. In the options, you can attach this to a specific repo by including it in the URL as a username.
-For example, `http://01234567-89ab-cdef-fedc-ba9876543210@mini.poplindata.com/iglu-server/api`
-
-==== Repository Setup
-Make sure you have access to your repository from your browser in order for the extension to find your schemas.
-Typically repositories are hosted on S3, and by default the files may not be publically readable and will result in 403 errors.
-
-For older versions of the extension, it was important to have your repository website or S3 bucket configured for link:https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS[Cross-Origin Resource Sharing].
-You can find out how to correctly configure an S3 bucket at link:https://docs.aws.amazon.com/AmazonS3/latest/user-guide/add-cors-configuration.html[How Do I Allow Cross-Domain Resource Sharing with CORS?] the default rule should work, the extension only requires GET access.
-More recent versions shouldn't require CORS to be set up as long as you grant the extension permissions when adding a repository.
-
-If schemas are still 'Unrecognised', try clearing your browser cache and the extension's Schema Cache.
-Alternatively, you can import your schemas directly as Local Schemas in the extension Options page.
 
 == Develop
 === Build
