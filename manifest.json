@@ -25,6 +25,6 @@
   "author": "Poplin Data",
   "minimum_chrome_version": "18.0",
   "devtools_page": "devtools.html",
-  "permissions": ["storage", "clipboardWrite"],
+  "permissions": ["storage"],
   "optional_permissions": ["*://*/*"]
 }
