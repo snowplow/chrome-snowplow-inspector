@@ -4,31 +4,7 @@ import { trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
-import { b64d, hash, tryb64 } from "../../ts/util";
-
-const COLLECTOR_COLOURS = [
-  "turquoise",
-  "purple",
-  "dark",
-  "red",
-  "yellow",
-  "blue",
-  "light",
-];
-const SEEN_COLLECTORS = new Map();
-
-const colourOf = (beacon: IBeaconSummary) => {
-  const id = beacon.collector + beacon.appId;
-
-  if (!SEEN_COLLECTORS.has(id)) {
-    SEEN_COLLECTORS.set(
-      id,
-      COLLECTOR_COLOURS[SEEN_COLLECTORS.size % COLLECTOR_COLOURS.length || 0]
-    );
-  }
-
-  return SEEN_COLLECTORS.get(id);
-};
+import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 
 const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
   return (
@@ -335,7 +311,7 @@ export const Timeline: Component<ITimeline> = {
               x.response.status === 200 || x.response.status === 0
                 ? ""
                 : "not-ok",
-              colourOf(y),
+              colorOf(y.collector + y.appId),
               y.validity === "Invalid" ? "is-invalid" : "",
             ].join(" "),
             onclick: setActive.bind(null, y),

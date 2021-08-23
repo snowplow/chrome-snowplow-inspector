@@ -114,6 +114,18 @@ $colors: (
     background-color: #{$color};
     border-radius: 100%;
   }
+
+  summary > .registry.#{$class} {
+    background-color: #{$color};
+    color: findColorInvert($color);
+  }
+}
+
+summary > .registry {
+  border-radius: 2px;
+  font-size: 0.75em;
+  padding: 0.1em 0.5em;
+  margin: 0 0.1em;
 }
 
 .directory.column {

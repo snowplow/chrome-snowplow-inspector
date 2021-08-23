@@ -1,3 +1,5 @@
+import { default as canonicalize } from "canonicalize";
+
 import { IgluSchema } from "../";
 import { Registry } from "./Registry";
 import { RegistrySpec, RegistryStatus } from "../../types";
@@ -333,11 +335,10 @@ export class DataStructuresRegistry extends Registry {
             > = new Map();
 
             deployments.forEach((dep) => {
-              catalog.push(new IgluSchema(vendor, name, format, dep.version));
-
               const v: Omit<typeof dep, "version"> = Object.assign({}, dep, {
                 version: undefined,
               });
+
               if (versionInfo.has(dep.version)) {
                 versionInfo.get(dep.version)?.push(v);
               } else {
@@ -347,6 +348,7 @@ export class DataStructuresRegistry extends Registry {
 
             versionInfo.forEach((deployments, version) => {
               const s = new IgluSchema(vendor, name, format, version);
+              catalog.push(s);
               const metadata: DataStructuresMetaData = {
                 ...meta,
                 description,

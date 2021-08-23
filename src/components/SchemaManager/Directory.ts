@@ -1,11 +1,14 @@
 import { default as m, Component } from "mithril";
+import { default as canonicalize } from "canonicalize";
+
 import {
   Registry,
   IgluSchema,
   ResolvedIgluSchema,
   Resolver,
+  IgluUri,
 } from "../../ts/iglu";
-import { sorted } from "../../ts/util";
+import { chunkEach, colorOf, sorted } from "../../ts/util";
 
 interface SchemaDirectory {
   [vendor: string]: VendorDirectory;
@@ -20,7 +23,7 @@ interface NameDirectory {
 }
 
 interface VersionDirectory {
-  [version: string]: IgluSchema[];
+  [version: string]: (IgluSchema | ResolvedIgluSchema)[];
 }
 
 type DirectoryAttrs = {
@@ -33,14 +36,22 @@ type DirectoryAttrs = {
 
 const catalog: (IgluSchema | ResolvedIgluSchema)[] = [];
 const refreshSchemas = (resolver: Resolver) => {
+  const seenRegs = new Map<IgluUri, Registry[]>();
+
   resolver.walk().then((discovered) => {
     catalog.splice(0);
-    discovered.map((ds, i) => {
+
+    chunkEach(discovered, (ds, i) => {
       catalog[i] = ds;
-      resolver.resolve(ds).then((res) => {
-        catalog[i] = res;
-        m.redraw();
-      });
+      if (!seenRegs.has(ds.uri())) seenRegs.set(ds.uri(), []);
+
+      return resolver
+        .resolve(ds, seenRegs.get(ds.uri())!)
+        .then((res) => {
+          catalog[i] = res;
+          m.redraw();
+        })
+        .catch(() => console.log("couldn't find ", ds.uri()));
     });
   });
 };
@@ -120,28 +131,59 @@ export const Directory: Component<DirectoryAttrs> = {
                   m("summary", format),
                   sorted(Object.entries(versions), (x) => x[0], true).map(
                     ([version, deployments]) =>
-                      m(
-                        "details.version",
-                        { key: version },
-                        m("summary", version),
-                        m(
-                          "ul.registries",
-                          deployments.map((d) => {
-                            const json =
-                              d instanceof ResolvedIgluSchema
-                                ? JSON.stringify(d.data, null, 4)
-                                : d.uri();
-                            return m(
-                              "li",
-                              m(
-                                "textarea[readonly]",
-                                { rows: json.split("\n").length },
-                                json
-                              )
-                            );
-                          })
+                      deployments
+                        .map((d) =>
+                          d instanceof ResolvedIgluSchema
+                            ? canonicalize(d.data)
+                            : d.uri()
                         )
-                      )
+                        .map((d, _, a) => a.indexOf(d))
+                        .reduce<Registry[][]>((canon, e, i) => {
+                          const s = deployments[i];
+                          canon[e] = canon[e] || [];
+                          if (s instanceof ResolvedIgluSchema) {
+                            canon[e].push(s.registry);
+                          }
+
+                          return canon;
+                        }, [])
+                        .map(
+                          (
+                            registries,
+                            i
+                          ): [Registry[], IgluSchema | ResolvedIgluSchema] => [
+                            registries,
+                            deployments[i],
+                          ]
+                        )
+                        .map(([registries, deployment]) => ({
+                          val:
+                            deployment instanceof ResolvedIgluSchema
+                              ? JSON.stringify(deployment.data, null, 4)
+                              : deployment.uri(),
+                          registries,
+                        }))
+                        .map(({ val, registries }, i) =>
+                          m(
+                            "details.version",
+                            m(
+                              "summary",
+                              version,
+                              registries.map((r) =>
+                                m(
+                                  "span.registry.is-pulled-right",
+                                  { class: colorOf(r.spec.id!) },
+                                  r.spec.name
+                                )
+                              )
+                            ),
+                            m(
+                              "textarea[readonly]",
+                              { rows: val.split("\n").length },
+                              val
+                            )
+                          )
+                        )
                   )
                 )
               )
