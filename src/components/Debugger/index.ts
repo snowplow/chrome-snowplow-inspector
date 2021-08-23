@@ -96,7 +96,7 @@ export const Debugger: ClosureComponent<IDebugger> = ({
           "div.column.is-narrow.timeline",
           m(
             "div.panel.filterPanel",
-            m("input#filter[type=text][placeholder=Filter]", {
+            m("input.input#filter[type=text][placeholder=Filter]", {
               onkeyup: (e: KeyboardEvent) => {
                 const t = e.currentTarget as HTMLInputElement;
                 try {

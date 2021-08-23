@@ -459,9 +459,61 @@ const badToRequests = (data: string[]): Entry[] => {
   return entries;
 };
 
+const COLOR_OPTIONS = [
+  "turquoise",
+  "purple",
+  "dark",
+  "red",
+  "yellow",
+  "blue",
+  "light",
+];
+const COLOR_ALLOCATIONS = new Map();
+
+const colorOf = (id: string) => {
+  if (!COLOR_ALLOCATIONS.has(id)) {
+    COLOR_ALLOCATIONS.set(
+      id,
+      COLOR_OPTIONS[COLOR_ALLOCATIONS.size % COLOR_OPTIONS.length || 0]
+    );
+  }
+
+  return COLOR_ALLOCATIONS.get(id);
+};
+
+const chunkEach = <T>(
+  arr: T[],
+  cb: (e: T, i: number) => Promise<void>,
+  CHUNK_SIZE: number = 24
+) => {
+  return new Promise<void>((fulfil) => {
+    let next = CHUNK_SIZE;
+    let chunk = arr.slice(0, CHUNK_SIZE).map(cb);
+
+    if (!chunk.length) fulfil();
+
+    const step = (chunk: Promise<void>[]): Promise<void> => {
+      return Promise.race(chunk.map((p, i) => p.then(() => i))).then((i) => {
+        if (next < arr.length) {
+          chunk[i] = cb(arr[next], next);
+          next += 1;
+        } else {
+          chunk = chunk.filter((_, j) => j !== i);
+        }
+
+        if (chunk.length) return step(chunk);
+      });
+    };
+
+    return step(chunk);
+  });
+};
+
 export {
   badToRequests,
   b64d,
+  chunkEach,
+  colorOf,
   esToRequests,
   hash,
   hasMembers,

@@ -168,14 +168,26 @@ export class Resolver extends Registry {
     return migrated.length > 0;
   }
 
-  resolve(schema: IgluSchema) {
+  resolve(schema: IgluSchema, exclude?: Registry[]) {
+    if (schema instanceof ResolvedIgluSchema) {
+      return Promise.resolve(schema);
+    }
     const candidates = this.hitCache.get(schema.uri()) || this.registries;
+
     // .all rejects on first rejection, otherwise waiting for fulfillment
     // invert rejections to successes and the first success to an error to early abort
     return Promise.all(
       candidates.map((r) =>
         r.resolve(schema).then(
-          (res) => Promise.reject<ResolvedIgluSchema>(res),
+          (res) => {
+            if (
+              exclude !== undefined &&
+              exclude.find((reg) => res.registry.id === reg.id)
+            )
+              return Promise.resolve();
+
+            return Promise.reject(res);
+          },
           () => Promise.resolve()
         )
       )
@@ -185,6 +197,7 @@ export class Resolver extends Registry {
         (res: ResolvedIgluSchema) => Promise.resolve(res) // successfully found schema
       )
       .then((res) => {
+        if (exclude !== undefined) exclude.push(res.registry);
         if (res.registry.updated)
           this.persist().then(() => (res.registry.updated = false));
         return res;
@@ -239,6 +252,7 @@ export class Resolver extends Registry {
   }
 
   walk() {
+    this.hitCache.clear();
     return Promise.all(
       this.registries.map((reg) =>
         reg

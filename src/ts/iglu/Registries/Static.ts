@@ -1,5 +1,3 @@
-import { default as m } from "mithril";
-
 import { Registry } from "./Registry";
 import { IgluSchema, IgluUri, ResolvedIgluSchema } from "../IgluSchema";
 import { RegistrySpec } from "../../types";
