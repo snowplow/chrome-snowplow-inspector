@@ -166,15 +166,19 @@ export abstract class Registry implements ClassComponent {
     const perms = { origins };
 
     return new Promise<void>((fulfil, fail) =>
-      chrome.permissions.contains(perms, (allowed) =>
-        allowed
-          ? fulfil()
-          : new Promise<void>((reqfulfil, reqfail) =>
-              chrome.permissions.request(perms, (granted) =>
-                granted ? reqfulfil() : reqfail("EXTENSION_PERMISSION_DENIED")
-              )
-            ).catch((reason) => fail(reason))
-      )
+      chrome.permissions
+        ? chrome.permissions.contains(perms, (allowed) =>
+            allowed
+              ? fulfil()
+              : new Promise<void>((reqfulfil, reqfail) =>
+                  chrome.permissions.request(perms, (granted) =>
+                    granted
+                      ? reqfulfil()
+                      : reqfail("EXTENSION_PERMISSION_DENIED")
+                  )
+                ).catch((reason) => fail(reason))
+          )
+        : Promise.resolve()
     );
   }
 

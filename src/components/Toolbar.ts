@@ -20,12 +20,12 @@ const toolbarView = (vnode: Vnode<IToolbar>) => {
         ),
         m(
           "a.button.is-outlined.is-small.control",
-          { onclick: () => vnode.attrs.setModal("badRows") },
+          { onclick: () => vnode.attrs.setModal("badRows", { addRequests: vnode.attrs.addRequests }) },
           "Import Bad Rows"
         ),
         m(
           "a.button.is-outlined.is-small.control",
-          { onclick: () => vnode.attrs.setModal("stream") },
+          { onclick: () => vnode.attrs.setModal("stream", { addRequests: vnode.attrs.addRequests }) },
           "Stream Live Data"
         ),
         m(

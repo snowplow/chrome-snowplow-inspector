@@ -43,7 +43,7 @@ export const LiveStream: Component<LiveStreamOptions> = {
             const seenEvents = new Set();
 
             const esPermissions = { origins: [`*://${esUrl.hostname}/*`] };
-            chrome.permissions.request(esPermissions);
+            chrome.permissions?.request(esPermissions);
 
             const url = `${esUrl.protocol}//${esUrl.host}${esUrl.pathname}${esUrl.search}`;
 

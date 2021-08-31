@@ -2,7 +2,7 @@ import { Entry } from "har-format";
 import { Schema } from "jsonschema";
 
 import { Resolver } from "./iglu";
-import { Modal } from "../components/Modals";
+import { Modal, ModalSetter } from "../components/Modals";
 
 export type Application = "debugger" | "schemaManager";
 
@@ -74,7 +74,7 @@ export interface IToolbar {
   addRequests: (requests: Entry[]) => void;
   changeApp: (app: Application) => void;
   clearRequests: () => void;
-  setModal: (modalName?: Modal) => void;
+  setModal: ModalSetter;
 }
 
 export interface IRowSet {
@@ -96,7 +96,7 @@ export interface IBeacon {
 
 export interface IBadRowsSummary {
   addRequests: (requests: Entry[]) => void;
-  setModal: (modalName?: Modal) => void;
+  setModal: ModalSetter;
 }
 
 export interface ITomcatImport {
