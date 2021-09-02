@@ -126,9 +126,14 @@ const validateEvent = (
 
       if (ueKeys.includes(key)) {
         schema = IgluSchema.fromUri((sdj.data as SDJ).schema);
-        validations.push(
-          validate(schema, (sdj.data as SDJ).data).catch(() => "Unrecognised")
-        );
+        if (schema)
+          validations.push(
+            validate(schema, (sdj.data as SDJ).data).catch(() => "Unrecognised")
+          );
+        // this means data is not an SDJ. This is technically an invalid payload, but could just be old-style unstruct events.
+        // the beacon view will show it as invalid, but to reduce UI noise, just pretend it's unrecognised because there is no
+        // identifiable schema. This is a legacy behaviour so we'll make an exception here.
+        else validations.push(Promise.resolve("Unrecognised"));
       } else if (Array.isArray(sdj.data)) {
         sdj.data.forEach((ctx: SDJ) => {
           schema = IgluSchema.fromUri(ctx.schema);

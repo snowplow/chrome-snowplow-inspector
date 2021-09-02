@@ -28,7 +28,8 @@ export class IgluSchema {
     readonly version: string
   ) {}
 
-  static fromUri(uri: IgluUri): IgluSchema | null {
+  static fromUri(uri?: IgluUri): IgluSchema | null {
+    if (!uri) return null;
     const [scheme, ...body] = uri.split(":");
     if (scheme !== "iglu") return null;
 
