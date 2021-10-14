@@ -2,7 +2,6 @@
   "name": "chrome-snowplow-inspector",
   "version": "0.2.18",
   "description": "Add a panel to DevTools to show Snowplow analytics beacon information.",
-  "main": "src/extension.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "check": "tsc --noEmit",
@@ -27,17 +26,18 @@
   "dependencies": {
     "bulma": "^0.7.5",
     "jsonschema": "1.*",
-    "mithril": "2.*"
+    "mithril": "2.*",
+    "canonicalize": "^1.0.5",
+    "@snowplow/browser-tracker": "^3.1.1"
   },
   "devDependencies": {
-    "@snowplow/browser-tracker": "^3.1.1",
-    "@types/chrome": "^0.0.157",
+    "parcel": "^2.0.0",
+    "@parcel/transformer-sass": "^2.0.0",
+    "@types/chrome": "^0.0.159",
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/mithril": "^2.0.2",
     "@types/node": "^16.0.0",
-    "canonicalize": "^1.0.5",
-    "parcel-bundler": "^1.12.4",
     "prettier": "^2.3.2",
     "sass": "^1.23.7",
     "tslib": "*",
