@@ -24,20 +24,20 @@
   },
   "homepage": "https://github.com/poplindata/chrome-snowplow-inspector#readme",
   "dependencies": {
+    "@snowplow/browser-tracker": "^3.1.1",
     "bulma": "^0.7.5",
-    "jsonschema": "1.*",
-    "mithril": "2.*",
     "canonicalize": "^1.0.5",
-    "@snowplow/browser-tracker": "^3.1.1"
+    "jsonschema": "1.*",
+    "mithril": "2.*"
   },
   "devDependencies": {
-    "parcel": "^2.0.0",
     "@parcel/transformer-sass": "^2.0.0",
-    "@types/chrome": "^0.0.159",
+    "@types/chrome": "^0.0.164",
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/mithril": "^2.0.2",
     "@types/node": "^16.0.0",
+    "parcel": "^2.0.0",
     "prettier": "^2.3.2",
     "sass": "^1.23.7",
     "tslib": "*",
