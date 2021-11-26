@@ -41,6 +41,7 @@ export const Debugger: ClosureComponent<IDebugger> = ({
 
   function setActive(beacon: IBeaconSummary) {
     active = beacon;
+    m.redraw();
   }
 
   function isActive(beacon: IBeaconSummary) {
