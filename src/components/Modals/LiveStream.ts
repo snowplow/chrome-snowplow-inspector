@@ -3,6 +3,7 @@ import { Entry } from "har-format";
 import { default as m, request, Component } from "mithril";
 
 import { esToRequests } from "../../ts/util";
+import { request as requestPerms } from "../../ts/permissions";
 import { ModalOptions } from ".";
 
 let streamLock: number = -1;
@@ -41,35 +42,36 @@ export const LiveStream: Component<LiveStreamOptions> = {
             );
 
             const seenEvents = new Set();
-
-            const esPermissions = { origins: [`*://${esUrl.hostname}/*`] };
-            chrome.permissions?.request(esPermissions);
-
             const url = `${esUrl.protocol}//${esUrl.host}${esUrl.pathname}${esUrl.search}`;
 
-            let timeoutId = window.setTimeout(function pollStream() {
-              request({
-                password: esUrl.password || undefined,
-                url,
-                user: esUrl.username || undefined,
-              }).then((resp) => {
-                const hits = (resp as SearchResponse<object>).hits.hits.filter(
-                  (x) => !seenEvents.has(x._id)
-                );
-                hits.forEach((x) => seenEvents.add(x._id));
+            requestPerms(`*://${esUrl.hostname}/*`).then(() => {
+              let timeoutId = window.setTimeout(function pollStream() {
+                request({
+                  password: esUrl.password || undefined,
+                  url,
+                  user: esUrl.username || undefined,
+                }).then((resp) => {
+                  const hits = (
+                    resp as SearchResponse<object>
+                  ).hits.hits.filter((x) => !seenEvents.has(x._id));
+                  hits.forEach((x) => seenEvents.add(x._id));
 
-                if (hits.length) {
-                  addRequests(esToRequests(hits.map((x) => x._source)));
-                }
+                  if (hits.length) {
+                    addRequests(esToRequests(hits.map((x) => x._source)));
+                  }
 
-                if (streamLock === timeoutId) {
-                  streamLock = timeoutId = window.setTimeout(pollStream, 1000);
-                }
-              });
-            }, 1000);
-            streamLock = timeoutId;
+                  if (streamLock === timeoutId) {
+                    streamLock = timeoutId = window.setTimeout(
+                      pollStream,
+                      1000
+                    );
+                  }
+                });
+              }, 1000);
+              streamLock = timeoutId;
 
-            setModal();
+              setModal();
+            });
           },
         },
         [

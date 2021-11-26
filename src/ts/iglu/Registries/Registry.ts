@@ -1,8 +1,9 @@
 import { Validator } from "jsonschema";
 import { default as m, redraw, ClassComponent, Vnode } from "mithril";
 
-import { RegistrySpec, RegistryStatus } from "../../types";
 import { IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
+import { RegistrySpec, RegistryStatus } from "../../types";
+import { request } from "../../permissions";
 import { uuidv4 } from "../../util";
 
 const kindFieldOptions: { [name: string]: RegistrySpec["kind"] } = {
@@ -163,23 +164,7 @@ export abstract class Registry implements ClassComponent {
   }
 
   protected requestPermissions(...origins: string[]): Promise<void> {
-    const perms = { origins };
-
-    return new Promise<void>((fulfil, fail) =>
-      chrome.permissions
-        ? chrome.permissions.contains(perms, (allowed) =>
-            allowed
-              ? fulfil()
-              : new Promise<void>((reqfulfil, reqfail) =>
-                  chrome.permissions.request(perms, (granted) =>
-                    granted
-                      ? reqfulfil()
-                      : reqfail("EXTENSION_PERMISSION_DENIED")
-                  )
-                ).catch((reason) => fail(reason))
-          )
-        : Promise.resolve()
-    );
+    return request(...origins);
   }
 
   walk(): ReturnType<Registry["_walk"]> {
