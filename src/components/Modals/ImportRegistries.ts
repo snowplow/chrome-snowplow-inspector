@@ -133,7 +133,8 @@ export const ImportRegistries: Component<
                     state.results = parseResolverConfig(event.target.value);
                     state.error = undefined;
                   } catch (e) {
-                    state.error = e.message;
+                    if (e instanceof Error) state.error = e.message;
+                    else state.error = "" + e;
                   }
                 }
               }

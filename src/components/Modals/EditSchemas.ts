@@ -140,7 +140,8 @@ export const EditSchemas: ClosureComponent<EditSchemasOptions> = ({
                         try {
                           maybeSchema = validateEdited(schemadef, registry);
                         } catch (e) {
-                          error = e.message;
+                          if (e instanceof Error) error = e.message;
+                          else error = "" + e;
                         }
 
                         return m(
