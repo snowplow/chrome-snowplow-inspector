@@ -131,7 +131,7 @@ export abstract class Registry implements ClassComponent {
           "label.label",
           {
             title:
-              "Vendor prefixes, for preferrring registries for particular schema lookups. Not used in the extension",
+              "Vendor prefixes, for preferring registries for particular schema lookups. Not used in the extension",
           },
           "Vendor Prefixes",
           m("textarea.textarea[name=vendorPrefixes]", {
