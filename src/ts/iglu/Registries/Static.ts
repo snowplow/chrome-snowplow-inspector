@@ -34,29 +34,28 @@ export class StaticRegistry extends Registry {
   }
 
   private fetch(schemaPath: string): ReturnType<typeof fetch> {
-    const ac = new AbortController();
-    const id = setTimeout(ac.abort.bind(ac), REQUEST_TIMEOUT_MS);
-
-    const opts: Partial<RequestInit> = {
-      referrerPolicy: "origin",
-      signal: ac.signal,
-      credentials: this.base.username ? "include" : "omit",
-      cache: "default",
-    };
-
     const origins = [`*://${this.base.host}/*`];
     if (this.manifest) origins.push(`*://${this.manifest.host}/*`);
 
-    return this.requestPermissions(...origins).then(() =>
-      fetch(new URL(schemaPath, this.base).href, opts).then((resp) => {
+    return this.requestPermissions(...origins).then(() => {
+      const ac = new AbortController();
+      const id = setTimeout(ac.abort.bind(ac), REQUEST_TIMEOUT_MS);
+
+      const opts: Partial<RequestInit> = {
+        referrerPolicy: "origin",
+        signal: ac.signal,
+        credentials: this.base.username ? "include" : "omit",
+        cache: "default",
+      };
+      return fetch(new URL(schemaPath, this.base).href, opts).then((resp) => {
         clearTimeout(id);
         return resp.ok
           ? resp
           : resp.status === 404
           ? Promise.reject("NOT_FOUND")
           : Promise.reject("HTTP_ERROR");
-      })
-    );
+      });
+    });
   }
 
   resolve(schema: IgluSchema) {

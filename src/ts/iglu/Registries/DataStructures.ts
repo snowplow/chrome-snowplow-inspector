@@ -288,19 +288,15 @@ export class DataStructuresRegistry extends Registry {
   status() {
     this.lastStatus = this.lastStatus || "OK";
 
-    return new Promise<RegistryStatus>((fulfil, fail) =>
-      chrome.permissions
-        ? chrome.permissions.contains(
-            {
-              origins: [
-                `${this.oauthApiEndpoint.origin}/*`,
-                `${this.dsApiEndpoint.origin}/*`,
-              ],
-            },
-            (allowed) => (allowed ? fulfil("OK") : fail("EXTENSION_ERROR"))
-          )
-        : Promise.resolve("OK")
-    )
+    return Promise.race([
+      this.requestPermissions(
+        `${this.oauthApiEndpoint.origin}/*`,
+        `${this.dsApiEndpoint.origin}/*`
+      ),
+      new Promise((_, f) =>
+        setTimeout(f, REQUEST_TIMEOUT_MS, "Permission timeout")
+      ),
+    ])
       .then(() => this.auth())
       .then(() => {
         const now = new Date();
