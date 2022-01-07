@@ -71,12 +71,17 @@ export const EditSchemas: ClosureComponent<EditSchemasOptions> = ({
         reg.walk().then((schemas) => {
           const es = (editableSchemas[i] = editableSchemas[i] || []);
           addedSchemas[i] = addedSchemas[i] || [];
-          schemas.map((s, j) => {
-            reg.resolve(s).then((r) => {
-              es[j] = JSON.stringify(r.data);
-              redraw();
+          if (schemas.length) {
+            schemas.map((s, j) => {
+              reg.resolve(s).then((r) => {
+                es[j] = JSON.stringify(r.data);
+                redraw();
+              });
             });
-          });
+          } else if (!es.length) {
+            es.push("");
+            redraw();
+          }
         })
       );
     },
