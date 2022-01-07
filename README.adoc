@@ -24,7 +24,7 @@ You can get builds for Firefox v60+ in link:https://github.com/poplindata/chrome
 The Schema Manager inside the extension should let you load in local JSON Schema files during development, and you can also add your production or Snowplow Mini Iglu Repositories to test against what you have in production.
 
 All of
-. Local Registries (embedded into the extensionn)
+. Local Registries (embedded into the extension)
 . link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories]
 . link:https://github.com/snowplow/iglu/wiki/Iglu-server[Iglu Servers] (like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini])
 . link:https://docs.snowplowanalytics.com/docs/understanding-tracking-design/managing-data-structures-via-the-api/[Data Structures API]
