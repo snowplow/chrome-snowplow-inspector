@@ -32,7 +32,7 @@ are supported.
 ==== Adding an Iglu Repository
 . Head to the extension pane in the Dev Tools, and hit the `Manage Schemas` button in the top toolbar
 . In the bottom right, hit `Registries...`, then `Add`
-. Fill out the details for you new Regsitry and save
+. Fill out the details for you new Registry and save
 . Note your browser will request permission for the Extension to access the registries' Domain, this may happen in the main browser window rather than the Dev Tools window if it's not docked
 . You can also import your pipeline's configuration using Import and supplying a link:https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/iglu/iglu-resolver/[resolver-config]
 
