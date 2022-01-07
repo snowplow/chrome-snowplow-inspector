@@ -73,12 +73,21 @@ export abstract class Registry implements ClassComponent {
       return m(
         "fieldset.box",
         { name: this.id },
-        m("input.input[type=hidden][name=id][readonly]", { value: this.id }),
+        m("input.input[type=hidden][name=id][readonly]", {
+          oninput: (e: Event) => {
+            if (e.target instanceof HTMLInputElement) this.id = e.target.value;
+          },
+          value: this.id,
+        }),
         m(
           "label.label",
           { title: "Name for this registry. Used only in the extension" },
           "Name",
           m("input.input[type=text][name=name][required][pattern=.+]", {
+            oninput: (e: Event) => {
+              if (e.target instanceof HTMLInputElement)
+                this.spec.name = e.target.value;
+            },
             value: this.spec.name,
           })
         ),
@@ -91,7 +100,13 @@ export abstract class Registry implements ClassComponent {
           },
           m(
             "select[name=kind]",
-            { value: this.spec.kind },
+            {
+              onchange: (e: Event) => {
+                if (e.target instanceof HTMLSelectElement)
+                  this.spec.kind = e.target.value as RegistrySpec["kind"];
+              },
+              value: this.spec.kind,
+            },
             Object.entries(kindFieldOptions).map(([name, kind]) =>
               m(
                 "option",
@@ -112,6 +127,10 @@ export abstract class Registry implements ClassComponent {
                 required,
                 title: description,
                 type,
+                oninput: (e: Event) => {
+                  if (e.target instanceof HTMLInputElement)
+                    this.opts[field] = e.target.value;
+                },
                 value: this.opts[field],
               })
             )
@@ -124,6 +143,10 @@ export abstract class Registry implements ClassComponent {
           },
           "Priority",
           m("input.input[type=number][name=priority][min=0]", {
+            oninput: (e: Event) => {
+              if (e.target instanceof HTMLInputElement)
+                this.priority = +e.target.value;
+            },
             value: this.priority || 0,
           })
         ),
@@ -139,6 +162,12 @@ export abstract class Registry implements ClassComponent {
               5,
               this.vendorPrefixes ? this.vendorPrefixes.length : 1
             ),
+            oninput: (e: Event) => {
+              if (e.target instanceof HTMLInputElement)
+                this.vendorPrefixes = e.target.value
+                  .split("\n")
+                  .filter(Boolean);
+            },
             value: (this.vendorPrefixes || []).join("\n"),
           })
         ),
