@@ -12,8 +12,6 @@ const DEFAULT_REGISTRIES: RegistrySpec[] = [
     kind: "static",
     name: "Iglu Central",
     uri: "http://iglucentral.com",
-    manifestUri:
-      "https://api.github.com/repos/snowplow/iglu-central/git/trees/master?recursive=1",
     priority: 0,
   },
 ];

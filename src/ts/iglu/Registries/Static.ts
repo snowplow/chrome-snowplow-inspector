@@ -25,12 +25,14 @@ export class StaticRegistry extends Registry {
 
   private readonly cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
   private readonly base: URL;
-  private readonly manifest?: URL;
+  private readonly manifest: URL;
 
   constructor(spec: RegistrySpec) {
     super(spec);
     this.base = new URL(spec["uri"] || this.fields.uri.default);
-    this.manifest = spec["manifestUri"] && new URL(spec["manifestUri"]);
+    this.manifest = spec["manifestUri"]
+      ? new URL(spec["manifestUri"])
+      : new URL("/schemas", this.base);
   }
 
   private fetch(schemaPath: string): ReturnType<typeof fetch> {
@@ -89,55 +91,60 @@ export class StaticRegistry extends Registry {
 
   parseManifest(): Promise<IgluSchema[]> {
     const fileListProps = ["tree", "files", "paths"];
-    if (this.manifest) {
-      return this.fetch(this.manifest.href)
-        .then((res) => res.json())
-        .catch((reason) => {
-          this.lastStatus = "UNHEALTHY";
-          this.opts.statusReason = reason || "Manifest error";
-          return Promise.resolve(null);
-        })
-        .then((man) => {
-          let list: unknown[] = [];
+    return this.fetch(this.manifest.href)
+      .then((res) => res.json())
+      .catch((reason) => {
+        this.lastStatus = "UNHEALTHY";
+        this.opts.statusReason = reason || "Manifest error";
+        return Promise.resolve(null);
+      })
+      .then((man) => {
+        let list: unknown[] = [];
 
-          if (typeof man === "object" && man) {
-            if (Array.isArray(man)) {
-              list = man;
-            } else {
-              for (const p of fileListProps) {
-                if (man.hasOwnProperty(p) && Array.isArray(man[p])) {
-                  list = list.concat(man[p]);
-                }
+        if (typeof man === "object" && man) {
+          if (Array.isArray(man)) {
+            list = man;
+          } else {
+            for (const p of fileListProps) {
+              if (man.hasOwnProperty(p) && Array.isArray(man[p])) {
+                list = list.concat(man[p]);
               }
             }
+          }
 
-            return Promise.resolve(
-              list
-                .filter(
-                  (val: unknown): val is string | { path: string } =>
-                    typeof val === "string" ||
-                    (typeof val === "object" &&
-                      !!val &&
-                      objHasProperty(val, "path") &&
-                      typeof val["path"] === "string")
-                )
-                .map((almostSchema): IgluUri | null => {
-                  const maybeUri =
-                    typeof almostSchema === "string"
-                      ? almostSchema
-                      : almostSchema.path;
-                  const schemaparts =
-                    /(([^\/]+)\/([^\/]+)\/jsonschema\/([\d+]-[\d+]-[\d+]))(\.json(schema)?)?$/i.exec(
-                      maybeUri
-                    );
-                  return schemaparts && (("iglu:" + schemaparts[1]) as IgluUri);
-                })
-                .map((uri) => uri && IgluSchema.fromUri(uri))
-                .filter((schema): schema is IgluSchema => schema !== null)
-            );
-          } else return Promise.resolve([]);
-        });
-    } else return Promise.resolve([]);
+          return Promise.resolve(
+            list
+              .filter(
+                (val: unknown): val is string | { path: string } =>
+                  typeof val === "string" ||
+                  (typeof val === "object" &&
+                    !!val &&
+                    objHasProperty(val, "path") &&
+                    typeof val["path"] === "string")
+              )
+              .map((almostSchema): IgluUri | null => {
+                const maybeUri =
+                  typeof almostSchema === "string"
+                    ? almostSchema
+                    : almostSchema.path;
+                const schemaparts =
+                  /(([^\/]+)\/([^\/]+)\/jsonschema\/([\d+]-[\d+]-[\d+]))(\.json(schema)?)?$/i.exec(
+                    maybeUri
+                  );
+
+                if (schemaparts) {
+                  return (
+                    schemaparts[1].indexOf("iglu:") !== 0
+                      ? "iglu:" + schemaparts[1]
+                      : schemaparts[1]
+                  ) as IgluUri;
+                } else return schemaparts;
+              })
+              .map((uri) => uri && IgluSchema.fromUri(uri))
+              .filter((schema): schema is IgluSchema => schema !== null)
+          );
+        } else return Promise.resolve([]);
+      });
   }
 
   _walk() {
