@@ -16,6 +16,7 @@ Feedback, feature requests, pull requests, and bug reports are welcome! Please l
 
 == Install
 At the moment, only Chrome/Chromium are supported via an official app store, and builds for Firefox are available, but not supported.
+The extension also works in [Microsoft Edge](https://www.microsoft.com/en-us/edge), but is not yet in the extension store.
 To install the extension, visit the page on the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
 You can get builds for Firefox v60+ in link:https://github.com/poplindata/chrome-snowplow-inspector/releases[Releases].
 
