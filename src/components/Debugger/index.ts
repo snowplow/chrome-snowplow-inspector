@@ -105,9 +105,11 @@ export const Debugger: ClosureComponent<IDebugger> = ({
                   const f =
                     t && !!t.value ? new RegExp(t.value, "i") : undefined;
                   filter = f;
-                  t.className = "valid";
+                  t.classList.remove("invalid");
+                  t.classList.add("valid");
                 } catch (x) {
-                  t.className = "invalid";
+                  t.classList.remove("valid");
+                  t.classList.add("invalid");
                 }
               },
             })
