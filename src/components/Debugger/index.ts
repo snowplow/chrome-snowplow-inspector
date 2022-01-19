@@ -9,9 +9,10 @@ import { Timeline } from "./Timeline";
 const spPattern =
   /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
 const plPattern = /^iglu:[^\/]+\/payload_data/i;
+const gaPattern = /\/com\.google\.analytics\/v1/i;
 
 function isSnowplow(request: Request): boolean {
-  if (spPattern.test(request.url)) {
+  if (spPattern.test(request.url) || gaPattern.test(request.url)) {
     return true;
   } else {
     // It's possible that the request uses a custom endpoint via postPath

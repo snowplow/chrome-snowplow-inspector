@@ -6,6 +6,8 @@ import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
 import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 
+const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
+
 const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
   return (
     typeof filter === "undefined" ||
@@ -28,6 +30,12 @@ const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
 };
 
 const nameEvent = (params: Map<string, string>): string => {
+  if (GA_REQUIRED_FIELDS.every((k) => params.has(k))) {
+    const event = params.get("t") || "Unknown GA Event";
+    const eventDef = protocol.gaMap.t.values;
+    return eventDef[event] || event;
+  }
+
   const event = params.get("e") || "Unknown Event";
 
   const eventDef = protocol.paramMap.e;
@@ -187,10 +195,16 @@ const summariseBeacons = (
       eventName: nameEvent(req),
       id: `#${id}-${i}`,
       method,
-      page: req.get("url"),
+      page: req.get("url") || req.get("dl"),
       payload: new Map(req),
       time: new Date(
-        parseInt(req.get("stm") || req.get("dtm") || "", 10) || +new Date()
+        parseInt(
+          req.get("stm") ||
+            req.get("dtm") ||
+            (req.get("_gid") ? req.get("_gid") + "000" : "").split(".").pop() ||
+            "",
+          10
+        ) || +new Date()
       ).toJSON(),
       validity: validateEvent(`#${id}-${i}`, req, resolver),
     };
@@ -266,11 +280,33 @@ const extractRequests = (
 
         beacons.push(beacon);
       }
-    } catch (e) {
-      console.log("=================");
-      console.log(e);
-      console.log(JSON.stringify(req));
-      console.log("=================");
+    } catch (jsonErr) {
+      try {
+        if (req.postData != null && req.postData.text) {
+          const ga = req.postData.text.split("\n").map((line) => {
+            const payload: Map<string, string> = new Map();
+            new URLSearchParams(line).forEach((val, key) => {
+              payload.set(key, val);
+            });
+
+            return payload;
+          });
+
+          const validGa = ga.filter((b) =>
+            GA_REQUIRED_FIELDS.every((k) => b.has(k))
+          );
+          beacons.push.apply(beacons, validGa);
+        } else {
+          throw new Error(
+            "Expected Google Analytics Measurement Protocol data"
+          );
+        }
+      } catch (urlErr) {
+        console.log("=================");
+        console.log([jsonErr, urlErr].join("\n"));
+        console.log(JSON.stringify(req));
+        console.log("=================");
+      }
     }
   } else {
     const beacon: Map<string, string> = new Map();

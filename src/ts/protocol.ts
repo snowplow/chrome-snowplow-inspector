@@ -356,8 +356,26 @@ export const esMap: Record<
   TrackingProtocol.Field | ""
 > = enrichedMap;
 
+export const gaMap = {
+  t: {
+    name: "hitType",
+    type: "emap",
+    values: {
+      pageview: "GA Pageview",
+      screenview: "GA Screenview",
+      event: "GA Event",
+      transaction: "GA Transaction",
+      item: "GA Item",
+      social: "GA Social",
+      exception: "GA Exception",
+      timing: "GA Timing",
+    } as { [eventType: string]: string },
+  },
+} as const;
+
 export const protocol = {
   esMap,
   groupPriorities,
   paramMap,
+  gaMap,
 };

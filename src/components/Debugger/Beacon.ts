@@ -32,35 +32,42 @@ function parseBeacon({
     collector,
     data: [],
     method,
-    name: printableValue(payload.get("e"), protocol.paramMap.e),
+    name: payload.has("t")
+      ? printableValue(payload.get("t"), protocol.gaMap.t)
+      : printableValue(payload.get("e"), protocol.paramMap.e),
     time: printableValue(
-      payload.get("stm") || payload.get("dtm"),
+      payload.get("stm") ||
+        payload.get("dtm") ||
+        (payload.get("_gid") || "").split(".").pop() ||
+        undefined,
       protocol.paramMap.stm
     ),
   };
 
   const seen = new Set<string>();
 
-  for (const gp of protocol.groupPriorities) {
-    const name = gp.name;
-    const fields = gp.fields;
-    const rows: FieldDetail[] = [];
+  if (payload.has("e")) {
+    for (const gp of protocol.groupPriorities) {
+      const name = gp.name;
+      const fields = gp.fields;
+      const rows: FieldDetail[] = [];
 
-    for (const field of fields) {
-      const finfo = protocol.paramMap[field];
+      for (const field of fields) {
+        const finfo = protocol.paramMap[field];
 
-      let val = payload.get(field);
+        let val = payload.get(field);
 
-      val = printableValue(val, finfo);
+        val = printableValue(val, finfo);
 
-      if (val != null) {
-        rows.push([finfo.name, val, genClasses(finfo)]);
-        seen.add(field);
+        if (val != null) {
+          rows.push([finfo.name, val, genClasses(finfo)]);
+          seen.add(field);
+        }
       }
-    }
 
-    if (rows.length) {
-      result.data.push([name, rows]);
+      if (rows.length) {
+        result.data.push([name, rows]);
+      }
     }
   }
 
@@ -273,7 +280,8 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
     case "text":
       return val;
     case "epoc":
-      return new Date(parseInt(val, 10)).toISOString();
+      const ts = parseInt(val, 10);
+      return new Date(ts < 10e9 ? ts * 1000 : ts).toISOString();
     case "numb":
       return parseInt(val, 10);
     case "doub":
