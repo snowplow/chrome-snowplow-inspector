@@ -1,0 +1,35 @@
+body.themedark {
+  --bulma-black: #{$bulma-white};
+  --bulma-black-bis: #{$bulma-white-bis};
+  --bulma-black-ter: #{$bulma-white-ter};
+
+  --bulma-grey-darker: #{$bulma-grey-lighter};
+  --bulma-grey-dark: #{$bulma-grey-light};
+  --bulma-grey: #{$bulma-grey};
+  --bulma-grey-light: #{$bulma-dark};
+  --bulma-grey-lighter: #{$bulma-grey-darker};
+
+  --bulma-white-ter: #{$bulma-black-ter};
+  --bulma-white-bis: #{$bulma-black-bis};
+  --bulma-white: #{$bulma-black};
+
+  $t: findColorInvert($bulma-grey-light);
+  --bulma-text-invert: #{$t};
+  $t: rgba($bulma-white, 0.1);
+  --bulma-box-shadow: #{$t};
+  $t: rgba($bulma-white, 0.86);
+  --bulma-modal-background-background-color: #{$t};
+  $t: rgba($bulma-white, 0.2);
+  --bulma-delete-background-color: #{$t};
+
+  .navbar-brand img {
+    filter: brightness(350%);
+  }
+}
+
+.delete {
+  background-color: var(
+    --bulma-delete-background-color,
+    rgba($bulma-black, 0.2)
+  ) !important;
+}

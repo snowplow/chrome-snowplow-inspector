@@ -1,5 +1,7 @@
 @charset "utf-8";
 
+@import "bulma-overrides.scss";
+@import "dark";
 @import "bulma.scss";
 
 :root {
@@ -8,8 +10,15 @@
 }
 
 body {
-  background-color: ghostwhite;
+  background-color: $white-ter;
   height: 100vh;
+}
+
+select,
+textarea,
+input {
+  background-color: inherit;
+  color: inherit;
 }
 
 .column.timeline {
@@ -102,9 +111,7 @@ $colors: (
   "red": $orange,
   "dark": $grey-dark,
   "purple": $purple,
-  "yellow": $yellow,
   "black": $black,
-  "light": $white-ter,
   "turquoise": $turquoise,
 );
 
@@ -117,7 +124,7 @@ $colors: (
 
   summary > .registry.#{$class} {
     background-color: #{$color};
-    color: findColorInvert($color);
+    color: $bulma-white;
   }
 }
 
