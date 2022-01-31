@@ -254,8 +254,11 @@ const extractRequests = (
   const refr = entry.request.headers.find(
     (x) => x.name.toLowerCase() === "referer"
   );
+  const ct = entry.request.headers.find(
+    (x) => x.name.toLowerCase() === "content-type"
+  );
 
-  if (req.method === "POST") {
+  if (req.method === "POST" && ct != null && entry.request.bodySize) {
     try {
       if (req.postData === undefined || !req.postData.text) {
         throw new Error("POST request unexpectedly had no body.");
