@@ -17,7 +17,7 @@ const nextGesture = (missing: string[]) => {
 
       addEventListener("click", onNextClick, false);
     }).then((batch) => {
-      const distinct = batch.filter((e, i, a) => a.indexOf(e) !== i);
+      const distinct = batch.filter((e, i, a) => a.indexOf(e) === i);
 
       return new Promise<void>((fulfil, fail) =>
         chrome.permissions.request({ origins: distinct }, (granted) =>
