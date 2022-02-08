@@ -376,10 +376,11 @@ export const Timeline: Component<ITimeline> = {
         ),
       ]);
     });
-    chrome.browserAction.setBadgeText({
-      tabId: chrome.devtools.inspectedWindow.tabId,
-      text: "" + beacons.length,
-    });
+    if (chrome.browserAction)
+      chrome.browserAction.setBadgeText({
+        tabId: chrome.devtools.inspectedWindow.tabId,
+        text: "" + beacons.length,
+      });
     if (!active && first) setActive(first);
     return beacons
       .reduce(
