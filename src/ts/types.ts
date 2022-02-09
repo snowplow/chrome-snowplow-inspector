@@ -55,6 +55,7 @@ export interface IBeaconDetails {
   method: string;
   name: string;
   time: string;
+  payload?: IBeaconSummary["payload"];
 }
 
 export interface ICache {

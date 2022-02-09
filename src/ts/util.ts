@@ -107,10 +107,9 @@ const nameType = (val: unknown) => {
 };
 
 const copyToClipboard = (text: string): void => {
-  let cb = document.getElementById("clipboard") as HTMLInputElement;
+  let cb = document.getElementById("clipboard") as HTMLTextAreaElement;
   if (cb === null) {
-    cb = document.createElement("input") as HTMLInputElement;
-    cb.type = "text";
+    cb = document.createElement("textarea") as HTMLTextAreaElement;
     cb.id = "clipboard";
     cb.style.position = "relative";
     cb.style.left = "-10000px";

@@ -42,6 +42,7 @@ function parseBeacon({
         undefined,
       protocol.paramMap.stm
     ),
+    payload,
   };
 
   const seen = new Set<string>();
@@ -308,8 +309,89 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
   }
 };
 
+const wrapPost = (data: object) => {
+  return {
+    schema: "iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-4",
+    data: [data],
+  };
+};
+
+const copyMenu = (collector: string, beacon: IBeaconDetails["payload"]) =>
+  beacon &&
+  m(
+    "div.dropdown.button.is-hoverable.is-up.is-dark",
+    m("div.dropdown-trigger", "\u29c9"),
+    m(
+      "div.dropdown-menu",
+      m("div.dropdown-content", [
+        m("div.dropdown-item", "Copy as\u2026"),
+        m(
+          "a.dropdown-item",
+          {
+            onclick: () =>
+              copyToClipboard(
+                JSON.stringify(wrapPost(Object.fromEntries(beacon.entries())))
+              ),
+          },
+          "JSON"
+        ),
+        m(
+          "a.dropdown-item",
+          {
+            onclick: () =>
+              copyToClipboard(
+                JSON.stringify(
+                  wrapPost(Object.fromEntries(beacon.entries())),
+                  null,
+                  4
+                )
+              ),
+          },
+          "JSON (pretty)"
+        ),
+        m(
+          "a.dropdown-item",
+          {
+            onclick: () => {
+              const u = new URL(`https://${collector}/i`);
+              beacon.forEach((v, k) => u.searchParams.append(k, v));
+              copyToClipboard(u.href);
+            },
+          },
+          "URL - GET"
+        ),
+        m(
+          "a.dropdown-item",
+          {
+            onclick: () => {
+              const ua = beacon.get("ua");
+              const lang = beacon.get("lang");
+
+              const data = Object.fromEntries(beacon.entries());
+
+              delete data["ua"];
+              delete data["lang"];
+
+              const cmd = [
+                `curl 'https://${collector}/com.snowplowanalytics.snowplow/tp2'`,
+                "--compressed",
+                ua && `-H 'User-Agent: ${ua}'`,
+                lang && `-H 'Accept-Language: ${lang}`,
+                "-H 'Content-Type: application/json; charset=UTF-8",
+                `--data-raw '${JSON.stringify(wrapPost(data))}'`,
+              ];
+
+              copyToClipboard(cmd.filter(Boolean).join(" \\\n  "));
+            },
+          },
+          "cURL"
+        ),
+      ])
+    )
+  );
+
 const formatBeacon = (
-  { appId, name, time, collector, method, data }: IBeaconDetails,
+  { appId, name, time, collector, method, data, payload }: IBeaconDetails,
   resolver: Resolver
 ) =>
   [
@@ -342,6 +424,7 @@ const formatBeacon = (
         m("div", [m("p.heading", "Method"), m("p.title", method)])
       ),
     ]),
+    copyMenu(collector, payload),
   ].concat(
     data.map(([setName, rows]) =>
       m(
