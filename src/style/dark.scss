@@ -6,7 +6,7 @@ body.themedark {
   --bulma-grey-darker: #{$bulma-grey-lighter};
   --bulma-grey-dark: #{$bulma-grey-light};
   --bulma-grey: #{$bulma-grey};
-  --bulma-grey-light: #{$bulma-dark};
+  --bulma-grey-light: #{$bulma-grey-dark};
   --bulma-grey-lighter: #{$bulma-grey-darker};
 
   --bulma-white-ter: #{$bulma-black-ter};

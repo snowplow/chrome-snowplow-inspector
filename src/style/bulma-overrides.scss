@@ -8,8 +8,8 @@ $black-ter: var(--bulma-black-ter, #{$bulma-black-ter});
 
 $bulma-grey-darker: hsl(0, 0%, 21%);
 $grey-darker: var(--bulma-grey-darker, #{$bulma-grey-darker});
-$bulma-dark: hsl(0, 0%, 29%);
-$grey-dark: var(--bulma-dark, #{$bulma-dark});
+$bulma-grey-dark: hsl(0, 0%, 29%);
+$grey-dark: var(--bulma-grey-dark, #{$bulma-grey-dark});
 $bulma-grey: hsl(0, 0%, 48%);
 $grey: var(--bulma-grey, #{$bulma-grey});
 $bulma-grey-light: hsl(0, 0%, 71%);
@@ -24,7 +24,7 @@ $white-bis: var(--bulma-white-bis, #{$bulma-white-bis});
 $bulma-white: hsl(0, 0%, 100%);
 $white: var(--bulma-white, #{$bulma-white});
 
-$text-invert: var(--bulma-text-invert, findColorInvert($bulma-dark));
+$text-invert: var(--bulma-text-invert, findColorInvert($bulma-grey-dark));
 
 @use "sass:meta";
 $old_darken: meta.get-function("darken");
