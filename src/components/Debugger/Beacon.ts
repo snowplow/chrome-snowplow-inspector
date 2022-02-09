@@ -154,7 +154,9 @@ const BeaconValue: ClosureComponent<BeaconValueAttrs> = () => {
     },
     view: ({ attrs: { obj, resolver } }) => {
       if (typeof obj !== "object" || obj === null)
-        return JSON.stringify(obj).replace(/^"|"$/g, "");
+        return typeof obj === "undefined"
+          ? obj
+          : JSON.stringify(obj).replace(/^"|"$/g, "");
 
       const children: (Vnode<BeaconValueAttrs> | string)[] = [];
       let p;

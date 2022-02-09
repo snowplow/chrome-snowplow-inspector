@@ -254,38 +254,62 @@ const extractRequests = (
   const refr = entry.request.headers.find(
     (x) => x.name.toLowerCase() === "referer"
   );
+  const cl = entry.request.headers.find(
+    (x) => x.name.toLowerCase() === "content-length"
+  );
   const ct = entry.request.headers.find(
     (x) => x.name.toLowerCase() === "content-type"
   );
 
-  if (req.method === "POST" && ct != null && entry.request.bodySize) {
-    try {
-      if (req.postData === undefined || !req.postData.text) {
-        throw new Error("POST request unexpectedly had no body.");
-      }
+  if (req.method === "POST") {
+    if (req.postData === undefined && cl != null && +cl.value > 0) {
+      const beacon: Map<string, string> = new Map(
+        Object.entries({
+          error: [
+            "A post request to a known tracker URL was seen, but we could not extract the request body.",
+            "This is usually the result of a request sent with the `beacon` eventMethod",
+            "as a page is unloaded (e.g. a link click or form submission event that navigates to a new page).",
+            "The browser is unable to supply the request body without a reference to the page, so we can't display the events.",
+            "Although we can not validate the event, it was probably correctly sent to the collector.",
+            "Sorry! :(",
+          ].join(" "),
+          e: "Unknown Beacon",
+          endpoint: req.url,
+          payloadSize: cl.value,
+          contentType: ct ? ct.value : "",
+          stm: "" + +new Date(),
+        })
+      );
 
-      const payload = JSON.parse(req.postData.text);
+      if (nuid && nuid.value) beacon.set("nuid", nuid.value);
+      if (ua && ua.value) beacon.set("ua", ua.value);
+      if (lang && lang.value) beacon.set("lang", lang.value);
+      if (refr && refr.value) beacon.set("url", refr.value);
 
-      for (const pl of payload.data) {
-        const beacon: Map<string, string> = new Map(Object.entries(pl));
-        if (nuid && !beacon.has("nuid")) {
-          beacon.set("nuid", nuid.value);
-        }
-        if (ua && !beacon.has("ua")) {
-          beacon.set("ua", ua.value);
-        }
-        if (lang && !beacon.has("lang")) {
-          beacon.set("lang", lang.value);
-        }
-        if (refr && !beacon.has("url")) {
-          beacon.set("url", refr.value);
-        }
-
-        beacons.push(beacon);
-      }
-    } catch (jsonErr) {
+      beacons.push(beacon);
+    } else if (req.postData && req.postData.text && ct != null) {
       try {
-        if (req.postData != null && req.postData.text) {
+        const payload = JSON.parse(req.postData.text);
+
+        for (const pl of payload.data) {
+          const beacon: Map<string, string> = new Map(Object.entries(pl));
+          if (nuid && !beacon.has("nuid")) {
+            beacon.set("nuid", nuid.value);
+          }
+          if (ua && !beacon.has("ua")) {
+            beacon.set("ua", ua.value);
+          }
+          if (lang && !beacon.has("lang")) {
+            beacon.set("lang", lang.value);
+          }
+          if (refr && !beacon.has("url")) {
+            beacon.set("url", refr.value);
+          }
+
+          beacons.push(beacon);
+        }
+      } catch (jsonErr) {
+        try {
           const ga = req.postData.text.split("\n").map((line) => {
             const payload: Map<string, string> = new Map();
             new URLSearchParams(line).forEach((val, key) => {
@@ -299,17 +323,15 @@ const extractRequests = (
             GA_REQUIRED_FIELDS.every((k) => b.has(k))
           );
           beacons.push.apply(beacons, validGa);
-        } else {
-          throw new Error(
-            "Expected Google Analytics Measurement Protocol data"
-          );
+        } catch (urlErr) {
+          console.log("Invalid request payload", JSON.stringify(req), [
+            jsonErr,
+            urlErr,
+          ]);
         }
-      } catch (urlErr) {
-        console.log("=================");
-        console.log([jsonErr, urlErr].join("\n"));
-        console.log(JSON.stringify(req));
-        console.log("=================");
       }
+    } else {
+      console.log("Unexpected empty body in request", req);
     }
   } else {
     const beacon: Map<string, string> = new Map();

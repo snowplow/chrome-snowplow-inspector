@@ -6,8 +6,23 @@ import { IBeaconSummary, IDebugger } from "../../ts/types";
 import { Beacon } from "./Beacon";
 import { Timeline } from "./Timeline";
 
+/*
+  This looks for requests matching known Snowplow endpoints.
+  If a POST request doesn't match the pattern, it is still "sniffed" for a Snowplow
+  payload, in the event of Custom Post paths.
+
+  TODO(jethron): Make custom paths configurable:-
+  There is an issue where beacon requests (POSTs) fired on page navigation sometimes
+  have no body; the Content-Length header suggests there should be one but it is inaccessible.
+  This makes the hit undetectable to the sniffing above. Custom paths should be
+  configurable to catch these cases.
+
+  /i is the traditional "ice" request for GET
+  /com.snowplowanalytics.snowplow/tp2 is the default POST parameter endpoint
+  /collector/tp2 is a special case for a particular collector using beacon requests (Magento/Adobe: see #44)
+ */
 const spPattern =
-  /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
+  /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|(com\.snowplowanalytics\.snowplow|collector)\/tp2)/i;
 const plPattern = /^iglu:[^\/]+\/payload_data/i;
 const gaPattern = /\/com\.google\.analytics\/v1/i;
 
