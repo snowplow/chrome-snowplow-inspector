@@ -7,7 +7,13 @@ import {
   IRowSet,
   FieldDetail,
 } from "../../ts/types";
-import { b64d, hasMembers, nameType, copyToClipboard } from "../../ts/util";
+import {
+  b64d,
+  hasMembers,
+  nameType,
+  copyToClipboard,
+  tryb64,
+} from "../../ts/util";
 import { IgluUri, IgluSchema, Resolver } from "../../ts/iglu";
 
 type ProtocolField = typeof protocol.paramMap[keyof typeof protocol.paramMap];
@@ -375,10 +381,12 @@ const copyMenu = (collector: string, beacon: IBeaconDetails["payload"]) =>
               const cmd = [
                 `curl 'https://${collector}/com.snowplowanalytics.snowplow/tp2'`,
                 "--compressed",
-                ua && `-H 'User-Agent: ${ua}'`,
-                lang && `-H 'Accept-Language: ${lang}`,
-                "-H 'Content-Type: application/json; charset=UTF-8",
-                `--data-raw '${JSON.stringify(wrapPost(data))}'`,
+                ua && `-A ${JSON.stringify(ua)}`,
+                // shell will merge the consecutive strings
+                lang && `-H "Accept-Language: "${JSON.stringify(lang)}`,
+                `-H "Content-Type: application/json; charset=UTF-8"`,
+                // double stringify to escape quotes properly
+                `--data-raw ${JSON.stringify(JSON.stringify(wrapPost(data)))}`,
               ];
 
               copyToClipboard(cmd.filter(Boolean).join(" \\\n  "));
@@ -386,6 +394,36 @@ const copyMenu = (collector: string, beacon: IBeaconDetails["payload"]) =>
           },
           "cURL"
         ),
+        beacon.get("e") == "ue"
+          ? m(
+              "a.dropdown-item",
+              {
+                onclick: () => {
+                  const aid = beacon.get("aid");
+                  const ue = JSON.parse(
+                    tryb64(beacon.get("ue_pr") || beacon.get("ue_px") || "{}")
+                  );
+                  const ctx = JSON.parse(
+                    tryb64(beacon.get("co") || beacon.get("cx") || "{}")
+                  );
+
+                  const cmd = [
+                    `snowplow-tracking-cli --collector ${JSON.stringify(
+                      collector
+                    )}`,
+                    aid && `--appid ${JSON.stringify(aid)}`,
+                    `--schema ${JSON.stringify(ue.data.schema)}`,
+                    // double stringify to escape quotes properly
+                    `--json ${JSON.stringify(JSON.stringify(ue.data.data))}`,
+                    `--contexts ${JSON.stringify(JSON.stringify(ctx.data))}`,
+                  ];
+
+                  copyToClipboard(cmd.filter(Boolean).join(" \\\n  "));
+                },
+              },
+              "Snowplow CLI"
+            )
+          : undefined,
       ])
     )
   );
