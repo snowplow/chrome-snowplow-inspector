@@ -35,6 +35,7 @@ export abstract class Registry implements ClassComponent {
   validator: Validator;
   fields: OptFields = {};
   updated: boolean = false;
+  obsoleteOptions: string[] = [];
 
   private walkLock?: ReturnType<Registry["walk"]>;
 
@@ -51,7 +52,11 @@ export abstract class Registry implements ClassComponent {
   }
 
   toJSON() {
-    return { ...this.spec, ...(this.opts || {}) };
+    const json = { ...this.spec, ...(this.opts || {}) };
+    for (const prop of this.obsoleteOptions) {
+      delete json[prop];
+    }
+    return json;
   }
 
   view(vnode: Vnode<any>) {

@@ -1,20 +1,14 @@
-import { default as canonicalize } from "canonicalize";
-
 import { IgluSchema } from "../";
 import { Registry } from "./Registry";
-import { RegistrySpec, RegistryStatus } from "../../types";
+import { RegistrySpec } from "../../types";
 import { IgluUri, ResolvedIgluSchema } from "../IgluSchema";
 
-const INSIGHTS_OAUTH_ENDPOINT = "https://id.snowplowanalytics.com/";
-const INSIGHTS_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api/";
 const INSIGHTS_API_ENDPOINT = "https://console.snowplowanalytics.com/";
 
 const REQUEST_TIMEOUT_MS = 5000;
 
-type InsightsOauthResponse = {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
+type InsightsAuthResponse = {
+  accessToken: string;
 };
 
 type DataStructuresSchema = {
@@ -49,21 +43,6 @@ type DataStructuresMetaData = {
 
 export class DataStructuresRegistry extends Registry {
   fields = {
-    clientId: {
-      title: "OAuth Client ID",
-      type: "text",
-      description:
-        "Insights Console password to requrest OAuth credentials for",
-      required: true,
-      pattern: "^\\w{32}$",
-    },
-    clientSecret: {
-      title: "OAuth Client Secret",
-      type: "password",
-      description:
-        "Insights Console password to requrest OAuth credentials for",
-      required: true,
-    },
     organizationId: {
       title: "Organization ID",
       type: "text",
@@ -71,18 +50,10 @@ export class DataStructuresRegistry extends Registry {
       required: true,
       pattern: "^[a-fA-F0-9-]{36}$",
     },
-    oauthUsername: {
-      title: "Insights Console Username",
-      type: "email",
-      description:
-        "Insights Console username to requrest OAuth credentials for",
-      required: true,
-    },
-    oauthPassword: {
-      title: "Insights Console Password",
+    apiKey: {
+      title: "Insights Console API Key",
       type: "password",
-      description:
-        "Insights Console password to requrest OAuth credentials for",
+      description: "Insights Console API key to request access token with",
       required: true,
     },
     dsApiEndpoint: {
@@ -92,32 +63,21 @@ export class DataStructuresRegistry extends Registry {
       required: false,
       placeholder: INSIGHTS_API_ENDPOINT,
     },
-    oauthApiEndpoint: {
-      title: "OAuth Endpoint",
-      type: "url",
-      description: "OAuth authorization endpoint",
-      required: false,
-      placeholder: INSIGHTS_OAUTH_ENDPOINT,
-    },
-    oauthAudience: {
-      title: "OAuth Audience",
-      type: "text",
-      description: "OAuth audience scope",
-      required: false,
-      placeholder: INSIGHTS_OAUTH_AUDIENCE,
-    },
   };
+
+  obsoleteOptions = [
+    "clientId",
+    "clientSecret",
+    "oauthUsername",
+    "oauthPassword",
+    "oauthApiEndpoint",
+    "oauthAudience",
+  ];
 
   private readonly dsApiEndpoint: URL;
 
-  private readonly oauthApiEndpoint: URL;
-  private readonly oauthAudience: string;
-  private readonly oauthUsername?: string;
-  private readonly oauthPassword?: string;
-
   private readonly organizationId: string;
-  private readonly clientId: string;
-  private readonly clientSecret: string;
+  private readonly apiKey: string;
 
   private readonly cache: Map<IgluUri, Promise<ResolvedIgluSchema>> = new Map();
   private accessToken?: string;
@@ -133,16 +93,8 @@ export class DataStructuresRegistry extends Registry {
       spec["dsApiEndpoint"] || INSIGHTS_API_ENDPOINT
     );
 
-    this.oauthApiEndpoint = new URL(
-      spec["oauthApiEndpoint"] || INSIGHTS_OAUTH_ENDPOINT
-    );
-    this.oauthAudience = spec["oauthAudience"] || INSIGHTS_OAUTH_AUDIENCE;
-    this.oauthUsername = spec["oauthUsername"];
-    this.oauthPassword = spec["oauthPassword"];
-
     this.organizationId = spec["organizationId"];
-    this.clientId = spec["clientId"];
-    this.clientSecret = spec["clientSecret"];
+    this.apiKey = spec["apiKey"];
 
     this.accessToken = spec["accessToken"];
     this.accessExpiry = spec["accessExpiry"];
@@ -183,40 +135,34 @@ export class DataStructuresRegistry extends Registry {
       return Promise.resolve({ Authorization: this.accessToken });
     }
 
-    if (!this.clientId || !this.clientSecret || !this.organizationId)
+    if (!this.apiKey || !this.organizationId)
       return Promise.reject("Missing credentials");
 
-    const data = new URLSearchParams({
-      audience: this.oauthAudience,
-      client_id: this.clientId,
-      client_secret: this.clientSecret,
-    });
-
-    if (this.oauthUsername) data.append("username", this.oauthUsername);
-    if (this.oauthPassword) {
-      data.append("password", this.oauthPassword);
-      data.append("grant_type", "password");
-    }
-
     const opts: Partial<RequestInit> = {
-      method: "POST",
-      body: data,
+      method: "GET",
       referrerPolicy: "origin",
+      headers: {
+        "X-API-Key": this.apiKey,
+      },
     };
 
     return (this.authLock = this.requestPermissions(
-      `${this.oauthApiEndpoint.origin}/*`,
       `${this.dsApiEndpoint.origin}/*`
     )
       .then(() =>
-        fetch(new URL("oauth/token", this.oauthApiEndpoint).href, opts)
+        fetch(
+          new URL(
+            `api/msc/v1/organizations/${this.organizationId}/credentials/v2/token`,
+            this.dsApiEndpoint
+          ).href,
+          opts
+        )
       )
       .then((resp) => (resp.ok ? resp.json() : Promise.reject("AUTH_ERROR")))
-      .then((resp: InsightsOauthResponse) => {
-        this.opts.accessToken =
-          this.accessToken = `${resp.token_type} ${resp.access_token}`;
+      .then((resp: InsightsAuthResponse) => {
+        this.opts.accessToken = this.accessToken = `Bearer ${resp.accessToken}`;
         this.opts.accessExpiry = this.accessExpiry = new Date(
-          Date.now() + resp.expires_in * 1000
+          Date.now() + 3600000
         );
         this.updated = true;
         this.authLock = undefined;
@@ -263,7 +209,7 @@ export class DataStructuresRegistry extends Registry {
       const patchEnv = this.pickPatch(md);
 
       const p = this.fetch(
-        `api/schemas/v1/organizations/schemas/${md.hash}/versions/${schema.version}${patchEnv}`
+        `api/msc/v1/organizations/data-structures/v1/${md.hash}/versions/${schema.version}${patchEnv}`
       )
         .then((resp) => resp.json())
         .then((data) => schema.resolve(data, this))
@@ -289,10 +235,7 @@ export class DataStructuresRegistry extends Registry {
     this.lastStatus = this.lastStatus || "OK";
 
     return Promise.race([
-      this.requestPermissions(
-        `${this.oauthApiEndpoint.origin}/*`,
-        `${this.dsApiEndpoint.origin}/*`
-      ),
+      this.requestPermissions(`${this.dsApiEndpoint.origin}/*`),
       new Promise((_, f) =>
         setTimeout(f, REQUEST_TIMEOUT_MS, "Permission timeout")
       ),
@@ -314,7 +257,7 @@ export class DataStructuresRegistry extends Registry {
   }
 
   _walk() {
-    return this.fetch("api/schemas/v1/organizations/schemas")
+    return this.fetch("api/msc/v1/organizations/data-structures/v1")
       .then((resp) => resp.json())
       .then((resp) => {
         if (Array.isArray(resp)) {
