@@ -9,8 +9,8 @@
     "clean": "rm -r dist || true",
     "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/pd-logo.png ../res/poplin.png ../res/poplin-16.png ../res/poplin-48.png ../res/poplin-128.png ../src/popup.html ../LICENSE.txt dist/ && parcel watch src/panel.html src/options.html src/devtools.html",
     "build": "npm run clean && mkdir -p dist && cp manifest.json res/pd-logo.png res/poplin.png res/poplin-16.png res/poplin-48.png res/poplin-128.png src/popup.html LICENSE.txt dist/ && parcel build --no-source-maps src/panel.html src/options.html src/devtools.html",
-    "xpi": "npm run build && web-ext build --overwrite-dest -s dist/ -a .",
-    "xpi-signed": "npm run build && web-ext sign --id {ab5ef1af-3ce6-4741-9e30-96771603496d} -s dist/ -a .",
+    "xpi": "npm run build && npx web-ext build --overwrite-dest -s dist/ -a .",
+    "xpi-signed": "npm run build && npx web-ext sign --id {ab5ef1af-3ce6-4741-9e30-96771603496d} -s dist/ -a .",
     "zip": "npm run build && zip -r poplin-chrome-extension.zip dist/"
   },
   "repository": {
@@ -41,7 +41,6 @@
     "prettier": "^2.3.2",
     "sass": "^1.23.7",
     "tslib": "*",
-    "typescript": "^4.2.4",
-    "web-ext": "^6.1.0"
+    "typescript": "^4.2.4"
   }
 }
