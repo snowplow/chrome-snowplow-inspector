@@ -14,7 +14,7 @@ export class LocalRegistry extends Registry {
   fetch() {
     return new Promise<void>((fulfil) =>
       chrome.storage.local.get(
-        "localSchemas",
+        { localSchemas: "{}" },
         ({ localSchemas }: Partial<ExtensionOptions>) => {
           if (localSchemas && typeof localSchemas === "string") {
             const ls = JSON.parse(localSchemas);
@@ -60,7 +60,7 @@ export class LocalRegistry extends Registry {
   update(schemas: ResolvedIgluSchema[]) {
     return new Promise<void>((fulfil) =>
       chrome.storage.local.get(
-        "localSchemas",
+        { localSchemas: "{}" },
         ({ localSchemas }: Partial<ExtensionOptions>) => {
           if (localSchemas && typeof localSchemas === "string") {
             const ls = JSON.parse(localSchemas);
