@@ -21,6 +21,22 @@ input {
   color: inherit;
 }
 
+input[webkitdirectory] {
+  color: transparent;
+  max-width: 9rem;
+}
+
+input[webkitdirectory]:before {
+  color: $grey-darker;
+  content: "Import Directory";
+  text-align: center;
+  display: block;
+}
+
+input[webkitdirectory]::file-selector-button {
+  display: none;
+}
+
 .column.timeline {
   overflow: auto;
 }

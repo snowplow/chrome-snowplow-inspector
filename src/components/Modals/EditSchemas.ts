@@ -185,17 +185,50 @@ export const EditSchemas: ClosureComponent<EditSchemasOptions> = ({
                       })
                     ),
                     m(
-                      "button.button",
+                      "button.button[type=button]",
                       {
-                        onclick: (event: MouseEvent) => {
-                          event.preventDefault();
+                        onclick: () => {
                           const added = (addedSchemas[i] =
                             addedSchemas[i] || []);
                           added.push(SCHEMA_TEMPLATE);
                         },
                       },
                       "New Schema"
-                    )
+                    ),
+                    m("input[type=file][webkitdirectory][multiple].button", {
+                      onchange: (event: Event) => {
+                        const target = event.target;
+                        if (target instanceof HTMLInputElement) {
+                          if (target.files) {
+                            Promise.all(
+                              Array.prototype.map.call(
+                                target.files,
+                                (file: File) =>
+                                  file.size <= 10240 &&
+                                  file
+                                    .text()
+                                    .then((txt) => JSON.parse(txt))
+                                    .catch()
+                              )
+                            ).then((maybeSchemas) => {
+                              const added = (addedSchemas[i] =
+                                addedSchemas[i] || []);
+                              maybeSchemas.forEach((schema) => {
+                                if (schema && typeof schema === "object") {
+                                  if (
+                                    (schema as { $schema: string }).$schema ===
+                                    $SCHEMA
+                                  )
+                                    added.push(JSON.stringify(schema));
+                                }
+                              });
+
+                              redraw();
+                            });
+                          }
+                        }
+                      },
+                    })
                   );
               })
             ),
