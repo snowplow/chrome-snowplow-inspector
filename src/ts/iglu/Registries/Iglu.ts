@@ -55,6 +55,23 @@ export class IgluRegistry extends Registry {
     if (this.cache.has(schema.uri()))
       return Promise.resolve(this.cache.get(schema.uri())!);
 
+    if (this.vendorPrefixes && this.vendorPrefixes.length) {
+      if (
+        !this.vendorPrefixes.some(
+          (prefix) => (
+            console.log(
+              this.spec.name,
+              schema.vendor,
+              prefix,
+              schema.vendor.startsWith(prefix)
+            ),
+            schema.vendor.startsWith(prefix)
+          )
+        )
+      )
+        return Promise.reject("PREFIX_MISMATCH");
+    }
+
     return this.fetch(schema.uri().replace("iglu:", "api/schemas/"))
       .then((res) => res.json())
       .catch(() => {

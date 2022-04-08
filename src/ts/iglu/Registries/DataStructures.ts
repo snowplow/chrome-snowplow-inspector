@@ -204,6 +204,13 @@ export class DataStructuresRegistry extends Registry {
   resolve(schema: IgluSchema): Promise<ResolvedIgluSchema> {
     if (this.cache.has(schema.uri())) return this.cache.get(schema.uri())!;
 
+    if (this.vendorPrefixes && this.vendorPrefixes.length) {
+      if (
+        !this.vendorPrefixes.some((prefix) => schema.vendor.startsWith(prefix))
+      )
+        return Promise.reject("PREFIX_MISMATCH");
+    }
+
     if (this.metadata.has(schema.uri())) {
       const md = this.metadata.get(schema.uri())!;
       const patchEnv = this.pickPatch(md);

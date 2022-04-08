@@ -159,7 +159,7 @@ export abstract class Registry implements ClassComponent {
           "label.label",
           {
             title:
-              "Vendor prefixes, for preferring registries for particular schema lookups. Not used in the extension",
+              "Vendor prefixes, for preferring registries for particular schema lookups. If this is specified, only schemas with these prefixes will be fetched from the registry.",
           },
           "Vendor Prefixes",
           m("textarea.textarea[name=vendorPrefixes]", {
@@ -167,8 +167,8 @@ export abstract class Registry implements ClassComponent {
               5,
               this.vendorPrefixes ? this.vendorPrefixes.length : 1
             ),
-            oninput: (e: Event) => {
-              if (e.target instanceof HTMLInputElement)
+            onchange: (e: Event) => {
+              if (e.target instanceof HTMLTextAreaElement)
                 this.vendorPrefixes = e.target.value
                   .split("\n")
                   .filter(Boolean);

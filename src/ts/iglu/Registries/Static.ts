@@ -64,6 +64,15 @@ export class StaticRegistry extends Registry {
     if (this.cache.has(schema.uri())) {
       return Promise.resolve(this.cache.get(schema.uri())!);
     } else {
+      if (this.vendorPrefixes && this.vendorPrefixes.length) {
+        if (
+          !this.vendorPrefixes.some((prefix) =>
+            schema.vendor.startsWith(prefix)
+          )
+        )
+          return Promise.reject("PREFIX_MISMATCH");
+      }
+
       return this.fetch(schema.uri().replace("iglu:", "schemas/"))
         .then((res) => res.json())
         .then((result) => {
