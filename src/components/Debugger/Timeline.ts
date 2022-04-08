@@ -1,10 +1,12 @@
 import { Entry } from "har-format";
-import { default as m, Component, Vnode } from "mithril";
+import { default as m, ClosureComponent, Vnode } from "mithril";
 import { trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
 import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
+
+import { TestSuites } from "./TestSuites";
 
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
 
@@ -207,6 +209,10 @@ const summariseBeacons = (
         ) || +new Date()
       ).toJSON(),
       validity: validateEvent(`#${id}-${i}`, req, resolver),
+      collectorStatus: {
+        code: entry.response.status,
+        text: entry.response.statusText,
+      },
     };
 
     trackerAnalytics(collector, result.page, result.appId);
@@ -358,75 +364,116 @@ const extractRequests = (
   return [[id, collector, method], beacons];
 };
 
-export const Timeline: Component<ITimeline> = {
-  view: ({ attrs: { filter, isActive, requests, resolver, setActive } }) => {
-    const fallbackUrl = getPageUrl(requests);
-    let first: IBeaconSummary | undefined = undefined;
-    let active = false;
-    const beacons = requests.map((x, i) => {
-      const summary = summariseBeacons(x, i, resolver, filter);
-      first = first || summary[0];
-      return summary.map((y): [URL | null, Vnode] => [
-        y.page ? new URL(y.page) : fallbackUrl,
-        m(
-          "a.panel-block",
-          {
-            class: [
-              isActive(y) ? ((active = true), "is-active") : "",
-              // Some race in Firefox where the response information isn't always populated
-              x.response.status === 200 || x.response.status === 0
-                ? ""
-                : "not-ok",
-              colorOf(y.collector + y.appId),
-              y.validity === "Invalid" ? "is-invalid" : "",
-            ].join(" "),
-            onclick: setActive.bind(null, y),
-            title: [
-              `Time: ${y.time}`,
-              `Collector: ${y.collector}`,
-              `App ID: ${y.appId}`,
-              `Status: ${x.response.status} ${x.response.statusText}`,
-              `Validity: ${y.validity}`,
-            ].join("\n"),
-          },
-          m("span.panel-icon.identifier"),
-          y.eventName,
-          m(
-            "span.panel-icon.validity",
-            y.validity === "Invalid" ? "\u26d4\ufe0f" : ""
-          )
-        ),
-      ]);
-    });
-    if (chrome.browserAction)
-      chrome.browserAction.setBadgeText({
-        tabId: chrome.devtools.inspectedWindow.tabId,
-        text: "" + beacons.length,
-      });
-    if (!active && first) setActive(first);
-    return beacons
-      .reduce(
-        (acc, batch) =>
-          batch.reduce((acc, [url, beacon]) => {
-            const key = url ? url.pathname.slice(0, 34) : "Current Page";
-            const tail = acc.pop() || [key, []];
-            if (tail[0] === key) {
-              tail[1].push(beacon);
-              acc.push(tail);
-            } else {
-              acc.push(tail);
-              acc.push([key, [beacon]]);
-            }
-            return acc;
-          }, acc),
-        [] as [string, Vnode[]][]
-      )
-      .map(([pageName, beacons]) =>
-        m(
-          "div.panel",
-          m("p.panel-heading", { title: pageName }, pageName),
-          beacons
-        )
+export const Timeline: ClosureComponent<ITimeline> = () => {
+  let filter: RegExp | undefined;
+
+  return {
+    view: ({
+      attrs: { displayMode, isActive, requests, resolver, setActive, setModal },
+    }) => {
+      const fallbackUrl = getPageUrl(requests);
+      let first: IBeaconSummary | undefined = undefined;
+      let active = false;
+      const events = requests.map((batch, i) =>
+        summariseBeacons(batch, i, resolver, filter)
       );
-  },
+      const beacons = events.map((summaries) => {
+        first = first || summaries[0];
+        return summaries.map((summary): [URL | null, Vnode] => [
+          summary.page ? new URL(summary.page) : fallbackUrl,
+          m(
+            "a.panel-block",
+            {
+              class: [
+                isActive(summary) ? ((active = true), "is-active") : "",
+                // Some race in Firefox where the response information isn't always populated
+                summary.collectorStatus.code === 200 ||
+                summary.collectorStatus.code === 0
+                  ? ""
+                  : "not-ok",
+                colorOf(summary.collector + summary.appId),
+                summary.validity === "Invalid" ? "is-invalid" : "",
+              ].join(" "),
+              onclick: setActive.bind(null, {
+                display: "beacon",
+                item: summary,
+              }),
+              title: [
+                `Time: ${summary.time}`,
+                `Collector: ${summary.collector}`,
+                `App ID: ${summary.appId}`,
+                `Status: ${summary.collectorStatus.code} ${summary.collectorStatus.text}`,
+                `Validity: ${summary.validity}`,
+              ].join("\n"),
+            },
+            m("span.panel-icon.identifier"),
+            summary.eventName,
+            m(
+              "span.panel-icon.validity",
+              summary.validity === "Invalid" ? "\u26d4\ufe0f" : ""
+            )
+          ),
+        ]);
+      });
+
+      if (chrome.browserAction)
+        chrome.browserAction.setBadgeText({
+          tabId: chrome.devtools.inspectedWindow.tabId,
+          text: "" + beacons.length,
+        });
+
+      if (displayMode === "beacon" && !active && first)
+        setActive({ display: "beacon", item: first });
+
+      return m(
+        "div.column.is-narrow.timeline",
+        m(
+          ".timeline__events",
+          m(
+            "div.panel.filterPanel",
+            m("input.input#filter[type=text][placeholder=Filter]", {
+              onkeyup: (e: KeyboardEvent) => {
+                const t = e.currentTarget as HTMLInputElement;
+                try {
+                  const f =
+                    t && !!t.value ? new RegExp(t.value, "i") : undefined;
+                  filter = f;
+                  t.classList.remove("invalid");
+                  t.classList.add("valid");
+                } catch (x) {
+                  t.classList.remove("valid");
+                  t.classList.add("invalid");
+                }
+              },
+            })
+          ),
+          ...beacons
+            .reduce(
+              (acc, batch) =>
+                batch.reduce((acc, [url, beacon]) => {
+                  const key = url ? url.pathname.slice(0, 34) : "Current Page";
+                  const tail = acc.pop() || [key, []];
+                  if (tail[0] === key) {
+                    tail[1].push(beacon);
+                    acc.push(tail);
+                  } else {
+                    acc.push(tail);
+                    acc.push([key, [beacon]]);
+                  }
+                  return acc;
+                }, acc),
+              [] as [string, Vnode[]][]
+            )
+            .map(([pageName, beacons]) =>
+              m(
+                "div.panel",
+                m("p.panel-heading", { title: pageName }, pageName),
+                beacons
+              )
+            )
+        ),
+        m(TestSuites, { events, setActive, setModal })
+      );
+    },
+  };
 };

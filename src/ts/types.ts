@@ -25,6 +25,7 @@ export interface IDebugger {
   addRequests: (requests: Entry[]) => void;
   events: Entry[];
   resolver: Resolver;
+  setModal: ModalSetter;
 }
 
 export interface IPageRequests {
@@ -42,6 +43,10 @@ export interface IBeaconSummary {
   payload: Map<string, string>;
   time: string;
   validity: BeaconValidity;
+  collectorStatus: {
+    code: number;
+    text: string;
+  };
 }
 
 export type BeaconValidity = "Valid" | "Unrecognised" | "Invalid";
@@ -84,10 +89,11 @@ export interface IRowSet {
 
 export interface ITimeline {
   isActive: (beacon: IBeaconSummary) => boolean;
-  filter?: RegExp;
+  displayMode: DisplayItem["display"];
   requests: Entry[];
   resolver: Resolver;
-  setActive: (beacon: IBeaconSummary) => void;
+  setActive: (item: DisplayItem) => void;
+  setModal: ModalSetter;
 }
 
 export interface IBeacon {
@@ -110,3 +116,70 @@ export interface RegistrySpec {
   name: string;
   [opt: string]: any;
 }
+
+export type TestSuiteCondition =
+  | {
+      target: string;
+      operator: "exists";
+    }
+  | {
+      target: string;
+      operator: "matches";
+      value: string;
+    }
+  | {
+      target: string;
+      operator: "one_of";
+      value: any[];
+    }
+  | {
+      target: string;
+      operator: "equals";
+      value: any;
+    };
+
+interface TestSuite {
+  name: string;
+  description?: string;
+  targets?: TestSuiteCondition[];
+  combinator?: "and" | "or" | "not";
+}
+
+interface GroupedTestSuiteSpec extends TestSuite {
+  tests: TestSuiteSpec[];
+}
+
+export interface TestSuiteCase extends TestSuite {
+  conditions: TestSuiteCondition[];
+}
+
+export type TestSuiteSpec = GroupedTestSuiteSpec | TestSuiteCase;
+
+type ResultStatus = "pass" | "fail" | "incomplete";
+
+export type TestSuiteResult =
+  | {
+      test: TestSuiteSpec;
+      status: ResultStatus;
+      results: TestSuiteResult[];
+    }
+  | {
+      test: TestSuiteSpec;
+      status: ResultStatus;
+      result: {
+        success: IBeaconSummary[];
+        failure: IBeaconSummary[];
+        passCauses: TestSuiteCondition[];
+        failCauses: TestSuiteCondition[];
+      };
+    };
+
+export type DisplayItem =
+  | {
+      display: "beacon";
+      item: IBeaconSummary;
+    }
+  | {
+      display: "testsuite";
+      item: TestSuiteResult;
+    };

@@ -21,24 +21,62 @@ input {
   color: inherit;
 }
 
-input[webkitdirectory] {
-  color: transparent;
-  max-width: 9rem;
+.panel.testsuites summary {
+  cursor: pointer;
+  width: 100%;
 }
 
-input[webkitdirectory]:before {
+.panel.testsuites .panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel.testsuites .panel-heading button {
+  margin: -1em 0;
+}
+
+.panel.testsuites .panel-block,
+.panel.testsuites .panel-block summary {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+input[type="file"] {
+  color: transparent;
+  max-width: 5rem;
+}
+
+input[type="file"]:before {
   color: $grey-darker;
-  content: "Import Directory";
+  content: "Import";
   text-align: center;
   display: block;
 }
 
-input[webkitdirectory]::file-selector-button {
+input[type="file"][webkitdirectory] {
+  max-width: 9rem;
+}
+
+input[type="file"][webkitdirectory]:before {
+  content: "Import Directory";
+}
+
+input[type="file"]::file-selector-button {
   display: none;
 }
 
 .column.timeline {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-content: center;
+}
+
+.timeline__events {
   overflow: auto;
+  flex: 4 1 auto;
 }
 
 .filterPanel {
@@ -71,6 +109,7 @@ input[webkitdirectory]::file-selector-button {
 .panel-icon {
   font-size: inherit;
   margin-right: 0.45em;
+  align-self: center;
 }
 
 .tile.is-ancestor {
@@ -97,7 +136,8 @@ input[webkitdirectory]::file-selector-button {
   display: none;
 }
 
-#beacon {
+#beacon,
+#testdetail {
   overflow: auto;
   padding: 1rem;
 }

@@ -1,9 +1,10 @@
 import { Entry, Request } from "har-format";
 import { default as m, ClosureComponent } from "mithril";
 
-import { IBeaconSummary, IDebugger } from "../../ts/types";
+import { DisplayItem, IBeaconSummary, IDebugger } from "../../ts/types";
 
 import { Beacon } from "./Beacon";
+import { TestResults } from "./TestResults";
 import { Timeline } from "./Timeline";
 
 /*
@@ -50,18 +51,19 @@ function isSnowplow(request: Request): boolean {
 }
 
 export const Debugger: ClosureComponent<IDebugger> = ({
-  attrs: { addRequests, events, resolver },
+  attrs: { addRequests, events, resolver, setModal },
 }) => {
-  let active: IBeaconSummary | undefined;
-  let filter: RegExp | undefined;
+  let active: DisplayItem | undefined;
 
-  function setActive(beacon: IBeaconSummary) {
-    active = beacon;
+  function setActive(item: DisplayItem) {
+    active = item;
     m.redraw();
   }
 
   function isActive(beacon: IBeaconSummary) {
-    return !!(active && active.id === beacon.id);
+    if (active && active.display === "beacon")
+      return active.item.id === beacon.id;
+    return false;
   }
 
   function handleNewRequest(reqs: Entry[]): void {
@@ -109,41 +111,29 @@ export const Debugger: ClosureComponent<IDebugger> = ({
     },
     view: () =>
       m("section.columns.section", [
-        m(
-          "div.column.is-narrow.timeline",
-          m(
-            "div.panel.filterPanel",
-            m("input.input#filter[type=text][placeholder=Filter]", {
-              onkeyup: (e: KeyboardEvent) => {
-                const t = e.currentTarget as HTMLInputElement;
-                try {
-                  const f =
-                    t && !!t.value ? new RegExp(t.value, "i") : undefined;
-                  filter = f;
-                  t.classList.remove("invalid");
-                  t.classList.add("valid");
-                } catch (x) {
-                  t.classList.remove("valid");
-                  t.classList.add("invalid");
-                }
-              },
-            })
-          ),
-          m(Timeline, {
-            setActive,
-            isActive,
-            filter,
-            requests: events,
-            resolver,
-          })
-        ),
-        m(
-          "div#beacon.column",
-          m(
-            "div.tile.is-ancestor.is-vertical.inspector",
-            m(Beacon, { activeBeacon: active, resolver })
-          )
-        ),
+        m(Timeline, {
+          setActive,
+          isActive,
+          displayMode: active ? active.display : "beacon",
+          requests: events,
+          resolver,
+          setModal,
+        }),
+        !active || active.display === "beacon"
+          ? m(
+              "div#beacon.column",
+              m(
+                "div.tile.is-ancestor.is-vertical.inspector",
+                m(Beacon, { activeBeacon: active && active.item, resolver })
+              )
+            )
+          : m(
+              "div#testdetail.column",
+              m(
+                "div.tile.is-ancestor.is-vertical",
+                m(TestResults, { activeSuite: active.item, setActive })
+              )
+            ),
       ]),
   };
 };

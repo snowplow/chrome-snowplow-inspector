@@ -56,7 +56,7 @@ export const SnowplowInspector: ClosureComponent = () => {
       let app: Vnode<any>, modal: Vnode<any> | undefined;
       switch (application) {
         case "debugger":
-          app = m(Debugger, { addRequests, events, resolver });
+          app = m(Debugger, { addRequests, events, resolver, setModal });
           break;
         case "schemaManager":
           app = m(SchemaManager, { resolver, setModal });
