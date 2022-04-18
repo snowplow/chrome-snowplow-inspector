@@ -1,3 +1,4 @@
+import nunjucks from "nunjucks";
 import { default as m, Component, ClosureComponent, Vnode } from "mithril";
 import { protocol } from "../../ts/protocol";
 import {
@@ -393,6 +394,208 @@ const copyMenu = (collector: string, beacon: IBeaconDetails["payload"]) =>
             },
           },
           "cURL"
+        ),
+        m(
+          "a.dropdown-item",
+          {
+            onclick: () => {
+              const ua = beacon.get("ua");
+              const lang = beacon.get("lang");
+
+              const data = Object.fromEntries(beacon.entries());
+
+              delete data["ua"];
+              delete data["lang"];
+
+              const aid = beacon.get("aid");
+              const ue = JSON.parse(
+                tryb64(beacon.get("ue_pr") || beacon.get("ue_px") || "{}")
+              );
+              const ctx = JSON.parse(
+                tryb64(beacon.get("co") || beacon.get("cx") || "{}")
+              );
+
+              const variables = {
+                schema: ue.data.schema,
+                ue_data: ue.data.data
+              };
+
+              const command = nunjucks.renderString(
+                `
+
+  {% set schema_components = schema.split("/") %}
+  {% set schemaver_components = schema.split('/')[3].split("-") %}
+
+
+
+// C++ code
+json data = {{ ue_data | dump | safe }}
+SelfDescribingJson sdj("{{schema}}", data);
+
+Tracker::SelfDescribingEvent sde(sdj);
+Tracker::instance()->track_self_describing_event(sde);  
+
+// C# code
+
+Dictionary<string, object> eventDict = new Dictionary<string, object>();
+
+{% for key, value in ue_data %}
+eventDict.Add("{{ key }}", {{ value | dump | safe }});
+{% endfor %}
+
+SelfDescribingJson eventData = new SelfDescribingJson(
+    "{{schema}}",
+    eventDict
+)
+
+tracker.Track(new SelfDescribing()
+    .SetEventData(eventData)
+    .Build());
+
+// Flutter code
+
+tracker.track(SelfDescribing(
+  schema: '{{ schema }}',
+  data: {{ ue_data | dump | safe}}
+))
+
+// Go code
+
+data := map[string]interface{}{
+	-- TODO
+}
+
+sdj := sp.InitSelfDescribingJson("{{ schema }}", data)
+
+tracker.TrackSelfDescribingEvent(sp.SelfDescribingEvent{
+	Event: sdj
+})
+
+// Java code
+
+Map<String, Object> eventData = new HashMap<>();
+
+{% for key, value in ue_data %}
+eventData.put("{{ key }}", {{ value | dump | safe }});
+{% endfor %}
+
+SelfDescribingJson sdj = new SelfDescribingJson(
+    "{{ schema }}",
+    eventData
+);
+
+tracker.track(sdj);
+
+// Javascript (Node.js) code
+
+tracker.track(buildSelfDescribingEvent({
+  event: {
+      schema: '{{ schema }}',
+      data: {{ ue_data | dump | safe }}
+  }
+}));
+
+
+// Objective C (iOS)
+
+let data = ["targetUrl": "abc" as NSObject]; -- TODO: fix this?
+
+let event = SelfDescribing(
+    schema: "{{ schema }}",
+    payload: data
+)
+
+tracker.track(event);
+
+// Python code
+
+tracker.track_self_describing_event(
+  SelfDescribingJson(
+      "{{ schema }}",
+      {{ ue_data | dump | safe }} -- TODO: this is JSON, not a dict so might need conversion
+  )
+)
+
+// React native
+
+tracker.selfSelfDescribingEvent({
+  schema: "{{ schema }}",
+  data: {{ ue_data | dump | safe }}
+})
+
+// Roku (Brightscript)
+
+m.global.snowplow.selfDescribing = {
+  schema: '{{ schema }}',
+  data: {{ ue_data | dump | safe }}
+}
+
+// Ruby code
+
+// TODO: won't work for nested data at the moment
+// are we better off just parsing the JSON into a variable?
+
+self_desc_json = SnowplowTracker::SelfDescribingJson.new(
+  "{{ schema }}",
+  {
+    
+    {% for key, value in ue_data %}
+    "{{ key }}" => {{ value | dump | safe }},
+    {% endfor %}
+  }
+)
+
+tracker.track_self_describing_event(event_json: self_desc_json)
+
+// Scala code
+
+val event = SelfDescribingJson(
+  SchemaKey("{{ schema_components[0] }}", "{{ schema_components[1] }}", "jsonschema", SchemaVer({{ schemaver_components[0] }}, {{ schemaver_components[1] }}, {{ schemaver_components[2] }})),
+  Json.obj(
+    {% for key, value in ue_data %}
+    "{{ key }}" := {{ value | dump | safe }},
+    {% endfor %}
+  )
+)
+
+tracker.trackSelfDescribingEvent(event);
+
+// Unity code
+// not sure the object assignment is correct here
+// should be key=value
+
+TrackerManager.SnowplowTracker.Track(
+  new Unstructured().SetEventData(new SelfDescribingJson(
+      "{{ schema }}",
+      new {
+          {% for key, value in ue_data %}
+          {{ key }} = {{ value | dump | safe }},
+          {% endfor %}
+      }
+  ))
+);
+
+// PHP code
+
+$data = json_decode('{{ ue_data | dump | safe}}', true);
+
+$tracker->trackUnstructEvent(
+  array(
+      "schema" => "{{ schema}}",
+      "data" => $data
+  ),
+  NULL -- contexts
+);
+
+                `,
+                variables
+
+              )
+              console.log('out:', command);
+              copyToClipboard(command);
+            },
+          },
+          "C++ tracker code"
         ),
         beacon.get("e") == "ue"
           ? m(

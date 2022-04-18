@@ -25,10 +25,12 @@
   "homepage": "https://github.com/poplindata/chrome-snowplow-inspector#readme",
   "dependencies": {
     "@snowplow/browser-tracker": "^3.1.1",
+    "@types/nunjucks": "^3.2.1",
     "bulma": "^0.7.5",
     "canonicalize": "^1.0.5",
     "jsonschema": "1.*",
-    "mithril": "2.*"
+    "mithril": "2.*",
+    "nunjucks": "^3.2.3"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.0.0",
@@ -40,6 +42,7 @@
     "buffer": "^6.0.3",
     "parcel": "^2.0.0",
     "prettier": "^2.3.2",
+    "process": "^0.11.10",
     "querystring-es3": "^0.2.1",
     "sass": "^1.23.7",
     "tslib": "*",

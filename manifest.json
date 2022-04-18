@@ -26,5 +26,6 @@
   "minimum_chrome_version": "18.0",
   "devtools_page": "devtools.html",
   "permissions": ["storage"],
-  "optional_permissions": ["*://*/*"]
+  "optional_permissions": ["*://*/*"],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
