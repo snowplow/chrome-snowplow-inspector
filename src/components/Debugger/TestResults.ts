@@ -10,7 +10,7 @@ const DisplayEvents: Component<{
   rows: IBeaconSummary[];
   setActive: (item: DisplayItem) => void;
   title: string;
-  causes: TestSuiteCondition[];
+  causes: [TestSuiteCondition, string?][];
 }> = {
   view: ({ attrs: { rows, setActive, title, causes } }) =>
     m(
@@ -26,9 +26,10 @@ const DisplayEvents: Component<{
             m("th", "Event Type"),
             m("th", "App ID"),
             m("th", "Collector"),
+            m("th", "Condition"),
+            m("th", "Actual"),
             m("th", "Event Method"),
-            m("th", "Page"),
-            m("th", "Condition")
+            m("th", "Page")
           ),
           ...rows.map((e, i) =>
             m(
@@ -46,9 +47,13 @@ const DisplayEvents: Component<{
               ),
               m("td", e.appId),
               m("td", e.collector),
+              m(
+                "td",
+                causes[i] && m("pre", JSON.stringify(causes[i][0], null, 2))
+              ),
+              m("td", causes[i] && m("code", causes[i][1])),
               m("td", e.method),
-              m("td", e.page),
-              m("td", causes[i] && m("pre", JSON.stringify(causes[i], null, 4)))
+              m("td", e.page)
             )
           )
         )

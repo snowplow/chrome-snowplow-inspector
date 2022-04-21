@@ -169,8 +169,8 @@ export type TestSuiteResult =
       result: {
         success: IBeaconSummary[];
         failure: IBeaconSummary[];
-        passCauses: TestSuiteCondition[];
-        failCauses: TestSuiteCondition[];
+        passCauses: [TestSuiteCondition, string?][];
+        failCauses: [TestSuiteCondition, string?][];
       };
     };
 

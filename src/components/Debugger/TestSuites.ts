@@ -67,12 +67,12 @@ const evalCondition = (
   condition: TestSuiteCondition,
   event: IBeaconSummary,
   params?: Record<string, string>
-): boolean => {
+): [boolean, string?] => {
   let target: string | undefined;
   try {
     target = getTarget(condition.target, event, params);
-  } catch {
-    return false;
+  } catch (e) {
+    return [false, "" + e];
   }
   const value =
     "value" in condition
@@ -84,25 +84,29 @@ const evalCondition = (
   switch (condition.operator) {
     case "equals":
       try {
-        return (
-          target === (value != null ? substitute(value, params) : undefined)
-        );
+        return [
+          target === (value != null ? substitute(value, params) : undefined),
+          target,
+        ];
       } catch (e) {
         console.log(e);
-        return false;
+        return [false, "" + e];
       }
     case "exists":
-      return typeof target !== "undefined";
+      return [typeof target !== "undefined", target];
     case "matches":
       const re = new RegExp(condition.value, "i");
-      return target != null ? re.test(target) : false;
+      return [target != null ? re.test(target) : false, target];
     case "one_of":
-      return Array.isArray(condition.value)
-        ? condition.value.indexOf(target) >= 0
-        : false;
+      return [
+        Array.isArray(condition.value)
+          ? condition.value.indexOf(target) >= 0
+          : false,
+        target,
+      ];
   }
 
-  return false;
+  return [false, condition["operator"]];
 };
 
 const evalTest = (
@@ -112,36 +116,42 @@ const evalTest = (
 ): TestSuiteResult => {
   const success: IBeaconSummary[] = [];
   const failure: IBeaconSummary[] = [];
-  const passCauses: TestSuiteCondition[] = [];
-  const failCauses: TestSuiteCondition[] = [];
+  const passCauses: [TestSuiteCondition, string?][] = [];
+  const failCauses: [TestSuiteCondition, string?][] = [];
 
-  const conditions = (e: IBeaconSummary): boolean[] =>
+  const conditions = (e: IBeaconSummary): [boolean, string?][] =>
     test.conditions.map((c) => evalCondition(c, e, params));
 
   events.forEach((event) => {
-    let idx: number;
+    let idx: number, ok: boolean, got: string | undefined;
+
+    const results = conditions(event);
 
     switch (test.combinator) {
       case undefined:
       case "not":
       case "and":
-        idx = conditions(event).indexOf(test.combinator === "not");
+        idx = results.findIndex(([ok]) => ok === (test.combinator === "not"));
         if (idx === -1) {
           success.push(event);
-          passCauses.push(test.conditions[test.conditions.length - 1]);
+          [ok, got] = results[results.length - 1];
+          passCauses.push([test.conditions[test.conditions.length - 1], got]);
         } else {
           failure.push(event);
-          failCauses.push(test.conditions[idx]);
+          [ok, got] = results[idx];
+          failCauses.push([test.conditions[idx], got]);
         }
         break;
       case "or":
-        idx = conditions(event).indexOf(true);
+        idx = results.findIndex(([ok]) => ok === true);
         if (idx === -1) {
           failure.push(event);
-          failCauses.push(test.conditions[test.conditions.length - 1]);
+          [ok, got] = results[results.length - 1];
+          failCauses.push([test.conditions[test.conditions.length - 1], got]);
         } else {
           success.push(event);
-          passCauses.push(test.conditions[idx]);
+          [ok, got] = results[idx];
+          passCauses.push([test.conditions[idx], got]);
         }
         break;
     }
