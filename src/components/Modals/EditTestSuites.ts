@@ -50,6 +50,23 @@ const SUITE_TEMPLATE: TestSuiteSpec = {
       ],
     },
     {
+      name: "Context Validation",
+      description: "You can dig into context data too.",
+      conditions: [
+        {
+          target:
+            "payload.context.com_snowplowanalytics_snowplow.web_page.$version",
+          operator: "equals",
+          value: "1-0-0",
+        },
+        {
+          target: "payload.context.com_snowplowanalytics_snowplow.web_page.id",
+          operator: "matches",
+          value: "^[a-f0-9-]{36}$",
+        },
+      ],
+    },
+    {
       name: "Test Failure",
       description:
         "This test should always fail because an event should only be one of these types.",

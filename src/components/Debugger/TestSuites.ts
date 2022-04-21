@@ -7,6 +7,7 @@ import {
   TestSuiteResult,
   TestSuiteSpec,
 } from "../../ts/types";
+import { tryb64 } from "../../ts/util";
 import { ModalSetter } from "../Modals";
 
 const substitute = (s: string, params?: Record<string, string>) =>
@@ -39,6 +40,32 @@ const substitute = (s: string, params?: Record<string, string>) =>
     return prefix + val;
   });
 
+const unpackSDJ = (
+  sdjs: { schema: string; data: any }[]
+): Record<string, Record<string, any[]>> => {
+  const result: Record<string, Record<string, any[]>> = {};
+
+  sdjs.forEach((sdj) => {
+    const [vendor, name, format, version] = sdj.schema
+      .replace("iglu:", "")
+      .replace(/\./g, "_")
+      .split("/");
+
+    if (!result[vendor]) result[vendor] = {};
+    if (!result[vendor][name]) result[vendor][name] = [];
+
+    result[vendor][name].push({
+      $vendor: vendor,
+      $name: name,
+      $format: format,
+      $version: version,
+      ...sdj.data,
+    });
+  });
+
+  return result;
+};
+
 const getTarget = (
   target: string,
   event: IBeaconSummary,
@@ -50,9 +77,52 @@ const getTarget = (
   let next: string | undefined;
   while ((next = path.shift()) && typeof result === "object" && result) {
     if (result instanceof Map) {
+      if (next == "unstruct") {
+        if (result.get("ue_pr")) next = "ue_pr";
+        if (result.get("ue_px")) next = "ue_px";
+      } else if (/^contexts?$/.test(next)) {
+        if (result.get("co")) next = "co";
+        if (result.get("cx")) next = "cx";
+      }
+
       result = result.get(next);
+    } else if (Array.isArray(result)) {
+      const intKey = parseInt(next, 10);
+      if (isNaN(intKey)) {
+        result = result[0][next];
+      } else {
+        result = result[intKey];
+      }
     } else {
       result = result[next];
+    }
+
+    if (
+      ["ue_pr", "ue_px", "co", "cx"].indexOf(next) > -1 &&
+      typeof result === "string"
+    ) {
+      try {
+        const extracted = JSON.parse(tryb64(result));
+        if (
+          typeof extracted === "object" &&
+          "schema" in extracted &&
+          "data" in extracted
+        ) {
+          if (
+            /^iglu:com.snowplowanalytics.snowplow\/contexts\//.test(
+              extracted.schema
+            )
+          ) {
+            result = unpackSDJ(extracted.data);
+          } else if (
+            /^iglu:com.snowplowanalytics.snowplow\/unstruct_event\//.test(
+              extracted.schema
+            )
+          ) {
+            result = unpackSDJ([extracted.data]);
+          }
+        }
+      } catch {}
     }
   }
 
