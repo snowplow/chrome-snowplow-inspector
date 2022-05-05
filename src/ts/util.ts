@@ -1,7 +1,9 @@
-import { Cookie, Entry, Header } from "har-format";
+import { Cookie, Entry, Header, Har } from "har-format";
 import { protocol } from "./protocol";
 import { schemas, decodeB64Thrift } from "./thriftcodec";
-import { ITomcatImport } from "./types";
+import { ITomcatImport, NgrokEvent } from "./types";
+
+let ngrokWatermark = 0;
 
 const uuidv4 = (): string =>
   "00000000-0000-4000-8000-000000000000".replace(/0/g, () =>
@@ -508,6 +510,64 @@ const chunkEach = <T>(
   });
 };
 
+const ngrokEventToHAR = (event: NgrokEvent): Entry => {
+    let headers = Object.entries(event.request.headers).map(x => ({'name': x[0], 'value': x.slice(1).join(' ')}))
+    let parsed = atob(event.request.raw);
+    let body = parsed.split("\n").slice(-1)[0];
+  
+    return {
+      pageref: "page_good",
+      request: {
+        bodySize: 0,
+        cookies: [],
+        headers: headers,
+        // headers: ngrok.request.headers, TODO: turn into kvps
+        headersSize: 0,
+        httpVersion: event.request.proto,
+        method: event.request.method,
+        postData: {
+          "mimeType": "application/json; charset=UTF-8",
+          "text": body
+        },
+        queryString: [],
+        url: "https://" + event.request.headers.Host[0] + "/" + event.request.uri // should we use host or forwarding destination here?
+      },
+      response: {
+        bodySize: 0,
+        content: {
+          mimeType: "text/html",
+          size: 0,
+          text: "",
+        },
+        cookies: [],
+        headers: [],
+        headersSize: 0,
+        httpVersion: "HTTP/1.1",
+        redirectURL: "",
+        status: event.response.status_code,
+        statusText: "OK",
+      },
+      startedDateTime: event.start,
+      time: 0,
+      cache: {},
+      timings: {}
+    };
+  }
+
+const parseNgrokRequests = (data: any): {entries: []} => {
+    let ngrok_events = data.requests;
+    // inspect_db_size (ngrok) defaults to 50MB
+    let afterWaterMark = ngrok_events.filter((event: NgrokEvent) => new Date(event.start).getTime() > ngrokWatermark);
+    // iterate through and build a HAR request for each event
+    let entries = afterWaterMark.map((event: NgrokEvent) => ngrokEventToHAR(event));
+    let watermark = Math.max(...ngrok_events.map((event: Har) => new Date(event.start).getTime()));
+    // set ngrok watermark
+    ngrokWatermark = watermark;
+    return {
+      entries: entries
+    }
+  }
+
 export {
   badToRequests,
   b64d,
@@ -523,4 +583,6 @@ export {
   tryb64,
   uuidv4,
   sorted,
+  ngrokEventToHAR,
+  parseNgrokRequests
 };

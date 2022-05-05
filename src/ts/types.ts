@@ -183,3 +183,27 @@ export type DisplayItem =
       display: "testsuite";
       item: TestSuiteResult;
     };
+
+export type NgrokEvent = 
+  | {
+    uri: string;
+    id: string;
+    tunnel_name: string;
+    remote_addr: string;
+    start: string;
+    duration: number;
+    request: {
+      method: string;
+      proto: string;
+      headers: {[key: string]: string} // arbitrary key value
+      uri: string;
+      raw: string;
+    },
+    response: {
+      status: string;
+      status_code: number;
+      proto: string;
+      headers: {[key: string]: string} // arbitrary key value
+      raw: string;
+    }
+  };

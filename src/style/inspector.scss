@@ -286,3 +286,21 @@ output[name="registry-status"] {
   display: block;
   font-weight: normal;
 }
+
+.ngrok-play {
+  border-color: green;
+}
+
+.ngrok-play::after {
+  content: "\00a0▶️";
+}
+
+.ngrok-stop {
+  border-color: red;
+}
+
+.ngrok-stop::after {
+  content: "\00a0⏹️";
+}
+
+

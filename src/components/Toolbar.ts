@@ -1,10 +1,17 @@
 import { Har } from "har-format";
+import { request } from "http";
 import { default as m, Component, Vnode } from "mithril";
 import { landingUrl } from "../ts/analytics";
-import { IToolbar } from "../ts/types";
+import { IToolbar, NgrokEvent } from "../ts/types";
+import { ngrokEventToHAR, parseNgrokRequests } from "../ts/util";
+import { request as requestPerms } from "../ts/permissions";
+
+let ngrokStreamLock: number = -1;
+let ngrokStreamInterval: number = 1000;
 
 const toolbarView = (vnode: Vnode<IToolbar>) => {
   let toolbar_view;
+  var ngrok_watermark = 0;
   switch (vnode.attrs.application) {
     case "debugger":
       toolbar_view = [
@@ -74,6 +81,52 @@ const toolbarView = (vnode: Vnode<IToolbar>) => {
           },
           "Import HAR Session"
         ),
+        m(
+          "a.button.is-outlined.is-small.control",
+          {
+            class: ngrokStreamLock === -1 ? "ngrok-play" : "ngrok-stop"
+          },
+          m("hi", {
+            onclick: () => {
+            if (ngrokStreamLock != -1) {
+              console.log('stopping ngrok stream');
+              ngrokStreamLock = -1;
+              return;
+            }
+
+            // this permissions things works but it needs a better way
+            // to test and reset it!
+
+            var API_HOST = 'http://localhost:4040/'; // TODO: make this customisable in settings
+
+            requestPerms(API_HOST).then(() => {
+              let timeoutId = window.setTimeout(function pollStream() {
+                console.log('requesting new data...');
+                let newEntries = fetch(`${API_HOST}api/requests/http`, {
+                  headers: {
+                    'Accept': 'application/json'
+                  }
+                })
+                  .then((response) => response.json())
+                  // and then?
+                  .then(parseNgrokRequests)
+                  // and then and then
+                  .then(({entries}) => vnode.attrs.addRequests(entries));
+
+                  if (ngrokStreamLock === timeoutId) {
+                    ngrokStreamLock = timeoutId = window.setTimeout(
+                      pollStream,
+                      ngrokStreamInterval
+                    );
+                  }
+
+              }, ngrokStreamInterval);
+              ngrokStreamLock = timeoutId;
+            });
+            },
+          },
+          ngrokStreamLock === -1 ? 'Start ngrok listener' : 'Stop ngrok listener'
+        )),
       ];
       break;
     case "schemaManager":
