@@ -31,7 +31,10 @@ export class Resolver extends Registry {
         repolist: [],
       },
       ({ registries, repolist }) => {
+        let defaultRepos = false;
         for (const repo of registries as string[]) {
+          const spec = JSON.parse(repo);
+          defaultRepos = defaultRepos || !spec.id;
           const built = buildRegistry(JSON.parse(repo));
           repoAnalytics(
             built.spec.kind,
@@ -40,6 +43,8 @@ export class Resolver extends Registry {
           );
           this.registries.push(built);
         }
+
+        if (defaultRepos) this.persist();
 
         // handle legacy repo settings
         this.importLegacyLocalSchemas()
