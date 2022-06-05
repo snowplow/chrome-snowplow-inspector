@@ -336,6 +336,49 @@ const goodToRequests = (data: {
   };
 };
 
+const parseNewBadRowJson = (data: ItomcatImport | undefined, schema: string): ItomcatImport | undefined => {
+    if (!data) return data;
+    if (data.hasOwnProperty("querystring")) return data;
+
+    const result: ITomcatImport = {};
+
+    for (const [key, value] of Object.entries(data)) {
+        switch (key) {
+            case "userAgent":
+            case "contentType":
+              if (value !== null) {
+                result[key] = decodeURIComponent(value.replace(/\+/g, " "));
+              }
+              else {
+                result[key] = value;
+              }
+              break;
+            
+            case "refererUri":
+              result[key] = value;
+              if (typeof result.headers === "object") {
+                result.headers.Referer = value;
+              }
+              break;
+
+            default:
+                result[key] = value;
+                break;
+        }
+    }
+    result["schema"] = schema;
+    result["path"] = "bad_rows";
+    
+    let q = [];
+    let params = data["parameters"];
+    for (var p in params) {
+        q.push(encodeURIComponent(params[p].name) + "=" + encodeURIComponent(params[p].value));
+    }
+    result["querystring"] = q.join("&");
+
+    return result;
+}
+
 const badToRequests = (data: string[]): Entry[] => {
   const logs = data.map((row) => {
     if (!row.length) {
@@ -350,8 +393,26 @@ const badToRequests = (data: string[]): Entry[] => {
       js = row;
     }
 
-    if (typeof js === "object" && js !== null && js.hasOwnProperty("line")) {
-      js = js.line;
+    if (typeof js === "object" && js !== null) {
+        if (js.hasOwnProperty("line")) {
+            // older bad row format
+            js = js.line;
+        } else if (js.hasOwnProperty("schema") && js.hasOwnProperty("data")) {
+            // newer bad row format
+            // check that the schema has the pattern 'iglu:com.snowplowanalytics.snowplow.badrows'
+            if (!/^iglu:com\.snowplowanalytics\.snowplow\.badrows/.test(js.schema)) {
+                console.log("Unrecognized bad row iglu schema. ", js);
+                return;
+            }
+
+            if (typeof js.data.payload === "string") {
+                js = js.data.payload;
+            } else {
+                return parseNewBadRowJson(js.data.payload.raw || undefined, js.schema);
+            }
+        }
+    } else {
+        console.log("Unrecognized bad row format.", js);
     }
 
     if (typeof js === "string") {
