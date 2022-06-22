@@ -416,8 +416,8 @@ export const Timeline: ClosureComponent<ITimeline> = () => {
         ]);
       });
 
-      if (chrome.browserAction)
-        chrome.browserAction.setBadgeText({
+      if (chrome.action)
+        chrome.action.setBadgeText({
           tabId: chrome.devtools.inspectedWindow.tabId,
           text: "" + beacons.length,
         });

@@ -1,10 +1,10 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
 
   "name": "Snowplow Inspector",
   "description": "Add a new tab in Developer Tools to show Snowplow Analytics beacon information.",
   "version": "0.2.21",
-  "browser_action": {
+  "action": {
     "browser_style": true,
     "default_title": "Snowplow Inspector",
     "default_popup": "popup.html",
@@ -12,10 +12,7 @@
       "280": "poplin.png"
     }
   },
-  "options_ui": {
-    "page": "options.html",
-    "chrome_style": true
-  },
+  "options_page": "options.html",
   "icons": {
     "16": "poplin-16.png",
     "48": "poplin-48.png",
@@ -26,5 +23,5 @@
   "minimum_chrome_version": "18.0",
   "devtools_page": "devtools.html",
   "permissions": ["storage"],
-  "optional_permissions": ["*://*/*"]
+  "optional_host_permissions": ["*://*/*"]
 }
