@@ -1,4 +1,6 @@
-import { default as m, redraw, Component, ClosureComponent } from "mithril";
+import { h, FunctionComponent } from "preact";
+import { useEffect, useState } from "preact/hooks";
+
 import {
   DisplayItem,
   IBeaconSummary,
@@ -290,99 +292,93 @@ const ValidityOptions = {
   },
 };
 
-const ValidityBadge: Component<{ status: TestSuiteResult["status"] }> = {
-  view: ({ attrs: { status } }) =>
-    m(
-      "span.panel-icon.validity",
-      { title: ValidityOptions["title"][status] },
-      ValidityOptions["emoji"][status]
-    ),
-};
+const ValidityBadge: FunctionComponent<{
+  status: TestSuiteResult["status"];
+}> = ({ status }) => (
+  <span class="panel-icon validity" title={ValidityOptions["title"][status]}>
+    {ValidityOptions["emoji"][status]}
+  </span>
+);
 
-const TestResult: Component<{
+const TestResult: FunctionComponent<{
   result: TestSuiteResult;
   setActive: (beacon: DisplayItem) => void;
-}> = {
-  view: ({ attrs: { result, setActive } }) =>
-    "results" in result
-      ? m(
-          "details.panel-block",
-          m(
-            "summary",
-            { title: result.test.description },
-            result.test.name,
-            m(ValidityBadge, { status: result.status })
-          ),
-          result.results.map((r) => m(TestResult, { result: r, setActive }))
-        )
-      : m(
-          "a.panel-block",
-          {
-            onclick: () => setActive({ display: "testsuite", item: result }),
-            title: result.test.description,
-          },
-          result.test.name,
-          m(ValidityBadge, { status: result.status })
-        ),
-};
+}> = ({ result, setActive }) =>
+  "results" in result ? (
+    <details class="panel-block">
+      <summary title={result.test.description}>
+        {result.test.name}
+        <ValidityBadge status={result.status} />
+      </summary>
+      {result.results.map((r) => (
+        <TestResult result={r} setActive={setActive} />
+      ))}
+    </details>
+  ) : (
+    <a
+      class="panel-block"
+      title={result.test.description}
+      onClick={() => setActive({ display: "testsuite", item: result })}
+    >
+      {result.test.name}
+      <ValidityBadge status={result.status} />
+    </a>
+  );
 
-export const TestSuites: ClosureComponent<{
+export const TestSuites: FunctionComponent<{
   events: IBeaconSummary[][];
   setActive: (beacon: DisplayItem) => void;
   setModal: ModalSetter;
-}> = () => {
-  let suites: TestSuiteSpec[] = [];
+}> = ({ events, setActive, setModal }) => {
+  const [suites, setSuites] = useState<TestSuiteSpec[]>([]);
 
-  return {
-    oninit: () => {
-      chrome.storage.local.get(
-        {
-          testSuites: "[]",
-        },
-        ({ testSuites }) => {
-          try {
-            suites = JSON.parse(testSuites);
-            redraw();
-          } catch (e) {
-            console.error("error parsing stored testSuites");
-          }
+  useEffect(() => {
+    chrome.storage.local.get(
+      {
+        testSuites: "[]",
+      },
+      ({ testSuites }) => {
+        try {
+          setSuites(JSON.parse(testSuites));
+        } catch (e) {
+          console.error("error parsing stored testSuites");
         }
-      );
-    },
-    view: ({ attrs: { events, setActive, setModal } }) =>
-      m(
-        "div.panel.testsuites",
-        m(
-          "p.panel-heading",
-          {
-            title:
-              "Test Suites allow you to define assertions about events in the timeline.",
-          },
-          "Test Suites",
-          m(
-            "button.button[type=button]",
-            {
-              title: "Edit Test Suites",
-              onclick: () =>
-                setModal("editTestSuites", {
-                  suites: JSON.parse(JSON.stringify(suites)),
-                  setSuites: (newSuites: TestSuiteSpec[]) => {
-                    chrome.storage.local.set(
-                      { testSuites: JSON.stringify(newSuites) },
-                      () => {
-                        suites = newSuites;
-                        redraw();
-                      }
-                    );
-                  },
-                }),
-            },
-            "\ud83d\udd89"
-          )
-        ),
-        suites.map((suite) =>
-          m(TestResult, { result: runSuite(suite, events.flat()), setActive })
-        )
-      ),
-  };
+      }
+    );
+  }, []);
+
+  return (
+    <div class="panel testsuites">
+      <p
+        class="panel-heading"
+        title="Test Suites allow you to define assertions about events in the timeline."
+      >
+        Test Suites
+        <button
+          class="button"
+          type="button"
+          title="Edit Test Suites"
+          onClick={() =>
+            setModal("editTestSuites", {
+              suites: JSON.parse(JSON.stringify(suites)),
+              setSuites: (newSuites: TestSuiteSpec[]) => {
+                chrome.storage.local.set(
+                  { testSuites: JSON.stringify(newSuites) },
+                  () => setSuites(newSuites)
+                );
+              },
+            })
+          }
+        >
+          {"\ud83d\udd89"}
+        </button>
+      </p>
+      {suites.map((suite) => (
+        <TestResult
+          result={runSuite(suite, events.flat())}
+          setActive={setActive}
+        />
+      ))}
+    </div>
+  );
 };

@@ -1,7 +1,9 @@
-import { default as m, Component } from "mithril";
+import { h, FunctionComponent } from "preact";
+import { useState } from "preact/hooks";
 
 import { ModalOptions } from ".";
 import { buildRegistry, Registry, Resolver } from "../../ts/iglu";
+import { RegistryDetail } from "../SchemaManager/RegistryDetail";
 import { objHasProperty, tryb64 } from "../../ts/util";
 import { RegistrySpec } from "../../ts/types";
 
@@ -95,78 +97,71 @@ const parseResolverConfig = (input: string) => {
   return imported.map(buildRegistry);
 };
 
-export const ImportRegistries: Component<
-  ImportRegistriesOptions,
-  { error?: string; results?: Registry[] }
-> = {
-  view: ({ attrs: { setModal, resolver }, state }) =>
-    m("div.modal.is-active.registry-import", [
-      m("div.modal-background", { onclick: () => setModal() }),
-      m("div.modal-card", [
-        m("header.modal-card-head", [
-          m("p.modal-card-title", "Import Resolver Configuration"),
-          m("button.delete", {
-            onclick: () => setModal(),
-          }),
-        ]),
-        m("section.modal-card-body", [
-          m(
-            "p",
-            "Enter the ",
-            m(
-              "a",
-              {
-                target: "_blank",
-                href: "https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/iglu/iglu-resolver/",
-              },
-              m("code", "Resolver-Config")
-            ),
-            " configuration used in your pipeline to register all the Registries used by your pipeline."
-          ),
-          m("textarea.textarea.resolver-import", {
-            rows: 8,
-            oninput: (event: InputEvent) => {
-              if (event.target instanceof HTMLTextAreaElement) {
-                state.results = undefined;
-                if (event.target.value) {
-                  try {
-                    state.results = parseResolverConfig(event.target.value);
-                    state.error = undefined;
-                  } catch (e) {
-                    if (e instanceof Error) state.error = e.message;
-                    else state.error = "" + e;
-                  }
-                }
-              }
-            },
-          }),
-          state.error && m("p.error", state.error),
-          state.results
-            ? m(
-                "select[disabled][multiple]",
-                { size: 5 },
-                state.results?.map((r) => m(r))
-              )
-            : undefined,
-        ]),
-        m(
-          "footer.modal-card-foot",
-          m(
-            "button.button",
-            {
-              onclick: () => {
-                let p = Promise.resolve();
-                if (state.results) {
-                  resolver.import(false, ...state.results);
-                  p = resolver.persist();
-                }
+export const ImportRegistries: FunctionComponent<ImportRegistriesOptions> = ({
+  setModal,
+  resolver,
+}) => {
+  const [error, setError] = useState<string>();
+  const [results, setResults] = useState<Registry[]>();
 
-                p.then(() => setModal());
-              },
-            },
-            "Save Registries"
-          )
-        ),
-      ]),
-    ]),
+  return (
+    <div class="modal is-active registry-import">
+      <div class="modal-background" onClick={() => setModal()}></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Import Resolver Configuration</p>
+          <button class="delete" onClick={() => setModal()} />
+        </header>
+        <section class="modal-card-body">
+          <p>
+            Enter the{" "}
+            <a
+              target="_blank"
+              href="https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/iglu/iglu-resolver/"
+            >
+              <code>Resolver-Config</code>
+            </a>{" "}
+            configuration used in your pipeline to register all the Registries
+            used by your pipeline.
+          </p>
+          <textarea
+            class="textarea resolver-import"
+            rows={8}
+            onInput={(e) => {
+              const target = e.currentTarget;
+              try {
+                setResults(parseResolverConfig(target.value));
+                setError(undefined);
+              } catch (e) {
+                setError(e instanceof Error ? e.message : "" + e);
+              }
+            }}
+          />
+          {error && <p class="error">{error}</p>}
+          {results && (
+            <select disabled multiple size={5}>
+              {results.map((r) => (
+                <RegistryDetail registry={r} />
+              ))}
+            </select>
+          )}
+        </section>
+        <footer class="modal-card-foot">
+          <button
+            class="button"
+            onClick={() => {
+              if (results) {
+                resolver.import(false, ...results);
+                resolver.persist().then(() => setModal());
+              } else {
+                setModal();
+              }
+            }}
+          >
+            Save Registries
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
 };

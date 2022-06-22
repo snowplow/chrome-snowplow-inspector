@@ -1,5 +1,7 @@
 import { Entry } from "har-format";
-import { default as m, ClosureComponent, Vnode } from "mithril";
+import { h, FunctionComponent, VNode } from "preact";
+import { useEffect, useMemo, useState } from "preact/hooks";
+
 import { trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
@@ -173,7 +175,6 @@ const validateEvent = (
       id,
       unrec ? "Unrecognised" : valid ? "Valid" : "Invalid"
     );
-    m.redraw();
   });
 
   return validationCache.get(id)!;
@@ -226,16 +227,10 @@ const summariseBeacons = (
 };
 
 const getPageUrl = (entries: Entry[]) => {
-  let page: Entry["request"]["headers"][number] | undefined;
-  entries.find(
-    (entry) =>
-      (page = entry.request.headers.find((x) => /referr?er/i.test(x.name)))
-  );
-  if (page) {
-    return new URL(page.value);
-  }
-
-  return null;
+  const page = entries
+    .flatMap((entry) => entry.request.headers)
+    .find((header) => /referr?er/i.test(header.name));
+  return page ? new URL(page.value) : null;
 };
 
 const extractRequests = (
@@ -364,116 +359,129 @@ const extractRequests = (
   return [[id, collector, method], beacons];
 };
 
-export const Timeline: ClosureComponent<ITimeline> = () => {
-  let filter: RegExp | undefined;
+export const Timeline: FunctionComponent<ITimeline> = ({
+  displayMode,
+  isActive,
+  requests,
+  resolver,
+  setActive,
+  setModal,
+}) => {
+  const [filterStr, setFilterStr] = useState<string>("");
 
-  return {
-    view: ({
-      attrs: { displayMode, isActive, requests, resolver, setActive, setModal },
-    }) => {
-      const fallbackUrl = getPageUrl(requests);
-      let first: IBeaconSummary | undefined = undefined;
-      let active = false;
-      const events = requests.map((batch, i) =>
-        summariseBeacons(batch, i, resolver, filter)
-      );
-      const beacons = events.map((summaries) => {
-        first = first || summaries[0];
-        return summaries.map((summary): [URL | null, Vnode] => [
-          summary.page ? new URL(summary.page) : fallbackUrl,
-          m(
-            "a.panel-block",
-            {
-              class: [
-                isActive(summary) ? ((active = true), "is-active") : "",
-                // Some race in Firefox where the response information isn't always populated
-                summary.collectorStatus.code === 200 ||
-                summary.collectorStatus.code === 0
-                  ? ""
-                  : "not-ok",
-                colorOf(summary.collector + summary.appId),
-                summary.validity === "Invalid" ? "is-invalid" : "",
-              ].join(" "),
-              onclick: setActive.bind(null, {
-                display: "beacon",
-                item: summary,
-              }),
-              title: [
-                `Time: ${summary.time}`,
-                `Collector: ${summary.collector}`,
-                `App ID: ${summary.appId}`,
-                `Status: ${summary.collectorStatus.code} ${summary.collectorStatus.text}`,
-                `Validity: ${summary.validity}`,
-              ].join("\n"),
-            },
-            m("span.panel-icon.identifier"),
-            summary.eventName,
-            m(
-              "span.panel-icon.validity",
-              summary.validity === "Invalid" ? "\u26d4\ufe0f" : ""
-            )
-          ),
-        ]);
+  const filter = useMemo(() => {
+    try {
+      return filterStr ? new RegExp(filterStr, "i") : undefined;
+    } catch (e) {
+      return undefined;
+    }
+  }, [filterStr]);
+
+  const fallbackUrl = useMemo(() => getPageUrl(requests), [requests]);
+
+  const [first, setFirst] = useState<IBeaconSummary>();
+
+  let active = false; // ?
+
+  const events = useMemo(
+    () =>
+      requests.map((batch, i) => summariseBeacons(batch, i, resolver, filter)),
+    [requests, resolver, filter]
+  );
+
+  const beacons = events.map((summaries) => {
+    setFirst((prev) => prev || summaries[0]);
+    return summaries.map((summary): [URL | null, VNode] => [
+      summary.page ? new URL(summary.page) : fallbackUrl,
+      <a
+        class={[
+          "panel-block",
+          isActive(summary) ? ((active = true), "is-active") : "",
+          // Some race in Firefox where the response information isn't always populated
+          summary.collectorStatus.code === 200 ||
+          summary.collectorStatus.code === 0
+            ? ""
+            : "not-ok",
+          colorOf(summary.collector + summary.appId),
+          summary.validity === "Invalid" ? "is-invalid" : "",
+        ].join(" ")}
+        title={[
+          `Time: ${summary.time}`,
+          `Collector: ${summary.collector}`,
+          `App ID: ${summary.appId}`,
+          `Status: ${summary.collectorStatus.code} ${summary.collectorStatus.text}`,
+          `Validity: ${summary.validity}`,
+        ].join("\n")}
+        onClick={setActive.bind(null, { display: "beacon", item: summary })}
+      >
+        <span class="panel-icon identifier" />
+        {summary.eventName}
+        <span class="panel-icon validity">
+          {summary.validity === "Invalid" ? "\u26d4\ufe0f" : ""}
+        </span>
+      </a>,
+    ]);
+  });
+
+  const byPage = beacons.reduce(
+    (acc, batch) =>
+      batch.reduce((acc, [url, beacon]) => {
+        const key = url ? url.pathname.slice(0, 34) : "Current Page";
+        const tail = acc.pop() || [key, []];
+        if (tail[0] === key) {
+          tail[1].push(beacon);
+          acc.push(tail);
+        } else {
+          acc.push(tail);
+          acc.push([key, [beacon]]);
+        }
+        return acc;
+      }, acc),
+    [] as [string, VNode[]][]
+  );
+
+  useEffect(() => {
+    if (chrome.action)
+      chrome.action.setBadgeText({
+        tabId: chrome.devtools.inspectedWindow.tabId,
+        text: "" + beacons.length,
       });
+  }, [beacons.length]);
 
-      if (chrome.action)
-        chrome.action.setBadgeText({
-          tabId: chrome.devtools.inspectedWindow.tabId,
-          text: "" + beacons.length,
-        });
+  if (displayMode === "beacon" && !active && first)
+    setActive({ display: "beacon", item: first });
 
-      if (displayMode === "beacon" && !active && first)
-        setActive({ display: "beacon", item: first });
-
-      return m(
-        "div.column.is-narrow.timeline",
-        m(
-          ".timeline__events",
-          m(
-            "div.panel.filterPanel",
-            m("input.input#filter[type=text][placeholder=Filter]", {
-              onkeyup: (e: KeyboardEvent) => {
-                const t = e.currentTarget as HTMLInputElement;
-                try {
-                  const f =
-                    t && !!t.value ? new RegExp(t.value, "i") : undefined;
-                  filter = f;
-                  t.classList.remove("invalid");
-                  t.classList.add("valid");
-                } catch (x) {
-                  t.classList.remove("valid");
-                  t.classList.add("invalid");
-                }
-              },
-            })
-          ),
-          ...beacons
-            .reduce(
-              (acc, batch) =>
-                batch.reduce((acc, [url, beacon]) => {
-                  const key = url ? url.pathname.slice(0, 34) : "Current Page";
-                  const tail = acc.pop() || [key, []];
-                  if (tail[0] === key) {
-                    tail[1].push(beacon);
-                    acc.push(tail);
-                  } else {
-                    acc.push(tail);
-                    acc.push([key, [beacon]]);
-                  }
-                  return acc;
-                }, acc),
-              [] as [string, Vnode[]][]
-            )
-            .map(([pageName, beacons]) =>
-              m(
-                "div.panel",
-                m("p.panel-heading", { title: pageName }, pageName),
-                beacons
-              )
-            )
-        ),
-        m(TestSuites, { events, setActive, setModal })
-      );
-    },
-  };
+  return (
+    <div class="column is-narrow timeline">
+      <div class="timeline__events">
+        <div class="panel filterPanel">
+          <input
+            id="filter"
+            class={[
+              "input",
+              filter ? "valid" : filterStr ? "invalid" : "valid",
+            ].join(" ")}
+            type="text"
+            placeholder="Filter"
+            onKeyUp={(e) => {
+              if (e.currentTarget instanceof HTMLInputElement) {
+                const val = e.currentTarget.value;
+                setFilterStr(val);
+              }
+            }}
+            value={filterStr}
+          />
+        </div>
+        {byPage.map(([pageName, beacons]) => (
+          <div class="panel">
+            <p class="panel-heading" title="pageName">
+              {pageName}
+            </p>
+            {beacons}
+          </div>
+        ))}
+        <TestSuites events={events} setActive={setActive} setModal={setModal} />
+      </div>
+    </div>
+  );
 };
