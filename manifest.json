@@ -20,7 +20,7 @@
     "280": "poplin.png"
   },
   "author": "Poplin Data",
-  "minimum_chrome_version": "18.0",
+  "minimum_chrome_version": "88.0",
   "devtools_page": "devtools.html",
   "permissions": ["storage"],
   "optional_host_permissions": ["*://*/*"]
