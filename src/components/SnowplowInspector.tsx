@@ -39,15 +39,19 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   const clearRequests = useCallback(() => setEvents([]), []);
 
-  const setModal: ModalSetter = useCallback((modalName, opts) => {
-    if (modalOpts.current && modalOpts.current.callback) modalOpts.current.callback();
-    if (modalName) {
-      modalOpts.current = { kind: modalName, setModal, ...opts };
-    } else {
-      modalOpts.current = undefined;
-    }
-    setActiveModal(modalName);
-  }, [modalOpts]);
+  const setModal: ModalSetter = useCallback(
+    (modalName, opts) => {
+      if (modalOpts.current && modalOpts.current.callback)
+        modalOpts.current.callback();
+      if (modalName) {
+        modalOpts.current = { kind: modalName, setModal, ...opts };
+      } else {
+        modalOpts.current = undefined;
+      }
+      setActiveModal(modalName);
+    },
+    [modalOpts]
+  );
 
   const app = [];
 

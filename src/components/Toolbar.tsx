@@ -29,7 +29,7 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
 
   const streamModal = useCallback(
     () => setModal("stream", { addRequests, streamLock, setStreamLock }),
-    [setModal, addRequests]
+    [setModal, addRequests, streamLock]
   );
 
   const importHar = useCallback(() => {
