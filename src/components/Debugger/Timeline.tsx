@@ -381,7 +381,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   const [first, setFirst] = useState<IBeaconSummary>();
 
-  let active = false; // ?
 
   const events = useMemo(
     () =>
@@ -396,7 +395,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       <a
         class={[
           "panel-block",
-          isActive(summary) ? ((active = true), "is-active") : "",
+          isActive(summary) ? "is-active" : "",
           // Some race in Firefox where the response information isn't always populated
           summary.collectorStatus.code === 200 ||
           summary.collectorStatus.code === 0
@@ -448,8 +447,8 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       });
   }, [beacons.length]);
 
-  if (displayMode === "beacon" && !active && first)
-    setActive({ display: "beacon", item: first });
+  if (displayMode === "beacon" && first)
+    setActive((active) => active || { display: "beacon", item: first });
 
   return (
     <div class="column is-narrow timeline">

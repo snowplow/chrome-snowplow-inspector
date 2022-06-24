@@ -1,5 +1,6 @@
 import { Entry } from "har-format";
 import { Schema } from "jsonschema";
+import { StateUpdater } from "preact/hooks";
 
 import { Resolver } from "./iglu";
 import { Modal, ModalSetter } from "../components/Modals";
@@ -78,7 +79,7 @@ export interface IErrorMessageSet {
 export interface IToolbar {
   application: Application;
   addRequests: (requests: Entry[]) => void;
-  changeApp: (app: Application) => void;
+  changeApp: StateUpdater<Application>;
   clearRequests: () => void;
   setModal: ModalSetter;
 }
@@ -92,7 +93,7 @@ export interface ITimeline {
   displayMode: DisplayItem["display"];
   requests: Entry[];
   resolver: Resolver;
-  setActive: (item: DisplayItem) => void;
+  setActive: StateUpdater<DisplayItem | undefined>;
   setModal: ModalSetter;
 }
 
