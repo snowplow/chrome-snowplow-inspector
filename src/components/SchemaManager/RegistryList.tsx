@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useState } from "preact/hooks";
+import { StateUpdater } from "preact/hooks";
 
 import { Registry, Resolver } from "../../ts/iglu";
 
@@ -13,14 +13,14 @@ export const RegistryList: FunctionComponent<{
   filterRegistries: (selected: Registry[]) => void;
   setModal: ModalSetter;
   selectedRegistries: Registry[];
-  requestUpdate: (request?: boolean) => boolean;
+  setWatermark: StateUpdater<number>;
 }> = ({
   resolver,
   clearSearch,
   filterRegistries,
   setModal,
-  requestUpdate,
   selectedRegistries,
+  setWatermark,
 }) => {
   return (
     <div class="registries column is-narrow">
@@ -41,7 +41,7 @@ export const RegistryList: FunctionComponent<{
           onChange={(event) => {
             const target = event.currentTarget;
 
-            const callback = () => requestUpdate(true);
+            const callback = () => setWatermark(Date.now());
             switch (target.value) {
               case "Edit":
                 if (selectedRegistries)
@@ -100,7 +100,7 @@ export const RegistryList: FunctionComponent<{
                 registries: selectedRegistries.filter(
                   (reg) => reg.spec.kind === "local"
                 ),
-                callback: () => requestUpdate(true),
+                callback: () => setWatermark(Date.now())
               });
             }
           }}

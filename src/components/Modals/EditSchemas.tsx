@@ -231,10 +231,24 @@ export const EditSchemas: FunctionComponent<EditSchemasOptions> = ({
                 if (registry.spec.kind !== "local") return;
                 const local = registry as LocalRegistry;
 
-                const edited = editableSchemas[i];
-                const added = addedSchemas[i];
+                const edited = Array.prototype.filter
+                  .call(form.elements, (el: HTMLElement) => {
+                    if (el instanceof HTMLTextAreaElement) {
+                      let parent: Node = el;
+                      while (
+                        parent.parentNode &&
+                        parent.nodeName.toUpperCase() !== "FIELDSET"
+                      )
+                        parent = parent.parentNode;
+
+                      if (parent instanceof HTMLFieldSetElement) {
+                        return registry.id === parent.name;
+                      }
+                    }
+                  })
+                  .map((el: HTMLTextAreaElement) => el.value);
+
                 const resolved = edited
-                  .concat(added)
                   .map((s) => (s ? validateEdited(s, local) : null))
                   .filter((r): r is ResolvedIgluSchema => r !== null);
 

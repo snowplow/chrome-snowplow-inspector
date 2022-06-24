@@ -1,6 +1,6 @@
 import { Entry } from "har-format";
 import { h, FunctionComponent, Fragment } from "preact";
-import { useCallback, useMemo, useState } from "preact/hooks";
+import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
 import { Application } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
@@ -13,7 +13,7 @@ import { Toolbar } from "./Toolbar";
 export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
   const [activeModal, setActiveModal] = useState<Modal>();
-  const [modalOpts, setModalOpts] = useState<ModalOptions>();
+  const modalOpts = useRef<ModalOptions>();
 
   const resolver = useMemo(() => new Resolver(), []);
 
@@ -39,15 +39,15 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   const clearRequests = useCallback(() => setEvents([]), []);
 
-  const setModal: ModalSetter = (modalName, opts) => {
-    setActiveModal(modalName);
-    if (modalOpts && modalOpts.callback) modalOpts.callback();
+  const setModal: ModalSetter = useCallback((modalName, opts) => {
+    if (modalOpts.current && modalOpts.current.callback) modalOpts.current.callback();
     if (modalName) {
-      setModalOpts({ kind: modalName, setModal, ...opts });
+      modalOpts.current = { kind: modalName, setModal, ...opts };
     } else {
-      setModalOpts(undefined);
+      modalOpts.current = undefined;
     }
-  };
+    setActiveModal(modalName);
+  }, [modalOpts]);
 
   const app = [];
 
@@ -79,7 +79,7 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   if (activeModal) {
     const Modal = modals[activeModal];
-    app.push(<Modal {...(modalOpts as any)} />);
+    app.push(<Modal {...(modalOpts.current as any)} />);
   }
 
   return <>{app}</>;

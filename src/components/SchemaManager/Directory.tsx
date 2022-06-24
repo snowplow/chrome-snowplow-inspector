@@ -31,8 +31,8 @@ type DirectoryAttrs = {
   resolver: Resolver;
   search?: RegExp;
   selections: Registry[];
-  requestUpdate: (request?: boolean) => boolean;
   setCollapsed: StateUpdater<boolean>;
+  watermark: number;
 };
 
 const refreshSchemas = (
@@ -59,20 +59,16 @@ const refreshSchemas = (
 export const Directory: FunctionComponent<DirectoryAttrs> = ({
   search,
   selections,
-  requestUpdate,
   resolver,
   setCollapsed,
   children,
+  watermark,
 }) => {
   const [catalog, setCatalog] = useState<(IgluSchema | ResolvedIgluSchema)[]>(
     []
   );
-  useEffect(() => refreshSchemas(resolver, setCatalog), [resolver]);
 
-  if (requestUpdate()) {
-    requestUpdate(false);
-    refreshSchemas(resolver, setCatalog);
-  }
+  useEffect(() => refreshSchemas(resolver, setCatalog), [resolver, watermark]);
 
   const filtered = useMemo(
     () =>

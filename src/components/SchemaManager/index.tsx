@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useRef, useState } from "preact/hooks";
+import { useMemo, useRef, useState } from "preact/hooks";
 
 import { Registry, Resolver } from "../../ts/iglu";
 import { ModalSetter } from "../../components/Modals";
@@ -32,24 +32,18 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
   const clearSearch = () =>
     setFilters((filters) => ({ ...filters, search: undefined }));
 
-  const [doUpdate, setDoUpdate] = useState(false);
-
-  const requestUpdate = (request?: boolean): boolean => {
-    if (typeof request === "undefined") return doUpdate;
-    setDoUpdate(request);
-    return request;
-  };
-
   const [collapsed, setCollapsed] = useState(true);
+
+  const [watermark, setWatermark] = useState(Date.now());
 
   const smRef = useRef<HTMLElement>(null);
 
   return (
     <section class="schema-manager columns section" ref={smRef}>
       <Directory
-        requestUpdate={requestUpdate}
         setCollapsed={setCollapsed}
         resolver={resolver}
+        watermark={watermark}
         {...filters}
       >
         <div class="field is-grouped filterPanel">
@@ -89,9 +83,9 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
       <RegistryList
         filterRegistries={filterRegistries}
         clearSearch={clearSearch}
-        requestUpdate={requestUpdate}
         resolver={resolver}
         setModal={setModal}
+        setWatermark={setWatermark}
         selectedRegistries={filters.selections}
       />
     </section>
