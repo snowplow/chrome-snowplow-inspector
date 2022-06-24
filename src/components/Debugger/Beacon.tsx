@@ -368,7 +368,7 @@ const CopyMenu: FunctionComponent<{
               )
             }
           >
-            JSON
+            JSON (Pretty)
           </div>
           <div
             class="dropdown-item"
