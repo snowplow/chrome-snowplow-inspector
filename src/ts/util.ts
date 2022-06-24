@@ -222,20 +222,27 @@ const thriftToRequest = (
   };
 };
 
-const esToRequests = (data: object[]): Entry[] => {
+const esToRequests = (data: object[], index: string): Entry[] => {
+  const base = `https://${index}.elasticsearch/i`;
   return data.map((hit) => {
     if (hit.hasOwnProperty("collector_tstamp")) {
-      return goodToRequests(hit as { [esKeyName: string]: string }) as Entry;
+      return goodToRequests(
+        hit as { [esKeyName: string]: string },
+        base
+      ) as Entry;
     } else {
       return badToRequests([JSON.stringify(hit)])[0];
     }
   });
 };
 
-const goodToRequests = (data: {
-  [esKeyName: string]: string | object;
-}): Partial<Entry> => {
-  const uri = new URL("https://elasticsearch.invalid/i");
+const goodToRequests = (
+  data: {
+    [esKeyName: string]: string | object;
+  },
+  baseUri: string
+): Partial<Entry> => {
+  const uri = new URL(baseUri);
   const reverseTypeMap: { [event: string]: string } = {
     page_ping: "Page Ping",
     page_view: "Pageview",
