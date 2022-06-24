@@ -2,6 +2,7 @@ import { h, FunctionComponent } from "preact";
 
 import { ModalOptions } from ".";
 import { Registry, Resolver } from "../../ts/iglu";
+import { RegistryDetail } from "../SchemaManager/RegistryDetail";
 
 export interface DeleteRegistriesOptions extends ModalOptions {
   registries: Registry[];
@@ -26,7 +27,7 @@ export const DeleteRegistries: FunctionComponent<DeleteRegistriesOptions> = ({
           This can not be undone.
         </p>
         <select multiple disabled size={5}>
-          {registries}
+          {registries.map((reg) => <RegistryDetail registry={reg} />)}
         </select>
       </section>
       <footer class="modal-card-foot">

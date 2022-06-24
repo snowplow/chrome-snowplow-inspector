@@ -44,7 +44,7 @@ export const RegistryList: FunctionComponent<{
             const callback = () => setWatermark(Date.now());
             switch (target.value) {
               case "Edit":
-                if (selectedRegistries)
+                if (selectedRegistries.length)
                   setModal("editRegistries", {
                     registries: selectedRegistries,
                     resolver,
@@ -63,7 +63,7 @@ export const RegistryList: FunctionComponent<{
                 });
                 break;
               case "Remove":
-                if (selectedRegistries)
+                if (selectedRegistries.length)
                   setModal("deleteRegistries", {
                     registries: selectedRegistries,
                     resolver,

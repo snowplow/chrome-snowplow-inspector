@@ -40,6 +40,7 @@ const refreshSchemas = (
   setCatalog: StateUpdater<(IgluSchema | ResolvedIgluSchema)[]>
 ) => {
   const seenRegs = new Map<IgluUri, Registry[]>();
+  setCatalog([]);
 
   resolver.walk().then((discovered) => {
     chunkEach(discovered, (ds, i) => {
@@ -68,7 +69,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
     []
   );
 
-  useEffect(() => refreshSchemas(resolver, setCatalog), [resolver, watermark]);
+  useEffect(() => refreshSchemas(resolver, setCatalog), [resolver, watermark, resolver.registries]);
 
   const filtered = useMemo(
     () =>
