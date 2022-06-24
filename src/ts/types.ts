@@ -38,6 +38,7 @@ export interface IBeaconSummary {
   appId?: string;
   collector: string;
   eventName: string;
+  pageref?: string;
   id: string;
   method: string;
   page?: string;

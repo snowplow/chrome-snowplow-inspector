@@ -187,7 +187,7 @@ const summariseBeacons = (
   filter?: RegExp
 ): IBeaconSummary[] => {
   const reqs = extractRequests(entry, index);
-  const [[id, collector, method], requests] = reqs;
+  const { id, collector, method, pageref, beacons: requests } = reqs;
 
   const results = [];
 
@@ -196,6 +196,7 @@ const summariseBeacons = (
       appId: req.get("aid"),
       collector,
       eventName: nameEvent(req),
+      pageref,
       id: `#${id}-${i}`,
       method,
       page: req.get("url") || req.get("dl"),
@@ -236,13 +237,20 @@ const getPageUrl = (entries: Entry[]) => {
 const extractRequests = (
   entry: Entry,
   index: number
-): [[string, string, string], Map<string, string>[]] => {
+): {
+  id: string;
+  collector: string;
+  method: string;
+  pageref?: string;
+  beacons: Map<string, string>[];
+} => {
   const req = entry.request;
   const id =
-    entry.pageref +
+    (entry.pageref || "beacon") +
     hash(new Date(entry.startedDateTime).toJSON() + req.url + index);
   const collector = new URL(req.url).hostname;
   const method = req.method;
+  const pageref = entry.pageref;
   const beacons = [];
 
   const nuid = entry.request.cookies.filter((x) => x.name === "sp")[0];
@@ -356,7 +364,7 @@ const extractRequests = (
     beacons.push(beacon);
   }
 
-  return [[id, collector, method], beacons];
+  return { id, collector, method, pageref, beacons };
 };
 
 export const Timeline: FunctionComponent<ITimeline> = ({
@@ -390,8 +398,8 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   const beacons = events.map((summaries) => {
     setFirst((prev) => prev || summaries[0]);
-    return summaries.map((summary): [URL | null, VNode] => [
-      summary.page ? new URL(summary.page) : fallbackUrl,
+    return summaries.map((summary): [URL | string | null, VNode] => [
+      summary.pageref || (summary.page ? new URL(summary.page) : fallbackUrl),
       <a
         class={[
           "panel-block",
@@ -425,7 +433,10 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   const byPage = beacons.reduce(
     (acc, batch) =>
       batch.reduce((acc, [url, beacon]) => {
-        const key = url ? url.pathname.slice(0, 34) : "Current Page";
+        const key =
+          url instanceof URL
+            ? url.pathname.slice(0, 34)
+            : url || "Current Page";
         const tail = acc.pop() || [key, []];
         if (tail[0] === key) {
           tail[1].push(beacon);

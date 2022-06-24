@@ -100,7 +100,7 @@ export const RegistryList: FunctionComponent<{
                 registries: selectedRegistries.filter(
                   (reg) => reg.spec.kind === "local"
                 ),
-                callback: () => setWatermark(Date.now())
+                callback: () => setWatermark(Date.now()),
               });
             }
           }}

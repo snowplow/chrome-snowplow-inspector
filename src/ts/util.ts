@@ -188,7 +188,7 @@ const thriftToRequest = (
 
   // mock out the rest of the Entry interface
   return {
-    pageref: "page_bad",
+    pageref: "Bad Row",
     request: {
       bodySize: 0,
       cookies,
@@ -306,7 +306,7 @@ const goodToRequests = (data: {
   }
 
   return {
-    pageref: "page_good",
+    pageref: "ElasticSearch (Valid)",
     request: {
       bodySize: 0,
       cookies: [],
@@ -447,7 +447,7 @@ const badToRequests = (data: string[]): Entry[] => {
     }
   });
 
-  const entries = [];
+  const entries: Entry[] = [];
 
   for (const entry of logs.map(thriftToRequest)) {
     if (entry !== undefined) {
