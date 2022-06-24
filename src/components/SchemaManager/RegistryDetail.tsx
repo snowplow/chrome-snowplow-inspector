@@ -135,9 +135,10 @@ const EditableRegistry: FunctionComponent<{
   );
 };
 
-const RegistryListing: FunctionComponent<{ registry: Registry }> = ({
-  registry,
-}) => (
+const RegistryListing: FunctionComponent<{
+  registry: Registry;
+  selected?: boolean;
+}> = ({ registry, selected }) => (
   <option
     class={[
       "registry",
@@ -145,6 +146,7 @@ const RegistryListing: FunctionComponent<{ registry: Registry }> = ({
       (registry.lastStatus || "").toLowerCase(),
     ].join(" ")}
     value={registry.id}
+    selected={!!selected}
   >
     {registry.spec.name}
   </option>
@@ -153,10 +155,11 @@ const RegistryListing: FunctionComponent<{ registry: Registry }> = ({
 export const RegistryDetail: FunctionComponent<{
   registry: Registry;
   editing?: boolean;
+  selected?: boolean;
   schemaCount?: number;
-}> = ({ editing, registry, schemaCount }) =>
+}> = ({ editing, registry, schemaCount, selected }) =>
   editing ? (
     <EditableRegistry registry={registry} schemaCount={schemaCount} />
   ) : (
-    <RegistryListing registry={registry} />
+    <RegistryListing registry={registry} selected={selected} />
   );

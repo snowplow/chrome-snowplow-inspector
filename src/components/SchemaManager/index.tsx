@@ -17,9 +17,10 @@ type SchemaManagerAttributes = {
   setModal: ModalSetter;
 };
 
-export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = (
-  props
-) => {
+export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
+  resolver,
+  setModal,
+}) => {
   const [filters, setFilters] = useState<Filter>({
     search: undefined,
     selections: [],
@@ -42,15 +43,14 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = (
   const [collapsed, setCollapsed] = useState(true);
 
   const smRef = useRef<HTMLElement>(null);
-  const filterRef = useRef<HTMLInputElement>(null);
 
   return (
     <section class="schema-manager columns section" ref={smRef}>
       <Directory
         requestUpdate={requestUpdate}
         setCollapsed={setCollapsed}
+        resolver={resolver}
         {...filters}
-        {...props}
       >
         <div class="field is-grouped filterPanel">
           <input
@@ -58,23 +58,19 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = (
             type="search"
             placeholder="Filter Pattern"
             title="Regular expression to search schemas for"
-            onKeyUp={() => {
-              const target = filterRef.current;
-              if (target) {
-                const val = target.value;
-                if (!val.trim()) return clearSearch();
+            onKeyUp={(event) => {
+              const target = event.currentTarget;
+              if (!target.value.trim()) return clearSearch();
 
-                try {
-                  const re = new RegExp(val, "im");
-                  target.setCustomValidity("");
-                  filters.search = re;
-                } catch {
-                  target.setCustomValidity("Invalid regular expression");
-                  target.reportValidity();
-                }
+              try {
+                const re = new RegExp(target.value, "im");
+                target.setCustomValidity("");
+                setFilters((filters) => ({ ...filters, search: re }));
+              } catch {
+                target.setCustomValidity("Invalid regular expression");
+                target.reportValidity();
               }
             }}
-            ref={filterRef}
           />
           <button
             class="button"
@@ -94,7 +90,9 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = (
         filterRegistries={filterRegistries}
         clearSearch={clearSearch}
         requestUpdate={requestUpdate}
-        {...props}
+        resolver={resolver}
+        setModal={setModal}
+        selectedRegistries={filters.selections}
       />
     </section>
   );

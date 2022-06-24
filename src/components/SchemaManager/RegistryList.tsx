@@ -12,6 +12,7 @@ export const RegistryList: FunctionComponent<{
   resolver: Resolver;
   filterRegistries: (selected: Registry[]) => void;
   setModal: ModalSetter;
+  selectedRegistries: Registry[];
   requestUpdate: (request?: boolean) => boolean;
 }> = ({
   resolver,
@@ -19,22 +20,19 @@ export const RegistryList: FunctionComponent<{
   filterRegistries,
   setModal,
   requestUpdate,
-  ...rest
+  selectedRegistries,
 }) => {
-  const [selectedRegistries, setSelectedRegistries] = useState<Registry[]>([]);
-
-  const setRegistries = (registries: Registry[]) => {
-    setSelectedRegistries(registries);
-    filterRegistries(registries);
-  };
-
   return (
     <div class="registries column is-narrow">
-      <ResolverListing resolver={resolver} selectRegistries={setRegistries} />
+      <ResolverListing
+        resolver={resolver}
+        selected={selectedRegistries}
+        selectRegistries={filterRegistries}
+      />
       <menu>
         <button
           class="button clear"
-          onClick={() => (setRegistries([]), clearSearch())}
+          onClick={() => (filterRegistries([]), clearSearch())}
         >
           Clear Filters
         </button>
@@ -72,7 +70,7 @@ export const RegistryList: FunctionComponent<{
                     callback,
                   });
 
-                setRegistries([]);
+                filterRegistries([]);
                 clearSearch();
                 break;
               case "Import":
@@ -93,7 +91,8 @@ export const RegistryList: FunctionComponent<{
         <button
           class="button"
           disabled={
-            !selectedRegistries.some((reg) => reg.spec.kind !== "local")
+            !selectedRegistries.length ||
+            selectedRegistries.some((reg) => reg.spec.kind !== "local")
           }
           onClick={() => {
             if (selectedRegistries.length) {

@@ -1,6 +1,6 @@
 import { default as canonicalize } from "canonicalize";
 import { h, FunctionComponent } from "preact";
-import { StateUpdater, useEffect } from "preact/hooks";
+import { StateUpdater, useEffect, useMemo, useState } from "preact/hooks";
 
 import {
   Registry,
@@ -35,22 +35,21 @@ type DirectoryAttrs = {
   setCollapsed: StateUpdater<boolean>;
 };
 
-const catalog: (IgluSchema | ResolvedIgluSchema)[] = [];
-const refreshSchemas = (resolver: Resolver) => {
+const refreshSchemas = (
+  resolver: Resolver,
+  setCatalog: StateUpdater<(IgluSchema | ResolvedIgluSchema)[]>
+) => {
   const seenRegs = new Map<IgluUri, Registry[]>();
 
   resolver.walk().then((discovered) => {
-    catalog.splice(0);
-
     chunkEach(discovered, (ds, i) => {
-      catalog[i] = ds;
+      setCatalog((catalog) => ((catalog[i] = ds), [...catalog]));
       if (!seenRegs.has(ds.uri())) seenRegs.set(ds.uri(), []);
 
       return resolver
         .resolve(ds, seenRegs.get(ds.uri())!)
         .then((res) => {
-          catalog[i] = res;
-          //m.redraw();
+          setCatalog((catalog) => ((catalog[i] = res), [...catalog]));
         })
         .catch(() => console.log("couldn't find ", ds.uri()));
     });
@@ -65,24 +64,30 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
   setCollapsed,
   children,
 }) => {
-  useEffect(() => refreshSchemas(resolver), [resolver]);
+  const [catalog, setCatalog] = useState<(IgluSchema | ResolvedIgluSchema)[]>(
+    []
+  );
+  useEffect(() => refreshSchemas(resolver, setCatalog), [resolver]);
 
   if (requestUpdate()) {
     requestUpdate(false);
-    refreshSchemas(resolver);
+    refreshSchemas(resolver, setCatalog);
   }
 
-  const filtered =
-    selections.length || search
-      ? catalog.filter((s) => {
-          const filterHit =
-            !selections.length ||
-            (s instanceof ResolvedIgluSchema
-              ? !!selections.find((r) => r.id === s.registry.id)
-              : false);
-          return filterHit && (!search || s.like(search));
-        })
-      : catalog;
+  const filtered = useMemo(
+    () =>
+      selections.length || search
+        ? catalog.filter((s) => {
+            const filterHit =
+              !selections.length ||
+              (s instanceof ResolvedIgluSchema
+                ? !!selections.find((r) => r.id === s.registry.id)
+                : false);
+            return filterHit && (!search || s.like(search));
+          })
+        : catalog,
+    [selections, search, catalog]
+  );
 
   const directory: SchemaDirectory = sorted(filtered, (s) => s.uri()).reduce(
     (acc, el) => {
