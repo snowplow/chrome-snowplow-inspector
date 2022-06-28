@@ -17,6 +17,7 @@
     "jsx": "react",
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
+    "skipLibCheck": true,
     "paths": {
       "react": ["./node_modules/preact/compat/"],
       "react-dom": ["./node_modules/preact/compat/"]
