@@ -27,7 +27,9 @@ export const DeleteRegistries: FunctionComponent<DeleteRegistriesOptions> = ({
           This can not be undone.
         </p>
         <select multiple disabled size={5}>
-          {registries.map((reg) => <RegistryDetail registry={reg} />)}
+          {registries.map((reg) => (
+            <RegistryDetail registry={reg} />
+          ))}
         </select>
       </section>
       <footer class="modal-card-foot">

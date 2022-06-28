@@ -69,7 +69,10 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
     []
   );
 
-  useEffect(() => refreshSchemas(resolver, setCatalog), [resolver, watermark, resolver.registries]);
+  useEffect(
+    () => refreshSchemas(resolver, setCatalog),
+    [resolver, watermark, resolver.registries]
+  );
 
   const filtered = useMemo(
     () =>

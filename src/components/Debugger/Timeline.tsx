@@ -389,7 +389,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   const [first, setFirst] = useState<IBeaconSummary>();
 
-
   const events = useMemo(
     () =>
       requests.map((batch, i) => summariseBeacons(batch, i, resolver, filter)),
