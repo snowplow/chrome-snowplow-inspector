@@ -101,6 +101,7 @@ export interface ITimeline {
 export interface IBeacon {
   activeBeacon?: IBeaconSummary;
   resolver: Resolver;
+  compact?: boolean;
 }
 
 export interface IBadRowsSummary {

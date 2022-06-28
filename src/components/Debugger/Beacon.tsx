@@ -454,49 +454,100 @@ const CopyMenu: FunctionComponent<{
     </div>
   ) : null;
 
+const BeaconHeader: FunctionComponent<
+  Omit<IBeaconDetails, "data" | "payload"> & {
+    compact: boolean;
+    resolver: Resolver;
+  }
+> = ({ appId, collector, compact, method, name, resolver, time }) =>
+  compact ? (
+    <RowSet setName="Core">
+      <tr>
+        <th>App</th>
+        <td>
+          <LabelType val={appId} />
+          <BeaconValue obj={appId} resolver={resolver} />
+        </td>
+      </tr>
+      <tr>
+        <th>Event</th>
+        <td>
+          <BeaconValue obj={name} resolver={resolver} />
+        </td>
+      </tr>
+      <tr>
+        <th>Time</th>
+        <td>
+          <time dateTime={time}>{new Date(time).toUTCString()}</time>
+        </td>
+      </tr>
+      <tr>
+        <th>Collector</th>
+        <td>
+          <BeaconValue obj={collector} resolver={resolver} />
+        </td>
+      </tr>
+      <tr>
+        <th>Method</th>
+        <td>
+          <BeaconValue obj={method} resolver={resolver} />
+        </td>
+      </tr>
+    </RowSet>
+  ) : (
+    <>
+      <div class="level box">
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">App</p>
+            <p class="title">{appId}</p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Event</p>
+            <p class="title">{name}</p>
+          </div>
+        </div>
+      </div>
+      <div class="level box">
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Time</p>
+            <time class="title" dateTime={time}>
+              {new Date(time).toUTCString()}
+            </time>
+          </div>
+        </div>
+      </div>
+      <div class="level box">
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Collector</p>
+            <p class="title">{collector}</p>
+          </div>
+        </div>
+        <div class="level-item has-text-centered">
+          <div>
+            <p class="heading">Method</p>
+            <p class="title">{method}</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 const formatBeacon = (
-  { appId, name, time, collector, method, data, payload }: IBeaconDetails,
-  resolver: Resolver
+  { collector, data, payload, ...info }: IBeaconDetails,
+  resolver: Resolver,
+  compact = false
 ) => (
   <>
-    <div class="level box">
-      <div class="level-item has-text-centered">
-        <div>
-          <p class="heading">App</p>
-          <p class="title">{appId}</p>
-        </div>
-      </div>
-      <div class="level-item has-text-centered">
-        <div>
-          <p class="heading">Event</p>
-          <p class="title">{name}</p>
-        </div>
-      </div>
-    </div>
-    <div class="level box">
-      <div class="level-item has-text-centered">
-        <div>
-          <p class="heading">Time</p>
-          <time class="title" dateTime={time}>
-            {new Date(time).toUTCString()}
-          </time>
-        </div>
-      </div>
-    </div>
-    <div class="level box">
-      <div class="level-item has-text-centered">
-        <div>
-          <p class="heading">Collector</p>
-          <p class="title">{collector}</p>
-        </div>
-      </div>
-      <div class="level-item has-text-centered">
-        <div>
-          <p class="heading">Method</p>
-          <p class="title">{method}</p>
-        </div>
-      </div>
-    </div>
+    <BeaconHeader
+      compact={compact}
+      resolver={resolver}
+      collector={collector}
+      {...info}
+    />
     <CopyMenu collector={collector} beacon={payload} />
     {data.map(([setName, rows]) => (
       <RowSet setName={setName}>
@@ -521,6 +572,12 @@ const formatBeacon = (
 export const Beacon: FunctionComponent<IBeacon> = ({
   activeBeacon,
   resolver,
-}) => (
-  <>{!!activeBeacon && formatBeacon(parseBeacon(activeBeacon), resolver)}</>
-);
+  compact,
+}) => {
+  return (
+    <>
+      {!!activeBeacon &&
+        formatBeacon(parseBeacon(activeBeacon), resolver, compact)}
+    </>
+  );
+};

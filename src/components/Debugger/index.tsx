@@ -44,6 +44,20 @@ export const Debugger: FunctionComponent<IDebugger> = ({
     [addRequests]
   );
 
+  const [compactCore, setCompactCore] = useState(false);
+  useEffect(
+    () =>
+      chrome.storage.sync.get(
+        {
+          compactCoreMetadata: false,
+        },
+        ({ compactCoreMetadata }) => {
+          setCompactCore(compactCoreMetadata);
+        }
+      ),
+    []
+  );
+
   useEffect(() => {
     chrome.devtools.network.getHAR((harLog) => {
       handleNewRequests(
@@ -82,7 +96,11 @@ export const Debugger: FunctionComponent<IDebugger> = ({
       {!active || active.display === "beacon" ? (
         <div id="beacon" class="column">
           <div class="tile is-ancestor is-vertical inspector">
-            <Beacon activeBeacon={active && active.item} resolver={resolver} />
+            <Beacon
+              activeBeacon={active && active.item}
+              resolver={resolver}
+              compact={compactCore}
+            />
           </div>
         </div>
       ) : (
