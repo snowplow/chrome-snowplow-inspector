@@ -4,6 +4,7 @@ import { useCallback, useState } from "preact/hooks";
 
 import { landingUrl } from "../ts/analytics";
 import { IToolbar } from "../ts/types";
+import { isSnowplow } from "../ts/util";
 
 const ToolbarView: FunctionComponent<IToolbar> = ({
   addRequests,
@@ -52,7 +53,11 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
               "load",
               () => {
                 const content = JSON.parse(fr.result as string) as Har;
-                addRequests(content.log.entries);
+                addRequests(
+                  content.log.entries.filter((entry) =>
+                    isSnowplow(entry.request)
+                  )
+                );
               },
               false
             );

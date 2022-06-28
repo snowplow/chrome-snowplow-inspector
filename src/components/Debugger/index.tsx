@@ -3,53 +3,11 @@ import { h, FunctionComponent } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 import { DisplayItem, IBeaconSummary, IDebugger } from "../../ts/types";
+import { isSnowplow } from "../../ts/util";
 
 import { Beacon } from "./Beacon";
 import { TestResults } from "./TestResults";
 import { Timeline } from "./Timeline";
-
-/*
-  This looks for requests matching known Snowplow endpoints.
-  If a POST request doesn't match the pattern, it is still "sniffed" for a Snowplow
-  payload, in the event of Custom Post paths.
-
-  TODO(jethron): Make custom paths configurable:-
-  There is an issue where beacon requests (POSTs) fired on page navigation sometimes
-  have no body; the Content-Length header suggests there should be one but it is inaccessible.
-  This makes the hit undetectable to the sniffing above. Custom paths should be
-  configurable to catch these cases.
-
-  /i is the traditional "ice" request for GET
-  /com.snowplowanalytics.snowplow/tp2 is the default POST parameter endpoint
-  /collector/tp2 is a special case for a particular collector using beacon requests (Magento/Adobe: see #44)
- */
-const spPattern =
-  /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|(com\.snowplowanalytics\.snowplow|collector)\/tp2)/i;
-const plPattern = /^iglu:[^\/]+\/payload_data/i;
-const gaPattern = /\/com\.google\.analytics\/v1/i;
-
-function isSnowplow(request: Request): boolean {
-  if (spPattern.test(request.url) || gaPattern.test(request.url)) {
-    return true;
-  } else {
-    // It's possible that the request uses a custom endpoint via postPath
-    if (request.method === "POST" && typeof request.postData !== "undefined") {
-      // Custom endpoints only support POST requests
-      try {
-        const post = JSON.parse(request.postData.text!) || {};
-        return (
-          typeof post === "object" &&
-          "schema" in post &&
-          plPattern.test(post.schema)
-        );
-      } catch {
-        // invalid JSON, not a Snowplow event
-      }
-    }
-  }
-
-  return false;
-}
 
 export const Debugger: FunctionComponent<IDebugger> = ({
   addRequests,
