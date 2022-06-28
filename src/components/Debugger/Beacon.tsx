@@ -1,5 +1,5 @@
 import { h, FunctionComponent, Fragment, VNode } from "preact";
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useMemo, useState } from "preact/hooks";
 
 import { protocol } from "../../ts/protocol";
 import {
@@ -160,10 +160,21 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
     } else return Promise.resolve(null);
   }, [obj, resolver, schemaValidity]);
 
-  if (typeof obj !== "object" || obj === null)
-    return typeof obj === "undefined" ? null : (
-      <>{JSON.stringify(obj).replace(/^"|"$/g, "")}</>
-    );
+  if (typeof obj !== "object" || obj === null) {
+    switch (typeof obj) {
+      case "undefined":
+        return null;
+      case "string":
+        try {
+          const json = JSON.parse(obj);
+          return <BeaconValue resolver={resolver} obj={json} />;
+        } catch (e) {
+          return <>{obj}</>;
+        }
+      default:
+        return <>{JSON.stringify(obj)}</>;
+    }
+  }
 
   const children: (VNode<BeaconValueAttrs> | string)[] = [];
   let p;
