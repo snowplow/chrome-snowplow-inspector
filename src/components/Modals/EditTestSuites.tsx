@@ -167,7 +167,7 @@ export const EditTestSuites: FunctionComponent<EditTestSuitesOptions> = ({
 }) => (
   <div class="modal is-active">
     <div class="modal-background" onClick={() => setModal()}></div>
-    <div class="modal-card" onClick={() => setModal()}>
+    <div class="modal-card">
       <header class="modal-card-head">
         <p class="modal-card-title">Edit Test Suites</p>
         <button class="delete" type="button" onClick={() => setModal()} />
