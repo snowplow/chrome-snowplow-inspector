@@ -173,6 +173,32 @@ export const EditTestSuites: FunctionComponent<EditTestSuitesOptions> = ({
         <button class="delete" type="button" onClick={() => setModal()} />
       </header>
       <section class="modal-card-body">
+        <details>
+          <summary>What are Test Suites?</summary>
+          <p>
+            Test Suites allow you to define checks against all the events
+            displayed in the extension at once.
+          </p>
+          <p>
+            Test Suites add the flexibility to check the absence of tracking
+            (e.g. "Fail if event A does not occur"), as well as verify
+            requirements that are higher-level than can be defined at a
+            Self-Describing schema-level (e.g. "Event B must contain Context X
+            with a valid Y property and be valid according to the schema").
+          </p>
+          <p>
+            This can save you time if you already have a normal site test
+            procedure: you can define all your tracking expectations as a Test
+            Suite and you then don't need to manually verify that all your
+            requirements are met as you use each feature, you can just check at
+            the end and see which features had invalid or missing tracking.
+          </p>
+          <p>
+            This functionality also works with imported events from other
+            devices (e.g. via a HAR file containing events sent from a mobile
+            device).
+          </p>
+        </details>
         <form
           id="edit-testsuites"
           class="form testsuite-definition"
