@@ -550,7 +550,7 @@ const formatBeacon = (
     />
     <CopyMenu collector={collector} beacon={payload} />
     {data.map(([setName, rows]) => (
-      <RowSet setName={setName}>
+      <RowSet key={setName} setName={setName}>
         {rows.map(([name, val, classes]) =>
           !/Custom Context|(Unstructured|Self-Describing) Event/.test(name) ? (
             <tr class={classes}>
