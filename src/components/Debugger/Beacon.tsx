@@ -1,5 +1,5 @@
 import { h, FunctionComponent, Fragment, VNode } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 
 import { protocol } from "../../ts/protocol";
 import {
@@ -126,44 +126,39 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
     null
   );
 
-  useEffect(() => {
-    if (isSDJ(obj)) {
+  const validityCheck = useMemo((): Promise<ValidityState | null> => {
+    if (!schemaValidity && isSDJ(obj)) {
       const schema = IgluSchema.fromUri(obj.schema as IgluUri);
       if (schema) {
-        resolver
-          .resolve(schema)
-          .then(
-            (schema): ValidityState => {
-              const validation = schema.validate(obj.data);
-              return validation.valid
-                ? {
-                    validity: "Valid",
-                    schema,
-                  }
-                : {
-                    validity: "Invalid",
-                    errorText: validation.errors.join("\n"),
-                    schema,
-                  };
-            },
-            (): ValidityState => ({
-              validity: "Unrecognised",
-              errorText:
-                "Could not find or access schema definition in any configured repositories.",
-              schema,
-            })
-          )
-          .then((vs) => {
-            setSchemaValidity(vs);
-          });
+        return resolver.resolve(schema).then(
+          (schema) => {
+            const validation = schema.validate(obj.data);
+            return validation.valid
+              ? {
+                  validity: "Valid",
+                  schema,
+                }
+              : {
+                  validity: "Invalid",
+                  errorText: validation.errors.join("\n"),
+                  schema,
+                };
+          },
+          () => ({
+            validity: "Unrecognised",
+            errorText:
+              "Could not find or access schema definition in any configured repositories.",
+            schema,
+          })
+        );
       } else {
-        setSchemaValidity({
+        return Promise.resolve({
           validity: "Invalid",
           errorText: "Invalid Iglu URI identifying schema.",
         });
       }
-    }
-  }, [obj, resolver]);
+    } else return Promise.resolve(null);
+  }, [obj, resolver, schemaValidity]);
 
   if (typeof obj !== "object" || obj === null)
     return typeof obj === "undefined" ? null : (
@@ -173,6 +168,13 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
   const children: (VNode<BeaconValueAttrs> | string)[] = [];
   let p;
   if (isSDJ(obj)) {
+    if (!schemaValidity)
+      validityCheck.then((validity) => {
+        setSchemaValidity((orig) => {
+          return orig || validity;
+        });
+      });
+
     if (isSDJ(obj.data)) {
       children.push(<BeaconValue obj={obj.data} resolver={resolver} />);
     } else if (typeof obj.data === "object" && obj.data !== null) {
