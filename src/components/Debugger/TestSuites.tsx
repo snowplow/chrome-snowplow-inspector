@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 
 import {
   DisplayItem,
@@ -248,8 +248,9 @@ const runSuite = (
 ): TestSuiteResult => {
   const targeting = spec.targets || [];
   const targets = targeting.length
-    ? events.filter((e) => targeting.every((t) => evalCondition(t, e)))
+    ? events.filter((e) => targeting.every((t) => evalCondition(t, e)[0]))
     : events;
+
   if ("tests" in spec) {
     const results = spec.tests.map((test) => runSuite(test, targets, params));
 
@@ -347,6 +348,17 @@ export const TestSuites: FunctionComponent<{
     );
   }, []);
 
+  const results = useMemo(
+    () =>
+      suites.map((suite) => (
+        <TestResult
+          result={runSuite(suite, events.flat())}
+          setActive={setActive}
+        />
+      )),
+    [events, suites]
+  );
+
   return (
     <div class="panel testsuites">
       <p
@@ -373,12 +385,7 @@ export const TestSuites: FunctionComponent<{
           {"\ud83d\udd89"}
         </button>
       </p>
-      {suites.map((suite) => (
-        <TestResult
-          result={runSuite(suite, events.flat())}
-          setActive={setActive}
-        />
-      ))}
+      {results}
     </div>
   );
 };
