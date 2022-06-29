@@ -1,6 +1,12 @@
 import { Entry } from "har-format";
 import { h, FunctionComponent, Fragment } from "preact";
-import { useCallback, useMemo, useRef, useState } from "preact/hooks";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "preact/hooks";
 
 import { Application } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
@@ -16,6 +22,7 @@ export const SnowplowInspector: FunctionComponent = () => {
   const modalOpts = useRef<ModalOptions>();
 
   const resolver = useMemo(() => new Resolver(), []);
+  useEffect(() => void resolver.walk(), [resolver]);
 
   const [events, setEvents] = useState<Entry[]>([]);
 
