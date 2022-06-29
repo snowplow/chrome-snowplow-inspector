@@ -42,7 +42,7 @@ const substitute = (s: string, params?: Record<string, string>) =>
     return prefix + val;
   });
 
-const unpackSDJ = (
+export const unpackSDJ = (
   sdjs: { schema: string; data: any }[]
 ): Record<string, Record<string, any[]>> => {
   const result: Record<string, Record<string, any[]>> = {};
@@ -100,7 +100,7 @@ const getTarget = (
     }
 
     if (
-      ["ue_pr", "ue_px", "co", "cx"].indexOf(next) > -1 &&
+      ["ue_pr", "ue_px", "co", "cx"].includes(next) &&
       typeof result === "string"
     ) {
       try {

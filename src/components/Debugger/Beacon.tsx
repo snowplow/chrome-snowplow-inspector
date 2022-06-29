@@ -432,7 +432,6 @@ const formatBeacon = (
       collector={collector}
       {...info}
     />
-    <CopyMenu collector={collector} beacon={payload} />
     {data.map(([setName, rows]) => (
       <RowSet key={setName} setName={setName}>
         {rows.map(([name, val, classes]) =>
@@ -457,11 +456,10 @@ export const Beacon: FunctionComponent<IBeacon> = ({
   activeBeacon,
   resolver,
   compact,
-}) => {
-  return (
+}) =>
+  activeBeacon ? (
     <>
-      {!!activeBeacon &&
-        formatBeacon(parseBeacon(activeBeacon), resolver, compact)}
+      {formatBeacon(parseBeacon(activeBeacon), resolver, compact)}
+      <CopyMenu beacon={activeBeacon} />
     </>
-  );
-};
+  ) : null;

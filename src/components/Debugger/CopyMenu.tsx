@@ -1,6 +1,7 @@
 import { h, FunctionComponent } from "preact";
-import { IBeaconDetails } from "../../ts/types";
+import { IBeaconSummary } from "../../ts/types";
 import { copyToClipboard, tryb64 } from "../../ts/util";
+import { unpackSDJ } from "./TestSuites";
 
 const wrapPost = (data: object) => {
   return {
@@ -10,10 +11,11 @@ const wrapPost = (data: object) => {
 };
 
 export const CopyMenu: FunctionComponent<{
-  collector: string;
-  beacon: IBeaconDetails["payload"];
-}> = ({ collector, beacon }) =>
-  beacon ? (
+  beacon: IBeaconSummary;
+}> = ({ beacon }) => {
+  const { collector, payload } = beacon;
+
+  return (
     <div class="dropdown button is-hoverable is-up is-dark">
       <div class="dropdown-trigger">{"\u29c9"}</div>
       <div class="dropdown-menu">
@@ -23,7 +25,7 @@ export const CopyMenu: FunctionComponent<{
             class="dropdown-item"
             onClick={() =>
               copyToClipboard(
-                JSON.stringify(wrapPost(Object.fromEntries(beacon.entries())))
+                JSON.stringify(wrapPost(Object.fromEntries(payload.entries())))
               )
             }
           >
@@ -34,7 +36,7 @@ export const CopyMenu: FunctionComponent<{
             onClick={() =>
               copyToClipboard(
                 JSON.stringify(
-                  wrapPost(Object.fromEntries(beacon.entries())),
+                  wrapPost(Object.fromEntries(payload.entries())),
                   null,
                   4
                 )
@@ -46,8 +48,56 @@ export const CopyMenu: FunctionComponent<{
           <div
             class="dropdown-item"
             onClick={() => {
+              const event = Object.fromEntries(payload.entries());
+
+              try {
+                if (event.ue_pr || event.ue_px) {
+                  const extracted = JSON.parse(
+                    tryb64(event.ue_pr || event.ue_px)
+                  );
+                  if (
+                    typeof extracted === "object" &&
+                    "schema" in extracted &&
+                    "data" in extracted &&
+                    /^iglu:com.snowplowanalytics.snowplow\/unstruct_event\//.test(
+                      extracted.schema
+                    )
+                  )
+                    Object.assign(event, {
+                      unstruct: unpackSDJ([extracted.data]),
+                    });
+                }
+
+                if (event.co || event.cx) {
+                  const extracted = JSON.parse(
+                    tryb64(event.co || event.cx)
+                  );
+                  if (
+                    typeof extracted === "object" &&
+                    "schema" in extracted &&
+                    "data" in extracted &&
+                    /^iglu:com.snowplowanalytics.snowplow\/contexts\//.test(
+                      extracted.schema
+                    )
+                  )
+                    Object.assign(event, {
+                      context: unpackSDJ(extracted.data),
+                    });
+                }
+              } catch (e) {}
+
+              copyToClipboard(
+                JSON.stringify(Object.assign({}, beacon, { payload: event }), null, 4)
+              );
+            }}
+          >
+            Test Case Input
+          </div>
+          <div
+            class="dropdown-item"
+            onClick={() => {
               const u = new URL(`https://${collector}/i`);
-              beacon.forEach((v, k) => u.searchParams.append(k, v));
+              payload.forEach((v, k) => u.searchParams.append(k, v));
               copyToClipboard(u.href);
             }}
           >
@@ -56,10 +106,10 @@ export const CopyMenu: FunctionComponent<{
           <div
             class="dropdown-item"
             onClick={() => {
-              const ua = beacon.get("ua");
-              const lang = beacon.get("lang");
+              const ua = payload.get("ua");
+              const lang = payload.get("lang");
 
-              const data = Object.fromEntries(beacon.entries());
+              const data = Object.fromEntries(payload.entries());
 
               delete data["ua"];
               delete data["lang"];
@@ -80,16 +130,16 @@ export const CopyMenu: FunctionComponent<{
           >
             cURL
           </div>
-          {beacon.get("e") == "ue" && (
+          {payload.get("e") == "ue" && (
             <a
               class="dropdown-item"
               onClick={() => {
-                const aid = beacon.get("aid");
+                const aid = payload.get("aid");
                 const ue = JSON.parse(
-                  tryb64(beacon.get("ue_pr") || beacon.get("ue_px") || "{}")
+                  tryb64(payload.get("ue_pr") || payload.get("ue_px") || "{}")
                 );
                 const ctx = JSON.parse(
-                  tryb64(beacon.get("co") || beacon.get("cx") || "{}")
+                  tryb64(payload.get("co") || payload.get("cx") || "{}")
                 );
 
                 const cmd = [
@@ -112,4 +162,5 @@ export const CopyMenu: FunctionComponent<{
         </div>
       </div>
     </div>
-  ) : null;
+  );
+};

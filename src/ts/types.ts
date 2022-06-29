@@ -120,7 +120,11 @@ export interface RegistrySpec {
   [opt: string]: any;
 }
 
-export type TestSuiteCondition =
+export type TestSuiteCondition = {
+  name?: string;
+  description?: string;
+  type?: "condition";
+} & (
   | {
       target: string;
       operator: "exists";
@@ -139,20 +143,24 @@ export type TestSuiteCondition =
       target: string;
       operator: "equals";
       value: any;
-    };
+    }
+);
 
 interface TestSuite {
   name: string;
   description?: string;
   targets?: TestSuiteCondition[];
   combinator?: "and" | "or" | "not";
+  type?: string;
 }
 
 interface GroupedTestSuiteSpec extends TestSuite {
+  type?: "group";
   tests: TestSuiteSpec[];
 }
 
 export interface TestSuiteCase extends TestSuite {
+  type?: "case";
   conditions: TestSuiteCondition[];
 }
 
