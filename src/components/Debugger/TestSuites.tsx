@@ -89,6 +89,7 @@ const getTarget = (
 
       result = result.get(next);
     } else if (Array.isArray(result)) {
+      next = /^\[\d+\]$/.test(next) ? next.slice(1, -1) : next;
       const intKey = parseInt(next, 10);
       if (isNaN(intKey)) {
         result = result[0][next];

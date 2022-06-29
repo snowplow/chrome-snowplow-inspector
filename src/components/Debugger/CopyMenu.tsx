@@ -51,7 +51,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
     } catch (e) {}
 
     return JSON.stringify(
-      Object.assign({}, beacon, { payload: event }),
+      [Object.assign({}, beacon, { payload: event })],
       null,
       4
     );
