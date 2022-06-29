@@ -1,6 +1,6 @@
 import { Entry } from "har-format";
 import { h, FunctionComponent, VNode } from "preact";
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { StateUpdater, useEffect, useMemo, useState } from "preact/hooks";
 
 import { trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
@@ -87,14 +87,13 @@ const validationCache = new Map<string, BeaconValidity>();
 const validateEvent = (
   id: string,
   params: Map<string, string>,
-  resolver: Resolver
+  resolver: Resolver,
+  updateValidity: StateUpdater<number>
 ) => {
   type SDJ = { schema: IgluUri; data: object | SDJ[] };
 
   if (validationCache.has(id)) {
     return validationCache.get(id)!;
-  } else {
-    validationCache.set(id, "Unrecognised");
   }
 
   const ctxKeys = ["cx", "co"];
@@ -112,7 +111,9 @@ const validateEvent = (
             Promise.resolve(res.validate(data).valid ? "Valid" : "Invalid")
           )
       : Promise.resolve("Invalid");
+
   const validations: Promise<BeaconValidity>[] = [];
+
   validatableKeys.forEach((key) => {
     const payload = params.get(key);
     if (!payload) return;
@@ -171,20 +172,21 @@ const validateEvent = (
       valid = valid && result === "Valid";
     }
 
-    validationCache.set(
-      id,
-      unrec ? "Unrecognised" : valid ? "Valid" : "Invalid"
-    );
+    if (!unrec) {
+      validationCache.set(id, valid ? "Valid" : "Invalid");
+      updateValidity((n) => ++n);
+    }
   });
 
-  return validationCache.get(id)!;
+  return validationCache.get(id) || "Unrecognised";
 };
 
 const summariseBeacons = (
   entry: Entry,
   index: number,
   resolver: Resolver,
-  filter?: RegExp
+  filter: RegExp | undefined,
+  updateValidity: StateUpdater<number>
 ): IBeaconSummary[] => {
   const reqs = extractRequests(entry, index);
   const { id, collector, method, pageref, beacons: requests } = reqs;
@@ -210,7 +212,7 @@ const summariseBeacons = (
           10
         ) || +new Date()
       ).toJSON(),
-      validity: validateEvent(`#${id}-${i}`, req, resolver),
+      validity: validateEvent(`#${id}-${i}`, req, resolver, updateValidity),
       collectorStatus: {
         code: entry.response.status,
         text: entry.response.statusText,
@@ -389,10 +391,14 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   const [first, setFirst] = useState<IBeaconSummary>();
 
+  const [validity, updateValidity] = useState(0);
+
   const events = useMemo(
     () =>
-      requests.map((batch, i) => summariseBeacons(batch, i, resolver, filter)),
-    [requests, resolver, filter]
+      requests.map((batch, i) =>
+        summariseBeacons(batch, i, resolver, filter, updateValidity)
+      ),
+    [requests, resolver, filter, validity]
   );
 
   const beacons = events.map((summaries) => {

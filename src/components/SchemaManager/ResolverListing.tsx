@@ -15,7 +15,7 @@ export const ResolverListing: FunctionComponent<{
     onChange={(event) => {
       const target = event.currentTarget;
       const options = Array.from(target.selectedOptions);
-      console.log("change", options);
+
       const registries = options
         .map((opt) => resolver.registries.findIndex((r) => r.id === opt.value))
         .filter((i) => i !== -1)
