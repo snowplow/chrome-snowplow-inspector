@@ -42,7 +42,13 @@ const DisplayEvents: FunctionComponent<{
             <td>{e.appId}</td>
             <td>{e.collector}</td>
             <td>
-              {causes[i] && <pre>{JSON.stringify(causes[i][0], null, 2)}</pre>}
+              {causes[i] && causes[i][0].name && <p>{causes[i][0].name}</p>}
+              {causes[i] && (
+                <pre>
+                  {causes[i][0].description ||
+                    JSON.stringify(causes[i][0], null, 2)}
+                </pre>
+              )}
             </td>
             <td>{causes[i] && <code>{causes[i][1]}</code>}</td>
             <td>{e.method}</td>
