@@ -247,12 +247,13 @@ const extractRequests = (
   beacons: Map<string, string>[];
 } => {
   const req = entry.request;
+  const pageref =
+    entry.pageref && /page_\d+/.test(entry.pageref) ? undefined : entry.pageref;
   const id =
-    (entry.pageref || "beacon") +
+    (pageref || "beacon") +
     hash(new Date(entry.startedDateTime).toJSON() + req.url + index);
   const collector = new URL(req.url).hostname;
   const method = req.method;
-  const pageref = entry.pageref;
   const beacons = [];
 
   const nuid = entry.request.cookies.filter((x) => x.name === "sp")[0];
