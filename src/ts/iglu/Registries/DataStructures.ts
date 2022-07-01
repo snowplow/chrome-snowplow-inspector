@@ -54,6 +54,7 @@ export class DataStructuresRegistry extends Registry {
       title: "Insights Console API Key",
       type: "password",
       description: "Insights Console API key to request access token with",
+      pattern: "^[a-fA-F0-9-]{36}$",
       required: true,
     },
     dsApiEndpoint: {

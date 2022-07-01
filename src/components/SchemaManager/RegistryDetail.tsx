@@ -75,6 +75,7 @@ const EditableRegistry: FunctionComponent<{
           <label class="label">
             {title}
             <input
+              class="input"
               type={type}
               name={field}
               pattern={pattern}
@@ -82,10 +83,11 @@ const EditableRegistry: FunctionComponent<{
               title={description}
               onInput={(event) =>
                 setFieldVals((fv) => ({
-                  [field]: event.currentTarget.value,
                   ...fv,
+                  [field]: event.currentTarget.value,
                 }))
               }
+              onChange={(event) => event.currentTarget.reportValidity()}
               value={fieldVals[field] || ""}
             />
           </label>
@@ -127,8 +129,7 @@ const EditableRegistry: FunctionComponent<{
         title="Current status of the registry"
         for="registry-status"
       >
-        Status
-        <output title={registry.opts.statusReason} />
+        Status: <output title={registry.opts.statusReason} />
         {`${registry.lastStatus || "UNCERTAIN"} (${schemaCount || 0} schemas)`}
       </label>
     </fieldset>
