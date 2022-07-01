@@ -89,23 +89,23 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
     [selections, search, catalog]
   );
 
-  const directory: SchemaDirectory = sorted(filtered, (s) => s.uri()).reduce(
-    (acc, el) => {
-      const v = (acc[el.vendor] = acc[el.vendor] || {});
-      const n = (v[el.name] = v[el.name] || {});
-      const f = (n[el.format] = n[el.format] || {});
-      f[el.version] = f[el.version] || [];
-      f[el.version].push(el);
+  const directory: SchemaDirectory = useMemo(
+    () =>
+      sorted(filtered, (s) => s.uri()).reduce((acc, el) => {
+        const v = (acc[el.vendor] = acc[el.vendor] || {});
+        const n = (v[el.name] = v[el.name] || {});
+        const f = (n[el.format] = n[el.format] || {});
+        f[el.version] = f[el.version] || [];
+        f[el.version].push(el);
 
-      return acc;
-    },
-    {} as SchemaDirectory
+        return acc;
+      }, {} as SchemaDirectory),
+    [filtered]
   );
 
-  return (
-    <div class="directory column box">
-      {children}
-      {Object.entries(directory).map(([vendor, schemas]) => (
+  const listings = useMemo(
+    () =>
+      Object.entries(directory).map(([vendor, schemas]) => (
         <details
           class={vendor}
           open
@@ -169,7 +169,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                                 : deployment.uri(),
                             registries,
                           }))
-                          .map(({ val, registries }, i) => (
+                          .map(({ val, registries }) => (
                             <details class="version">
                               <summary>
                                 {version}
@@ -197,7 +197,14 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
             )
           )}
         </details>
-      ))}
+      )),
+    [directory]
+  );
+
+  return (
+    <div class="directory column box">
+      {children}
+      {listings}
     </div>
   );
 };
