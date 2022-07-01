@@ -380,8 +380,9 @@ const BeaconHeader: FunctionComponent<
     compact: boolean;
     resolver: Resolver;
   }
-> = ({ appId, collector, compact, method, name, resolver, time }) =>
-  compact ? (
+> = ({ appId, collector, compact, method, name, resolver, time }) => {
+  const dt = new Date(time);
+  return compact ? (
     <RowSet setName="Core">
       <tr>
         <th>App</th>
@@ -399,7 +400,15 @@ const BeaconHeader: FunctionComponent<
       <tr>
         <th>Time</th>
         <td>
-          <time dateTime={time}>{new Date(time).toUTCString()}</time>
+          <time
+            dateTime={dt.toISOString()}
+            title={dt.toLocaleString(undefined, {
+              dateStyle: "full",
+              timeStyle: "full",
+            })}
+          >
+            {dt.toUTCString()}
+          </time>
         </td>
       </tr>
       <tr>
@@ -435,8 +444,15 @@ const BeaconHeader: FunctionComponent<
         <div class="level-item has-text-centered">
           <div>
             <p class="heading">Time</p>
-            <time class="title" dateTime={time}>
-              {new Date(time).toUTCString()}
+            <time
+              class="title"
+              dateTime={dt.toISOString()}
+              title={dt.toLocaleString(undefined, {
+                dateStyle: "full",
+                timeStyle: "full",
+              })}
+            >
+              {dt.toUTCString()}
             </time>
           </div>
         </div>
@@ -457,6 +473,7 @@ const BeaconHeader: FunctionComponent<
       </div>
     </>
   );
+};
 const formatBeacon = (
   { collector, data, payload, ...info }: IBeaconDetails,
   resolver: Resolver,
