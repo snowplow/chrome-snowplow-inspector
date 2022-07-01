@@ -140,7 +140,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                         deployments
                           .map((d) =>
                             d instanceof ResolvedIgluSchema
-                              ? canonicalize(d.data)
+                              ? canonicalize(d.data) || JSON.stringify(d.data)
                               : d.uri()
                           )
                           .map((d, _, a) => a.indexOf(d))
