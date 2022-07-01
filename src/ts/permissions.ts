@@ -20,8 +20,18 @@ const nextGesture = (missing: string[]) => {
       const distinct = batch.filter((e, i, a) => a.indexOf(e) === i);
 
       return new Promise<void>((fulfil, fail) =>
-        chrome.permissions.request({ origins: distinct }, (granted) =>
-          granted ? fulfil() : fail(distinct)
+        chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) =>
+          chrome.windows.update(
+            tab.windowId,
+            {
+              drawAttention: true,
+              focused: true,
+            },
+            () =>
+              chrome.permissions.request({ origins: distinct }, (granted) =>
+                granted ? fulfil() : fail(distinct)
+              )
+          )
         )
       );
     }));
