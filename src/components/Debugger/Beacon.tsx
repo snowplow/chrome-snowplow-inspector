@@ -11,6 +11,9 @@ import {
 } from "../../ts/types";
 import { b64d, hasMembers, nameType, copyToClipboard } from "../../ts/util";
 import { IgluUri, IgluSchema, Resolver } from "../../ts/iglu";
+import { LocalRegistry } from "../../ts/iglu/Registries";
+
+import { ModalSetter } from "../Modals";
 
 import { CopyMenu } from "./CopyMenu";
 
@@ -106,7 +109,11 @@ type ValidityState = {
   schema?: IgluSchema;
 };
 
-type BeaconValueAttrs = { obj: unknown; resolver: Resolver };
+type BeaconValueAttrs = {
+  obj: unknown;
+  resolver: Resolver;
+  setModal?: ModalSetter;
+};
 
 function isSDJ(obj: unknown): obj is { data: unknown; schema: string } {
   return (
@@ -117,6 +124,7 @@ function isSDJ(obj: unknown): obj is { data: unknown; schema: string } {
 const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
   obj,
   resolver,
+  setModal,
 }) => {
   const [schemaValidity, setSchemaValidity] = useState<ValidityState | null>(
     null
@@ -163,7 +171,9 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
       case "string":
         try {
           const json = JSON.parse(obj);
-          return <BeaconValue resolver={resolver} obj={json} />;
+          return (
+            <BeaconValue resolver={resolver} obj={json} setModal={setModal} />
+          );
         } catch (e) {
           return <>{obj}</>;
         }
@@ -183,7 +193,9 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
       });
 
     if (isSDJ(obj.data)) {
-      children.push(<BeaconValue obj={obj.data} resolver={resolver} />);
+      children.push(
+        <BeaconValue obj={obj.data} resolver={resolver} setModal={setModal} />
+      );
     } else if (typeof obj.data === "object" && obj.data !== null) {
       for (p in obj.data) {
         const nested = obj.data as { [f: string]: unknown };
@@ -193,7 +205,11 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
               <tr>
                 <th>{p}</th>
                 <td>
-                  <BeaconValue obj={nested[p]} resolver={resolver} />
+                  <BeaconValue
+                    obj={nested[p]}
+                    resolver={resolver}
+                    setModal={setModal}
+                  />
                 </td>
               </tr>
             );
@@ -203,7 +219,11 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
                 <th>{p}</th>
                 <td>
                   <LabelType val={nested[p]} />
-                  <BeaconValue obj={nested[p]} resolver={resolver} />
+                  <BeaconValue
+                    obj={nested[p]}
+                    resolver={resolver}
+                    setModal={setModal}
+                  />
                 </td>
               </tr>
             );
@@ -230,8 +250,17 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
             class="card-footer-item validation"
             title={errorText}
             onClick={() => {
-              if (validity === "Unrecognised") {
-                chrome.runtime.openOptionsPage();
+              if (validity === "Unrecognised" && setModal) {
+                const newReg = new LocalRegistry({
+                  kind: "local",
+                  name: "My New Registry",
+                });
+                setModal("editRegistries", {
+                  registries: [newReg],
+                  resolver,
+                  callback: () =>
+                    setSchemaValidity((v) => (v ? { validity } : null)),
+                });
               } else if (errorText) {
                 copyToClipboard(errorText);
               }
@@ -256,7 +285,11 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
             <tr>
               <th>{p}</th>
               <td>
-                <BeaconValue obj={nested[p]} resolver={resolver} />
+                <BeaconValue
+                  obj={nested[p]}
+                  resolver={resolver}
+                  setModal={setModal}
+                />
               </td>
             </tr>
           );
@@ -266,7 +299,11 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
               <th>{p}</th>
               <td>
                 <LabelType val={nested[p]} />
-                <BeaconValue obj={nested[p]} resolver={resolver} />
+                <BeaconValue
+                  obj={nested[p]}
+                  resolver={resolver}
+                  setModal={setModal}
+                />
               </td>
             </tr>
           );
@@ -423,6 +460,7 @@ const BeaconHeader: FunctionComponent<
 const formatBeacon = (
   { collector, data, payload, ...info }: IBeaconDetails,
   resolver: Resolver,
+  setModal: ModalSetter,
   compact = false
 ) => (
   <>
@@ -440,11 +478,15 @@ const formatBeacon = (
               <th>{name}</th>
               <td>
                 <LabelType val={val} />
-                <BeaconValue obj={val} resolver={resolver} />
+                <BeaconValue
+                  obj={val}
+                  resolver={resolver}
+                  setModal={setModal}
+                />
               </td>
             </tr>
           ) : (
-            <BeaconValue obj={val} resolver={resolver} />
+            <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
           )
         )}
       </RowSet>
@@ -456,10 +498,11 @@ export const Beacon: FunctionComponent<IBeacon> = ({
   activeBeacon,
   resolver,
   compact,
+  setModal,
 }) =>
   activeBeacon ? (
     <>
-      {formatBeacon(parseBeacon(activeBeacon), resolver, compact)}
+      {formatBeacon(parseBeacon(activeBeacon), resolver, setModal, compact)}
       <CopyMenu beacon={activeBeacon} />
     </>
   ) : null;

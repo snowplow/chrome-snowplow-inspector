@@ -100,6 +100,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
               activeBeacon={active && active.item}
               resolver={resolver}
               compact={compactCore}
+              setModal={setModal}
             />
           </div>
         </div>

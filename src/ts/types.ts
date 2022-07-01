@@ -3,7 +3,7 @@ import { Schema } from "jsonschema";
 import { StateUpdater } from "preact/hooks";
 
 import { Resolver } from "./iglu";
-import { Modal, ModalSetter } from "../components/Modals";
+import { ModalSetter } from "../components/Modals";
 
 export type Application = "debugger" | "schemaManager";
 
@@ -102,6 +102,7 @@ export interface IBeacon {
   activeBeacon?: IBeaconSummary;
   resolver: Resolver;
   compact?: boolean;
+  setModal: ModalSetter;
 }
 
 export interface IBadRowsSummary {
