@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
 import { Registry, Resolver } from "../../ts/iglu";
 import { ModalSetter } from "../../components/Modals";
@@ -26,17 +26,61 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
     selections: [],
   });
 
-  const filterRegistries = (selections: Registry[]) =>
-    setFilters((filters) => ({ ...filters, selections }));
+  const filterRegistries = useCallback(
+    (selections: Registry[]) =>
+      setFilters((filters) => ({ ...filters, selections })),
+    []
+  );
 
-  const clearSearch = () =>
-    setFilters((filters) => ({ ...filters, search: undefined }));
+  const clearSearch = useCallback(
+    () => setFilters((filters) => ({ ...filters, search: undefined })),
+    []
+  );
 
   const [collapsed, setCollapsed] = useState(true);
 
   const [watermark, setWatermark] = useState(Date.now());
 
   const smRef = useRef<HTMLElement>(null);
+
+  const filterBar = useMemo(
+    () => (
+      <div class="field is-grouped filterPanel">
+        <input
+          class="input"
+          type="search"
+          placeholder="Filter Pattern"
+          title="Regular expression to search schemas for"
+          onKeyUp={(event) => {
+            const target = event.currentTarget;
+            if (!target.value.trim()) return clearSearch();
+
+            try {
+              const re = new RegExp(target.value, "im");
+              target.setCustomValidity("");
+              setFilters((filters) => ({ ...filters, search: re }));
+            } catch {
+              target.setCustomValidity("Invalid regular expression");
+              target.reportValidity();
+            }
+          }}
+        />
+        <button
+          class="button"
+          onClick={() => {
+            if (smRef.current) {
+              const details = smRef.current.getElementsByTagName("details");
+              Array.from(details).forEach((det) => (det.open = collapsed));
+              setCollapsed((collapsed) => !collapsed);
+            }
+          }}
+        >
+          {collapsed ? "Expand All" : "Collapse All"}
+        </button>
+      </div>
+    ),
+    [clearSearch, collapsed, smRef]
+  );
 
   return (
     <section class="schema-manager columns section" ref={smRef}>
@@ -46,39 +90,7 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
         watermark={watermark}
         {...filters}
       >
-        <div class="field is-grouped filterPanel">
-          <input
-            class="input"
-            type="search"
-            placeholder="Filter Pattern"
-            title="Regular expression to search schemas for"
-            onKeyUp={(event) => {
-              const target = event.currentTarget;
-              if (!target.value.trim()) return clearSearch();
-
-              try {
-                const re = new RegExp(target.value, "im");
-                target.setCustomValidity("");
-                setFilters((filters) => ({ ...filters, search: re }));
-              } catch {
-                target.setCustomValidity("Invalid regular expression");
-                target.reportValidity();
-              }
-            }}
-          />
-          <button
-            class="button"
-            onClick={() => {
-              if (smRef.current) {
-                const details = smRef.current.getElementsByTagName("details");
-                Array.from(details).forEach((det) => (det.open = collapsed));
-                setCollapsed((collapsed) => !collapsed);
-              }
-            }}
-          >
-            {collapsed ? "Expand All" : "Collapse All"}
-          </button>
-        </div>
+        {filterBar}
       </Directory>
       <RegistryList
         filterRegistries={filterRegistries}
