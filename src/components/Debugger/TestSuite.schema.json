@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://poplindata.com/chrome-snowplow-inspector/testsuite.json",
+  "title": "Test Suite",
+  "description": "An extension-compatible test suite definition.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/testSuite"
+    },
+    {
+      "$ref": "#/$defs/testCase"
+    }
+  ],
+  "$defs": {
+    "condition": {
+      "description": "A condition defines a check to evaluate against a targeted event. It combines a 'target', which is a dot-separated path into the JSON object, with an 'operator' that defines the test, which can require additional options to test against.",
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Allows you to name a condition for more intuitive result reporting."
+            },
+            "description": {
+              "type": "string",
+              "description": "Human-friendly text describing the condition and expected pass/fail scenarios."
+            },
+            "type": {
+              "const": "condition",
+              "default": "condition"
+            },
+            "target": {
+              "type": "string",
+              "pattern": "^([^\\.]+.?)+$",
+              "description": "A dot-separated path into a beacon payload that determines which value the condition will test against. Arrays can be indexed specifically via a segment wrapped in square brackets (e.g. 'myarray.[1]', or, if not provided, the first instance is assumed."
+            }
+          },
+          "required": ["target"]
+        },
+        {
+          "oneOf": [
+            {
+              "description": "Equals simply tests the 'target' value against the provided 'value'.",
+              "type": "object",
+              "properties": {
+                "operator": {
+                  "const": "equals"
+                },
+                "value": {}
+              },
+              "required": ["operator", "value"]
+            },
+            {
+              "description": "Exists evaluates whether the 'target' value exists (is not 'undefined').",
+              "type": "object",
+              "properties": {
+                "operator": {
+                  "const": "exists"
+                }
+              },
+              "required": ["operator"]
+            },
+            {
+              "description": "Matches evaluates whether the 'target' value matches the regular expression given in 'value' (case insensitive, casts target to string if necessary).",
+              "type": "object",
+              "properties": {
+                "operator": {
+                  "const": "matches"
+                },
+                "value": {
+                  "type": "string",
+                  "format": "regex"
+                }
+              },
+              "required": ["operator", "value"]
+            },
+            {
+              "description": "One_of checks for the existence of the 'target' in a list of values given via 'value'. If it is contained in the list, the condition passes.",
+              "type": "object",
+              "properties": {
+                "operator": {
+                  "const": "one_of"
+                },
+                "value": {
+                  "type": "array",
+                  "items": {},
+                  "minItems": 1,
+                  "uniqueItems": true
+                }
+              },
+              "required": ["operator", "value"]
+            }
+          ]
+        }
+      ]
+    },
+    "testBase": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The name of the test suite or case, that will be displayed in the extension."
+        },
+        "description": {
+          "type": "string",
+          "description": "A textual description of what the test suite or case evaluates, displayed when the user views the test results"
+        },
+        "combinator": {
+          "enum": ["and", "or", "not"],
+          "default": "and",
+          "description": "How the individual 'tests' or 'conditions' results are combined to determine the result of this test."
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "default": [],
+          "description": "A list of 'conditions' to filter the event stream and determine which events are eligible for this test. Only events that match all the 'targets' (always AND combinator) are evaluated against 'conditions' or passed to children 'tests'. Until an event matches the 'targets', it will have the 'incomplete' status."
+        }
+      },
+      "required": ["name"]
+    },
+    "testSuite": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/testBase"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "group",
+              "default": "group"
+            },
+            "tests": {
+              "type": "array",
+              "items": {
+                "description": "Individual child tests that contribute to the result of this test suite/group, when evaluated via 'combinator'.",
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/testSuite"
+                  },
+                  {
+                    "$ref": "#/$defs/testCase"
+                  }
+                ]
+              },
+              "minItems": 1,
+              "description": "List of child-tests that will be passed events matching all 'targets' conditions and determine the result of this test suite."
+            }
+          },
+          "required": ["tests"]
+        }
+      ]
+    },
+    "testCase": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/testBase"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "case",
+              "default": "case"
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/condition"
+              },
+              "minItems": 1,
+              "description": "The conditions that are evaluated against the events matching the 'target' conditions (if defined). Results are combined per 'combinator' to define if a given event passes or fails the test."
+            }
+          },
+          "required": ["conditions"]
+        }
+      ]
+    }
+  }
+}

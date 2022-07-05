@@ -1,7 +1,50 @@
-import { Cookie, Entry, Header } from "har-format";
+import { Cookie, Entry, Header, Request } from "har-format";
 import { protocol } from "./protocol";
 import { schemas, decodeB64Thrift } from "./thriftcodec";
 import { ITomcatImport } from "./types";
+
+/*
+  This looks for requests matching known Snowplow endpoints.
+  If a POST request doesn't match the pattern, it is still "sniffed" for a Snowplow
+  payload, in the event of Custom Post paths.
+
+  TODO(jethron): Make custom paths configurable:-
+  There is an issue where beacon requests (POSTs) fired on page navigation sometimes
+  have no body; the Content-Length header suggests there should be one but it is inaccessible.
+  This makes the hit undetectable to the sniffing above. Custom paths should be
+  configurable to catch these cases.
+
+  /i is the traditional "ice" request for GET
+  /com.snowplowanalytics.snowplow/tp2 is the default POST parameter endpoint
+  /collector/tp2 is a special case for a particular collector using beacon requests (Magento/Adobe: see #44)
+ */
+const spPattern =
+  /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|(com\.snowplowanalytics\.snowplow|collector)\/tp2)/i;
+const plPattern = /^iglu:[^\/]+\/payload_data/i;
+const gaPattern = /\/com\.google\.analytics\/v1/i;
+
+const isSnowplow = (request: Request): boolean => {
+  if (spPattern.test(request.url) || gaPattern.test(request.url)) {
+    return true;
+  } else {
+    // It's possible that the request uses a custom endpoint via postPath
+    if (request.method === "POST" && typeof request.postData !== "undefined") {
+      // Custom endpoints only support POST requests
+      try {
+        const post = JSON.parse(request.postData.text!) || {};
+        return (
+          typeof post === "object" &&
+          "schema" in post &&
+          plPattern.test(post.schema)
+        );
+      } catch {
+        // invalid JSON, not a Snowplow event
+      }
+    }
+  }
+
+  return false;
+};
 
 const uuidv4 = (): string =>
   "00000000-0000-4000-8000-000000000000".replace(/0/g, () =>
@@ -188,7 +231,7 @@ const thriftToRequest = (
 
   // mock out the rest of the Entry interface
   return {
-    pageref: "page_bad",
+    pageref: "Bad Row",
     request: {
       bodySize: 0,
       cookies,
@@ -222,20 +265,27 @@ const thriftToRequest = (
   };
 };
 
-const esToRequests = (data: object[]): Entry[] => {
+const esToRequests = (data: object[], index: string): Entry[] => {
+  const base = `https://${index}.elasticsearch/i`;
   return data.map((hit) => {
     if (hit.hasOwnProperty("collector_tstamp")) {
-      return goodToRequests(hit as { [esKeyName: string]: string }) as Entry;
+      return goodToRequests(
+        hit as { [esKeyName: string]: string },
+        base
+      ) as Entry;
     } else {
       return badToRequests([JSON.stringify(hit)])[0];
     }
   });
 };
 
-const goodToRequests = (data: {
-  [esKeyName: string]: string | object;
-}): Partial<Entry> => {
-  const uri = new URL("https://elasticsearch.invalid/i");
+const goodToRequests = (
+  data: {
+    [esKeyName: string]: string | object;
+  },
+  baseUri: string
+): Partial<Entry> => {
+  const uri = new URL(baseUri);
   const reverseTypeMap: { [event: string]: string } = {
     page_ping: "Page Ping",
     page_view: "Pageview",
@@ -306,7 +356,7 @@ const goodToRequests = (data: {
   }
 
   return {
-    pageref: "page_good",
+    pageref: "ElasticSearch (Valid)",
     request: {
       bodySize: 0,
       cookies: [],
@@ -447,7 +497,7 @@ const badToRequests = (data: string[]): Entry[] => {
     }
   });
 
-  const entries = [];
+  const entries: Entry[] = [];
 
   for (const entry of logs.map(thriftToRequest)) {
     if (entry !== undefined) {
@@ -516,6 +566,7 @@ export {
   esToRequests,
   hash,
   hasMembers,
+  isSnowplow,
   objHasProperty,
   nameType,
   copyToClipboard,

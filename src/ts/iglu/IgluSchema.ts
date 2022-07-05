@@ -1,3 +1,4 @@
+import { default as canonicalize } from "canonicalize";
 import { Schema, ValidatorResult } from "jsonschema";
 
 import { Registry } from "./Registries";
@@ -47,7 +48,9 @@ export class IgluSchema {
       if ("$schema" in potentialSchema) {
         const { $schema } = potentialSchema as { $schema: string };
         if ($schema === $SCHEMA && "self" in potentialSchema) {
-          const schema = potentialSchema as SelfDescribingSchema;
+          const schema = JSON.parse(
+            canonicalize(potentialSchema) || JSON.stringify(potentialSchema)
+          ) as SelfDescribingSchema;
           const { vendor, name, format, version } = schema.self;
           const matches =
             this.vendor === vendor &&

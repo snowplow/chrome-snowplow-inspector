@@ -1,5 +1,3 @@
-import { default as m, Vnode } from "mithril";
-
 import { buildRegistry } from ".";
 import { Registry } from "./Registries/Registry";
 import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
@@ -210,47 +208,6 @@ export class Resolver extends Registry {
   status() {
     return Promise.all(this.registries.map((r) => r.status())).then((s) =>
       s.reduce((res, s) => (s === "OK" ? res : "UNHEALTHY"), "OK")
-    );
-  }
-
-  view(
-    vnode: Vnode<{
-      setRegistries: (selected: Registry[]) => void;
-      registries: Registry[];
-    }>
-  ) {
-    return m(
-      "select[multiple]",
-      {
-        onupdate: (vnode) => {
-          if (!vnode.attrs.registries.length) {
-            const sel = vnode.dom as HTMLSelectElement;
-            if (
-              typeof vnode.tag === "string" &&
-              vnode.tag.toLowerCase() === "select" &&
-              sel.selectedIndex !== -1
-            ) {
-              sel.selectedIndex = -1;
-              m.redraw();
-            }
-          }
-        },
-        onchange: (event: Event) => {
-          if (!event.target) return;
-          const el = event.target as HTMLSelectElement;
-          vnode.attrs.setRegistries(
-            Array.from(el.selectedOptions)
-              .map((opt) =>
-                this.registries.findIndex((r) => r.id === opt.value)
-              )
-              .filter((i) => i !== -1)
-              .map((i) => this.registries[i])
-          );
-        },
-        size: this.registries.length,
-        ...vnode.attrs,
-      },
-      this.registries.map((reg) => m(reg, { key: reg.id }))
     );
   }
 

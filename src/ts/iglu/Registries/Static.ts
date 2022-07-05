@@ -23,7 +23,7 @@ export class StaticRegistry extends Registry {
     },
   };
 
-  private readonly cache: Map<IgluUri, ResolvedIgluSchema> = new Map();
+  private readonly cache: Map<IgluUri, Promise<ResolvedIgluSchema>> = new Map();
   private readonly base: URL;
   private readonly manifest: URL;
 
@@ -62,24 +62,25 @@ export class StaticRegistry extends Registry {
 
   resolve(schema: IgluSchema) {
     if (this.cache.has(schema.uri())) {
-      return Promise.resolve(this.cache.get(schema.uri())!);
+      return this.cache.get(schema.uri())!;
     } else {
       if (this.vendorPrefixes && this.vendorPrefixes.length) {
         if (
           !this.vendorPrefixes.some((prefix) =>
             schema.vendor.startsWith(prefix)
           )
-        )
-          return Promise.reject("PREFIX_MISMATCH");
+        ) {
+          const mismatch = Promise.reject("PREFIX_MISMATCH");
+          this.cache.set(schema.uri(), mismatch);
+          return mismatch;
+        }
       }
 
-      return this.fetch(schema.uri().replace("iglu:", "schemas/"))
+      const retrieve = this.fetch(schema.uri().replace("iglu:", "schemas/"))
         .then((res) => res.json())
         .then((result) => {
           const resolved = schema.resolve(result, this);
           if (resolved) {
-            this.cache.set(schema.uri(), resolved);
-            this.lastStatus = "OK";
             return Promise.resolve(resolved);
           } else return Promise.reject();
         })
@@ -90,6 +91,9 @@ export class StaticRegistry extends Registry {
 
           return Promise.reject(reason);
         });
+
+      this.cache.set(schema.uri(), retrieve);
+      return retrieve;
     }
   }
 
@@ -157,13 +161,16 @@ export class StaticRegistry extends Registry {
   }
 
   _walk() {
-    return this.parseManifest()
-      .then((claimed) => {
+    const cached = Array.from(this.cache.values()).map((p) =>
+      p.catch(() => null)
+    );
+    return Promise.all([this.parseManifest(), Promise.all(cached)])
+      .then(([claimed, cached]) => {
         const claimedUris = claimed.map(String);
         const cachedSchemas: IgluSchema[] = [];
-        for (const cached of this.cache.values()) {
-          if (!claimedUris.includes(cached.toString())) {
-            cachedSchemas.push(cached);
+        for (const hit of cached) {
+          if (hit && !claimedUris.includes(hit.toString())) {
+            cachedSchemas.push(hit);
           }
         }
 

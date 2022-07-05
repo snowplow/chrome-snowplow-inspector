@@ -1,8 +1,9 @@
 import { Entry } from "har-format";
 import { Schema } from "jsonschema";
+import { StateUpdater } from "preact/hooks";
 
 import { Resolver } from "./iglu";
-import { Modal, ModalSetter } from "../components/Modals";
+import { ModalSetter } from "../components/Modals";
 
 export type Application = "debugger" | "schemaManager";
 
@@ -37,6 +38,7 @@ export interface IBeaconSummary {
   appId?: string;
   collector: string;
   eventName: string;
+  pageref?: string;
   id: string;
   method: string;
   page?: string;
@@ -78,7 +80,7 @@ export interface IErrorMessageSet {
 export interface IToolbar {
   application: Application;
   addRequests: (requests: Entry[]) => void;
-  changeApp: (app: Application) => void;
+  changeApp: StateUpdater<Application>;
   clearRequests: () => void;
   setModal: ModalSetter;
 }
@@ -92,13 +94,15 @@ export interface ITimeline {
   displayMode: DisplayItem["display"];
   requests: Entry[];
   resolver: Resolver;
-  setActive: (item: DisplayItem) => void;
+  setActive: StateUpdater<DisplayItem | undefined>;
   setModal: ModalSetter;
 }
 
 export interface IBeacon {
   activeBeacon?: IBeaconSummary;
   resolver: Resolver;
+  compact?: boolean;
+  setModal: ModalSetter;
 }
 
 export interface IBadRowsSummary {
@@ -117,7 +121,11 @@ export interface RegistrySpec {
   [opt: string]: any;
 }
 
-export type TestSuiteCondition =
+export type TestSuiteCondition = {
+  name?: string;
+  description?: string;
+  type?: "condition";
+} & (
   | {
       target: string;
       operator: "exists";
@@ -136,20 +144,24 @@ export type TestSuiteCondition =
       target: string;
       operator: "equals";
       value: any;
-    };
+    }
+);
 
 interface TestSuite {
   name: string;
   description?: string;
   targets?: TestSuiteCondition[];
   combinator?: "and" | "or" | "not";
+  type?: string;
 }
 
 interface GroupedTestSuiteSpec extends TestSuite {
+  type?: "group";
   tests: TestSuiteSpec[];
 }
 
 export interface TestSuiteCase extends TestSuite {
+  type?: "case";
   conditions: TestSuiteCondition[];
 }
 
