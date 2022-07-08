@@ -77,17 +77,25 @@ input[type="file"]::file-selector-button {
 .timeline__events {
   overflow: auto;
   flex: 4 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .timeline .field.has-addons .button.reveal:hover {
   z-index: 4;
 }
 
+.timeline__events .events {
+  overflow: visible auto;
+  flex: 1 0 auto;
+}
+
 .timeline .button.reveal:hover::after {
   content: attr(title);
-  position: absolute;
+  position: fixed;
   pointer-events: none;
-  left: 2.4em;
+  transform: translateX(60%);
   background-color: var(--bulma-white);
   padding: calc(0.375em - 1px) 0.75em;
   border: 1px solid var(--bulma-grey-light);

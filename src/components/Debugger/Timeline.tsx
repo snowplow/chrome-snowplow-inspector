@@ -397,6 +397,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   const [validity, updateValidity] = useState(0);
 
   const [showFilter, setShowFilter] = useState(false);
+  const [reverse, setReverse] = useState(false);
 
   const events = useMemo(
     () =>
@@ -474,56 +475,68 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   return (
     <div class="column is-narrow timeline">
       <div class="timeline__events">
-        <div class="panel filterPanel">
-          <div class="field has-addons">
-            <p class="control">
-              <button
-                type="button"
-                class="button reveal"
-                title="Clear Requests"
-                onClick={clearRequests}
-              >
-                {"\ud83e\uddf9"}
-              </button>
-            </p>
-            <p class="control">
-              <button
-                type="button"
-                class="button reveal"
-                title="Filter Events"
-                onClick={() => setShowFilter(!showFilter)}
-              >
-                {"\ud83d\udd0d\ufe0f"}
-              </button>
-            </p>
-            <BulkCopyMenu events={events.flat()} />
+        <div class="events">
+          <div class="panel filterPanel">
+            <div class="field has-addons">
+              <p class="control">
+                <button
+                  type="button"
+                  class="button reveal"
+                  title="Clear Requests"
+                  onClick={clearRequests}
+                >
+                  {"\ud83e\uddf9"}
+                </button>
+              </p>
+              <p class="control">
+                <button
+                  type="button"
+                  class="button reveal"
+                  title="Filter Events"
+                  onClick={() => setShowFilter(!showFilter)}
+                >
+                  {"\ud83d\udd0d\ufe0f"}
+                </button>
+              </p>
+              <p class="control">
+                <button
+                  type="button"
+                  class="button reveal"
+                  title="Reverse Order"
+                  onClick={() => setReverse((rev) => !rev)}
+                >
+                  {"\u2195\ufe0f"}
+                </button>
+              </p>
+              <BulkCopyMenu events={events.flat()} />
+            </div>
+            <input
+              id="filter"
+              class={[
+                "input",
+                filter ? "valid" : filterStr ? "invalid" : "valid",
+                showFilter ? "" : "is-invisible",
+              ].join(" ")}
+              type="text"
+              placeholder="Filter"
+              onKeyUp={(e) => {
+                if (e.currentTarget instanceof HTMLInputElement) {
+                  const val = e.currentTarget.value;
+                  setFilterStr(val);
+                }
+              }}
+              value={filterStr}
+            />
           </div>
-          <input
-            id="filter"
-            class={[
-              "input",
-              filter ? "valid" : filterStr ? "invalid" : "valid",
-              showFilter ? "" : "is-invisible",
-            ].join(" ")}
-            type="text"
-            placeholder="Filter"
-            onKeyUp={(e) => {
-              if (e.currentTarget instanceof HTMLInputElement) {
-                const val = e.currentTarget.value;
-                setFilterStr(val);
-              }
-            }}
-            value={filterStr}
-          />
+          {(reverse ? byPage.reverse() : byPage).map(([pageName, beacons]) => (
+            <div class="panel">
+              <p class="panel-heading" title="pageName">
+                {pageName}
+              </p>
+              {reverse ? beacons.reverse() : beacons}
+            </div>
+          ))}
         </div>
-        {byPage.map(([pageName, beacons]) => (
-          <div class="panel">
-            <p class="panel-heading" title="pageName">
-              {pageName}
-            </p>
-            {beacons}
-          </div>
-        ))}
         <TestSuites events={events} setActive={setActive} setModal={setModal} />
       </div>
     </div>
