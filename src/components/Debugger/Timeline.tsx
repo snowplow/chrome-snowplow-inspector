@@ -9,6 +9,7 @@ import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
 import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 
 import { TestSuites } from "./TestSuites";
+import { BulkCopyMenu } from "./CopyMenu";
 
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
 
@@ -373,6 +374,7 @@ const extractRequests = (
 export const Timeline: FunctionComponent<ITimeline> = ({
   displayMode,
   isActive,
+  clearRequests,
   requests,
   resolver,
   setActive,
@@ -393,6 +395,8 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   const [first, setFirst] = useState<IBeaconSummary>();
 
   const [validity, updateValidity] = useState(0);
+
+  const [showFilter, setShowFilter] = useState(false);
 
   const events = useMemo(
     () =>
@@ -471,11 +475,35 @@ export const Timeline: FunctionComponent<ITimeline> = ({
     <div class="column is-narrow timeline">
       <div class="timeline__events">
         <div class="panel filterPanel">
+          <div class="field has-addons">
+            <p class="control">
+              <button
+                type="button"
+                class="button reveal"
+                title="Clear Requests"
+                onClick={clearRequests}
+              >
+                {"\ud83e\uddf9"}
+              </button>
+            </p>
+            <p class="control">
+              <button
+                type="button"
+                class="button reveal"
+                title="Filter Events"
+                onClick={() => setShowFilter(!showFilter)}
+              >
+                {"\ud83d\udd0d\ufe0f"}
+              </button>
+            </p>
+            <BulkCopyMenu events={events.flat()} />
+          </div>
           <input
             id="filter"
             class={[
               "input",
               filter ? "valid" : filterStr ? "invalid" : "valid",
+              showFilter ? "" : "is-invisible",
             ].join(" ")}
             type="text"
             placeholder="Filter"

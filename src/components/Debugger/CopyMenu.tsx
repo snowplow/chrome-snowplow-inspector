@@ -1,12 +1,13 @@
 import { h, FunctionComponent } from "preact";
+import { esMap } from "../../ts/protocol";
 import { IBeaconSummary } from "../../ts/types";
 import { copyToClipboard, tryb64 } from "../../ts/util";
 import { unpackSDJ } from "./TestSuites";
 
-const wrapPost = (data: object) => {
+const wrapPost = (data: object | object[]) => {
   return {
     schema: "iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-4",
-    data: [data],
+    data: Array.isArray(data) ? data : [data],
   };
 };
 
@@ -135,3 +136,257 @@ export const CopyMenu: FunctionComponent<{
     </div>
   </div>
 );
+
+const delimited = (delimiter: string, records: string[][]) =>
+  records
+    .map((row) =>
+      row
+        .map((cell) => {
+          if (cell.indexOf(delimiter) >= 0 || cell.indexOf("\n") >= 0) {
+            return `"${cell.replace(/"/g, '""').replace(/\n/g, "\\n")}"`;
+          } else return cell;
+        })
+        .join(delimiter)
+    )
+    .join("\r\n");
+
+const dsv = (delim: string, beacons: IBeaconSummary[]) => {
+  const header = Object.keys(esMap);
+  const rows = [header];
+
+  beacons.forEach((beacon) => {
+    const row: Record<string, string> = {};
+    try {
+      Object.entries(esMap).forEach(([outF, inF]) => {
+        const val = beacon.payload.get(inF);
+
+        switch (outF) {
+          case "event":
+            row["event_vendor"] = "com.snowplowanalytics.snowplow";
+            row["event_format"] = "jsonschema";
+            row["event_version"] = "1-0-0";
+
+            console.log(outF, inF, val);
+
+            switch (val) {
+              case "pv":
+                row["event_name"] = "page_view";
+                row["event"] = "page_view";
+                break;
+              case "pp":
+                row["event_name"] = "page_ping";
+                row["event"] = "page_ping";
+                break;
+              case "tr":
+                row["event_name"] = "transaction";
+                row["event"] = "transaction";
+                break;
+              case "ti":
+                row["event_name"] = "transaction_item";
+                row["event"] = "transaction_item";
+                break;
+              case "se":
+                row["event_name"] = "event";
+                row["event"] = "struct";
+                row["event_vendor"] = "com.google.analytics";
+                break;
+              case "ue":
+                row["event_name"] = "unstruct";
+                row["event"] = "unstruct";
+                break;
+              default:
+                throw new Error("unserializable event format");
+            }
+            break;
+          case "page_url":
+          case "page_referrer":
+            try {
+              if (!val) return;
+              const prefix = outF === "page_url" ? "page_" : "refr_";
+              const uri = new URL(val);
+
+              row[prefix + "urlscheme"] = uri.protocol.replace(":", "");
+              row[prefix + "urlhost"] = uri.hostname;
+              row[prefix + "urlport"] =
+                uri.port || (uri.protocol === "https:" ? "443" : "80");
+              row[prefix + "urlpath"] = uri.pathname;
+              row[prefix + "urlquery"] = uri.search;
+              row[prefix + "urlfragment"] = uri.hash;
+
+              if (prefix === "page_") {
+                ["source", "medium", "campaign", "content", "term"].forEach(
+                  (param) => {
+                    if (uri.searchParams.has("utm_" + param)) {
+                      row["mkt_" + param] =
+                        uri.searchParams.get("utm_" + param) || "";
+                    }
+                  }
+                );
+
+                Object.entries({
+                  gclid: "Google",
+                  msclkid: "Microsoft",
+                  dclid: "DoubleClick",
+                }).forEach(([param, network]) => {
+                  if (uri.searchParams.has(param)) {
+                    row["mkt_clickid"] = uri.searchParams.get(param) || "";
+                    row["mkt_network"] = network;
+                  }
+                });
+              } else {
+                if (uri.searchParams.has("_sp")) {
+                  const _sp = (uri.searchParams.get("_sp") || "").split(".");
+
+                  if (_sp.length === 2) {
+                    row["refr_domain_userid"] = _sp.shift()!;
+                    const ts = new Date(+_sp.shift()!);
+                    row["refr_device_tstamp"] = ts.toISOString();
+                  }
+                }
+              }
+            } catch (e) {}
+            break;
+          case "contexts":
+            const contexts = tryb64(
+              beacon.payload.get("cx") || beacon.payload.get("co") || ""
+            );
+            row[outF] = contexts;
+            break;
+          case "unstruct_event":
+            const unstruct = tryb64(
+              beacon.payload.get("ue_pr") || beacon.payload.get("ue_px") || ""
+            );
+            row[outF] = unstruct;
+
+            try {
+              const ue = JSON.parse(unstruct);
+              if (
+                typeof ue === "object" &&
+                ue &&
+                /\/unstruct_event\//.test(ue["schema"]) &&
+                ue["data"]
+              ) {
+                const inner = ue["data"];
+                if (inner.schema && /^iglu:/.test(inner.schema)) {
+                  const uri = inner.schema;
+                  const parts = uri.replace("iglu:", "").split("/");
+                  if (parts.length === 4) {
+                    row["event_vendor"] = parts[0];
+                    row["event_name"] = parts[1];
+                    row["event_format"] = parts[2];
+                    row["event_version"] = parts[3];
+                  }
+                }
+              }
+            } catch (e) {}
+            break;
+          case "br_viewwidth":
+          case "dvce_screenwidth":
+          case "doc_width":
+          case "br_viewheight":
+          case "dvce_screenheight":
+          case "doc_height":
+            const pair = val?.split("x");
+
+            if (pair && pair.length === 2) {
+              row[outF] = outF.indexOf("width") === -1 ? pair[1] : pair[0];
+            }
+            break;
+          case "dvce_created_tstamp":
+          case "dvce_created_tstamp":
+          case "dvce_sent_tstamp":
+          case "true_tstamp":
+            if (val) row[outF] = new Date(+val).toISOString();
+            break;
+          default:
+            if (val != null) row[outF] = val;
+        }
+      });
+    } catch (e) {
+      return;
+    }
+
+    rows.push(header.map((field) => row[field] || ""));
+  });
+
+  return delimited(delim, rows);
+};
+
+const bulkFormatters: Record<string, (beacons: IBeaconSummary[]) => string> = {
+  JSON: (beacons) =>
+    JSON.stringify(
+      beacons.map(({ payload }) => Object.fromEntries(payload.entries()))
+    ),
+  "JSON (Pretty)": (beacons) =>
+    JSON.stringify(
+      beacons.map(({ payload }) => Object.fromEntries(payload.entries())),
+      null,
+      4
+    ),
+  "JSON Sequence": (beacons) =>
+    "\x1e" +
+    beacons
+      .map(({ payload }) =>
+        JSON.stringify(Object.fromEntries(payload.entries()))
+      )
+      .join("\n\x1e") +
+    "\n",
+  "NDJSON / JSONL": (beacons) =>
+    beacons
+      .map(({ payload }) =>
+        JSON.stringify(Object.fromEntries(payload.entries()))
+      )
+      .join("\n"),
+  "Post Data": (beacons) =>
+    JSON.stringify(
+      wrapPost(
+        beacons.map(({ payload }) => Object.fromEntries(payload.entries()))
+      )
+    ),
+  CSV: dsv.bind(null, ","),
+  TSV: dsv.bind(null, "\t"),
+} as const;
+
+export const BulkCopyMenu: FunctionComponent<{ events: IBeaconSummary[] }> = ({
+  events,
+}) => {
+  const toggleCopyDisplay = ({
+    currentTarget,
+  }:
+    | h.JSX.TargetedMouseEvent<HTMLButtonElement>
+    | h.JSX.TargetedFocusEvent<HTMLButtonElement>) =>
+    void currentTarget.parentElement!.parentElement!.classList.toggle(
+      "is-active"
+    );
+  return (
+    <p class="control dropdown">
+      <div class="dropdown-trigger">
+        <button
+          type="button"
+          class="button reveal"
+          title="Copy As"
+          onClick={toggleCopyDisplay}
+          onBlur={toggleCopyDisplay}
+        >
+          {"\u29c9"}
+        </button>
+      </div>
+      <div class="dropdown-menu">
+        <div class="dropdown-content">
+          {Object.entries(bulkFormatters).map(([format, fn]) => (
+            <div
+              class="dropdown-item"
+              onMouseDown={(e) => {
+                console.log("copying", format, events);
+                e.preventDefault();
+                copyToClipboard(fn(events));
+              }}
+            >
+              {format}
+            </div>
+          ))}
+        </div>
+      </div>
+    </p>
+  );
+};

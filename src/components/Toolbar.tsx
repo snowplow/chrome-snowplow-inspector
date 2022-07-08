@@ -10,7 +10,6 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
   addRequests,
   application,
   changeApp,
-  clearRequests,
   setModal,
 }) => {
   const changeToSchemaManager = useCallback(
@@ -75,12 +74,6 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
     case "debugger":
       return (
         <>
-          <a
-            class="button is-outlined is-small control"
-            onClick={clearRequests}
-          >
-            Clear Events
-          </a>
           <a
             class="button is-outlined is-small control"
             onClick={changeToSchemaManager}

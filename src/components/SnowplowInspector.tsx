@@ -67,7 +67,6 @@ export const SnowplowInspector: FunctionComponent = () => {
       addRequests={addRequests}
       changeApp={setApplication}
       application={application}
-      clearRequests={clearRequests}
       setModal={setModal}
     />
   );
@@ -77,6 +76,7 @@ export const SnowplowInspector: FunctionComponent = () => {
       app.push(
         <Debugger
           addRequests={addRequests}
+          clearRequests={clearRequests}
           events={events}
           resolver={resolver}
           setModal={setModal}
