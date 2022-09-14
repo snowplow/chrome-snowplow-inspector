@@ -19,21 +19,23 @@ const nextGesture = (missing: string[]) => {
     }).then((batch) => {
       const distinct = batch.filter((e, i, a) => a.indexOf(e) === i);
 
-      return new Promise<void>((fulfil, fail) =>
-        chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) =>
-          chrome.windows.update(
-            tab.windowId,
-            {
-              drawAttention: true,
-              focused: true,
-            },
-            () =>
-              chrome.permissions.request({ origins: distinct }, (granted) =>
-                granted ? fulfil() : fail(distinct)
+      return new Promise<void>((fulfil, fail) => {
+        chrome.tabs
+          ? chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) =>
+              chrome.windows.update(
+                tab.windowId,
+                {
+                  drawAttention: true,
+                  focused: true,
+                },
+                () =>
+                  chrome.permissions.request({ origins: distinct }, (granted) =>
+                    granted ? fulfil() : fail(distinct)
+                  )
               )
-          )
-        )
-      );
+            )
+          : fail(distinct);
+      });
     }));
 };
 
@@ -44,10 +46,12 @@ export const request = (...origins: string[]): Promise<void> => {
 
   if (missing.length) {
     const p = new Promise<void>((fulfil, fail) =>
-      chrome.permissions.contains({ origins: missing }, (granted) => {
-        if (granted) fulfil();
-        else fail(missing);
-      })
+      chrome.permissions
+        ? chrome.permissions.contains({ origins: missing }, (granted) => {
+            if (granted) fulfil();
+            else fail(missing);
+          })
+        : fail(missing)
     ).catch(nextGesture);
 
     missing.forEach((origin) => pending.set(origin, p));
