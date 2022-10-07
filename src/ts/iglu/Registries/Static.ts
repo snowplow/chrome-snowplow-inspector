@@ -49,7 +49,7 @@ export class StaticRegistry extends Registry {
       .catch((reason) => {
         if (
           reason instanceof TypeError &&
-          /NetworkError/.test(reason.message)
+          /NetworkError|Failed to fetch/.test(reason.message)
         ) {
           const origins = [`*://${this.base.host}/*`];
           if (this.manifest) origins.push(`*://${this.manifest.host}/*`);
