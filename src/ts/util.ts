@@ -117,7 +117,14 @@ const hasMembers = (obj: unknown) => {
 
 const b64d = (s: string): string => {
   try {
-    return atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+    const bytes = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+
+    try {
+      // UTF-8 decode bytestring
+      return decodeURIComponent(escape(bytes));
+    } catch (e) {
+      return bytes;
+    }
   } catch (e) {
     console.log(e);
     return "";
