@@ -571,7 +571,7 @@ const ngrokEventToHAR = (event: NgrokEvent): Entry => {
     value,
   }));
   let parsed = atob(event.request.raw);
-  let body = parsed.split("\n").pop();
+  let body = parsed.split("\n").pop()!;
 
   return {
     pageref: "page_good",
