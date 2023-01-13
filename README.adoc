@@ -41,9 +41,15 @@ By default we include the URL for link:https://github.com/snowplow/iglu-central[
 
 ==== Using the universal debugger
 
-The universal debugger uses a link:https://ngrok.com/[Ngrok] tunnel in order to process events. Ngrok provides a HTTP endpoint that we can use as the temporary collector endpoint.
+The universal debugger uses an link:https://ngrok.com/[Ngrok] tunnel in order to process events. Ngrok provides a HTTP endpoint that we can use as the temporary collector endpoint.
 
-To start the tunnel ensure you have downloaded ngrok locally and create a new tunnel with:
+By using this tunnel this allows you to test and debug events from additional devices and platforms including:
+- a separate mobile device (using a native or React Native app)
+- server side events (e.g., server side Go codebase)
+- IoT devices (smart watch, TVs)
+- any other device or implementation where you can override the collector endpoint
+
+To start the tunnel ensure you have downloaded ngrok locally and create a new tunnel on the device you wish open the debugger (e.g., desktop) on with:
 
 `./ngrok http example.snplow.net`
 

@@ -288,7 +288,7 @@ output[name="registry-status"] {
 }
 
 .ngrok-play {
-  border-color: green;
+  border-color: $green;
 }
 
 .ngrok-play::after {
@@ -296,11 +296,9 @@ output[name="registry-status"] {
 }
 
 .ngrok-stop {
-  border-color: red;
+  border-color: $red;
 }
 
 .ngrok-stop::after {
   content: "\00a0⏹️";
 }
-
-
