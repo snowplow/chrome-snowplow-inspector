@@ -566,21 +566,22 @@ const chunkEach = <T>(
 };
 
 const ngrokEventToHAR = (event: NgrokEvent): Entry => {
-  let headers = Object.entries(event.request.headers).map(([name, value]) => ({
-    name,
-    value,
-  }));
-  let parsed = atob(event.request.raw);
-  let body = parsed.split("\n").pop()!;
+  const headers = Object.entries(event.request.headers).map(
+    ([name, value]) => ({
+      name,
+      value,
+    })
+  );
+  const parsed = tryb64(event.request.raw);
+  const body = parsed.split("\n").pop()!;
 
   return {
-    pageref: "page_good",
+    pageref: "Universal Debugger",
     request: {
-      bodySize: 0,
+      bodySize: -1,
       cookies: [],
-      headers: headers,
-      // headers: ngrok.request.headers, TODO: turn into kvps
-      headersSize: 0,
+      headers,
+      headersSize: -1,
       httpVersion: event.request.proto,
       method: event.request.method,
       postData: {
@@ -620,21 +621,19 @@ let ngrokWatermark = 0;
 const parseNgrokRequests = (data: {
   requests: NgrokEvent[];
 }): { entries: Entry[] } => {
-  const ngrok_events = data.requests;
   // inspect_db_size (ngrok) defaults to 50MB
-  const afterWaterMark = ngrok_events.filter(
-    (event) => new Date(event.start).getTime() > ngrokWatermark
+  const afterWaterMark = data.requests.filter(
+    ({ start }) => +new Date(start) > ngrokWatermark
   );
   // iterate through and build a HAR request for each event
-  const entries = afterWaterMark.map((event) => ngrokEventToHAR(event));
-  const watermark = Math.max(
-    ...ngrok_events.map((event) => new Date(event.start).getTime())
-  );
+  const entries = afterWaterMark.map(ngrokEventToHAR);
   // set ngrok watermark
-  ngrokWatermark = watermark;
-  return {
-    entries: entries,
-  };
+  ngrokWatermark = Math.max(
+    ngrokWatermark,
+    ...afterWaterMark.map(({ start }) => +new Date(start))
+  );
+
+  return { entries };
 };
 
 export {

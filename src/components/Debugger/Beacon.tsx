@@ -17,7 +17,7 @@ import { ModalSetter } from "../Modals";
 
 import { CopyMenu } from "./CopyMenu";
 
-type ProtocolField = typeof protocol.paramMap[keyof typeof protocol.paramMap];
+type ProtocolField = (typeof protocol.paramMap)[keyof typeof protocol.paramMap];
 
 function genClasses(finfo: ProtocolField): string {
   const classes = [];
