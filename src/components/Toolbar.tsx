@@ -1,10 +1,13 @@
 import { Har } from "har-format";
 import { h, FunctionComponent, Fragment } from "preact";
-import { useCallback, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 
 import { landingUrl } from "../ts/analytics";
 import { IToolbar } from "../ts/types";
-import { isSnowplow } from "../ts/util";
+import { isSnowplow, parseNgrokRequests } from "../ts/util";
+import { immediatelyRequest } from "../ts/permissions";
+
+const ngrokStreamInterval: number = 1500;
 
 const ToolbarView: FunctionComponent<IToolbar> = ({
   addRequests,
@@ -71,6 +74,55 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
     f.click();
   }, [addRequests]);
 
+  const [ngrokStreaming, setNgrokStreaming] = useState(false);
+  const [ngrokTunnel, setNgrokTunnel] = useState("http://localhost:4040/");
+
+  const ngrokHandler = useCallback(() => {
+    chrome.storage.sync.get(
+      { tunnelAddress: ngrokTunnel },
+      ({ tunnelAddress }) =>
+        chrome.permissions.contains({ origins: [tunnelAddress] }, (granted) =>
+          (granted
+            ? Promise.resolve()
+            : immediatelyRequest([tunnelAddress])
+          ).then(() => {
+            setNgrokTunnel(tunnelAddress);
+            setNgrokStreaming((ngrokStreaming) => !ngrokStreaming);
+          })
+        )
+    );
+  }, [ngrokTunnel, ngrokStreaming]);
+
+  useEffect(() => {
+    let ngrokStreamLock = -1;
+
+    if (ngrokStreaming) {
+      console.log("starting ngrok stream", ngrokTunnel);
+      ngrokStreamLock = window.setTimeout(function pollStream() {
+        console.log("requesting new data...", ngrokTunnel);
+        fetch(`${ngrokTunnel}api/requests/http`, {
+          headers: {
+            Accept: "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then(parseNgrokRequests)
+          .then(({ entries }) => {
+            addRequests(entries);
+            ngrokStreamLock = window.setTimeout(
+              pollStream,
+              ngrokStreamInterval
+            );
+          })
+          .catch(() => setNgrokStreaming(false));
+      }, 0);
+    }
+
+    return () => {
+      if (ngrokStreamLock !== -1) clearTimeout(ngrokStreamLock);
+    };
+  }, [addRequests, ngrokStreaming, ngrokTunnel]);
+
   switch (application) {
     case "debugger":
       return (
@@ -95,6 +147,11 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
           </a>
           <a class="button is-outlined is-small control" onClick={importHar}>
             Import HAR Session
+          </a>
+          <a class="button is-outlined is-small control" onClick={ngrokHandler}>
+            {ngrokStreaming
+              ? "Stop Universal Debugger"
+              : "Start Universal Debugger"}
           </a>
         </>
       );

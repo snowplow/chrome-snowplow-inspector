@@ -39,6 +39,44 @@ are supported.
 
 By default we include the URL for link:https://github.com/snowplow/iglu-central[Iglu Central], which includes schemas for the built-in tracking JSONs. You can add as many repositories as you like.
 
+
+==== Using the Universal Debugger
+
+The universal debugger uses an link:https://ngrok.com/[Ngrok] tunnel in order to process events from remote devices.
+Ngrok provides a HTTP endpoint that we can use as the temporary collector endpoint.
+
+By using this tunnel this allows you to test and debug events from additional devices and platforms including:
+
+- A separate mobile device (using a native or React Native app)
+- Server side events (e.g., server side Go codebase)
+- IoT devices (smart watch, TVs)
+- Any other device or implementation where you can override the Collector Endpoint
+
+To start the tunnel ensure you have downloaded `ngrok` locally and create a new tunnel on the device you are running Chrome and the extension on, with:
+
+[code,shell-session]
+```
+$ ngrok http example.snplow.net
+```
+
+Where `example.snplow.net` is the Collector hostname that you wish to forward requests on to.
+This can be link:https://docs.snowplow.io/docs/managing-data-quality/testing-and-qa-workflows/set-up-automated-testing-with-snowplow-micro/[Micro], link:https://docs.snowplow.io/docs/pipeline-components-and-applications/snowplow-mini/[Mini] or any other Snowplow Collector / server that responds with a 200.
+
+Once your tunnel has started ngrok will return a HTTP/S url (under 'Forwarding') that you should then use as your Collector host.
+Events sent to this host will be intercepted by ngrok and forwarded to your Snowplow destination without modification.
+
+image::res/ngrok.png[]
+
+In addition ngrok will create a Web Interface that runs on `localhost` (port `4040`) by default.
+The API for this interface is used to retrieve events and insert them into the tool.
+If you wish to override or change this address you can do so in the options settings of the Chrome extension by right-clicking on the icon and opening Options.
+
+If you wish to use a static address to forward to you can do so on one of the paid ngrok plans (a few dollars a month) to avoid having the hostname being dynamic.
+
+To start visualizing these events open the debugger and select 'Start Universal Debugger' which will begin to poll (via the link:https://ngrok.com/docs/ngrok-agent/api[Ngrok Agent API]) for events.
+
+To stop streaming these events select 'Stop Universal Debugger'.
+
 == Develop
 === Build
 Run `npm install` to install required dependencies, then `npm run build` to build the extension in the `dist/` directory.
