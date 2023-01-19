@@ -653,6 +653,5 @@ export {
   tryb64,
   uuidv4,
   sorted,
-  ngrokEventToHAR,
   parseNgrokRequests,
 };

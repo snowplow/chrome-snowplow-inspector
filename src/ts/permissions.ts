@@ -2,6 +2,29 @@ const pending = new Map<string, Promise<void>>();
 
 const queue: string[] = [];
 let nextClick: Promise<void> | undefined;
+
+export const immediatelyRequest = (batch: string[]) => {
+  const distinct = batch.filter((e, i, a) => a.indexOf(e) === i);
+
+  return new Promise<void>((fulfil, fail) => {
+    chrome.tabs
+      ? chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) =>
+          chrome.windows.update(
+            tab.windowId,
+            {
+              drawAttention: true,
+              focused: true,
+            },
+            () =>
+              chrome.permissions.request({ origins: distinct }, (granted) =>
+                granted ? fulfil() : fail()
+              )
+          )
+        )
+      : fail(distinct);
+  });
+};
+
 const nextGesture = (missing: string[]) => {
   queue.push(...missing);
 
@@ -16,27 +39,7 @@ const nextGesture = (missing: string[]) => {
       };
 
       addEventListener("click", onNextClick, false);
-    }).then((batch) => {
-      const distinct = batch.filter((e, i, a) => a.indexOf(e) === i);
-
-      return new Promise<void>((fulfil, fail) => {
-        chrome.tabs
-          ? chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) =>
-              chrome.windows.update(
-                tab.windowId,
-                {
-                  drawAttention: true,
-                  focused: true,
-                },
-                () =>
-                  chrome.permissions.request({ origins: distinct }, (granted) =>
-                    granted ? fulfil() : fail(distinct)
-                  )
-              )
-            )
-          : fail(distinct);
-      });
-    }));
+    }).then(immediatelyRequest));
 };
 
 export const request = (...origins: string[]): Promise<void> => {
