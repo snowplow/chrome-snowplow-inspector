@@ -2,13 +2,13 @@
 :Author: Poplin Data
 :Email: <contact@poplindata.com>
 
-A debugging tool to help you examine and debug your link:https://snowplowanalytics.com[Snowplow] tracking implementation.
+A debugging tool to help you examine and debug your link:https://snowplow.io[Snowplow] tracking implementation.
 
 .Features
 - List and filter all your tracking events
 - See tracking parameters in human-friendly format
 - GET and POST tracking support
-- Automatically decode and parse link:https://snowplowanalytics.com/blog/2014/05/15/introducing-self-describing-jsons/[Self-Describing Events and Custom Contexts]
+- Automatically decode and parse link:https://snowplow.io/blog/introducing-self-describing-jsons/[Self-Describing Events and Custom Contexts]
 - Validate your Contexts and Events against the schemas in your link:https://github.com/snowplow/iglu[Iglu Repository]
 - Import events from your bad rows bucket/stream and see why they failed enrichment
 
@@ -16,7 +16,7 @@ Feedback, feature requests, pull requests, and bug reports are welcome! Please l
 
 == Install
 At the moment, only Chrome/Chromium are supported via an official app store, and builds for Firefox are available, but not supported.
-The extension also works in [Microsoft Edge](https://www.microsoft.com/en-us/edge), but is not yet in the extension store.
+The extension also works in link:https://www.microsoft.com/en-us/edge[Microsoft Edge], but is not yet in the extension store.
 To install the extension, visit the page on the link:https://chrome.google.com/webstore/detail/maplkdomeamdlngconidoefjpogkmljm[Chrome Web Store].
 You can get builds for Firefox v60+ in link:https://github.com/poplindata/chrome-snowplow-inspector/releases[Releases].
 
@@ -24,10 +24,11 @@ You can get builds for Firefox v60+ in link:https://github.com/poplindata/chrome
 The Schema Manager inside the extension should let you load in local JSON Schema files during development, and you can also add your production or Snowplow Mini Iglu Repositories to test against what you have in production.
 
 All of
-. Local Registries (embedded into the extension)
-. link:https://github.com/snowplow/iglu/wiki/Static-repo[Static Iglu Repositories]
-. link:https://github.com/snowplow/iglu/wiki/Iglu-server[Iglu Servers] (like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini])
-. link:https://docs.snowplowanalytics.com/docs/understanding-tracking-design/managing-data-structures-via-the-api/[Data Structures API]
+
+- Local Registries (embedded into the extension)
+- link:https://docs.snowplow.io/docs/pipeline-components-and-applications/iglu/iglu-repositories/static-repo/[Static Iglu Repositories]
+- link:https://docs.snowplow.io/docs/pipeline-components-and-applications/iglu/iglu-repositories/iglu-server/[Iglu Servers] (like the one used in link:https://github.com/snowplow/snowplow-mini[Snowplow Mini])
+- link:https://docs.snowplow.io/docs/understanding-tracking-design/managing-data-structures-via-the-api-2/[Data Structures API]
 are supported.
 
 ==== Adding an Iglu Repository
@@ -35,7 +36,7 @@ are supported.
 . In the bottom right, hit `Registries...`, then `Add`
 . Fill out the details for you new Registry and save
 . Note your browser will request permission for the Extension to access the registries' Domain, this may happen in the main browser window rather than the Dev Tools window if it's not docked
-. You can also import your pipeline's configuration using Import and supplying a link:https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/iglu/iglu-resolver/[resolver-config]
+. You can also import your pipeline's configuration using Import and supplying a link:https://docs.snowplow.io/docs/pipeline-components-and-applications/iglu/iglu-resolver/[resolver-config]
 
 By default we include the URL for link:https://github.com/snowplow/iglu-central[Iglu Central], which includes schemas for the built-in tracking JSONs. You can add as many repositories as you like.
 
@@ -85,4 +86,4 @@ Instructions to install a local development version of the extension to test are
 
 === Hack
 You can also use `npm start` to start parcel in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
-You will still need to reload the extension in a browser.
+Some changes will automatically be reflected straight away, more intense changes will need to reload the extension in your browser to update correctly.
