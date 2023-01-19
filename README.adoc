@@ -54,9 +54,15 @@ To start the tunnel ensure you have downloaded ngrok locally and create a new tu
 
 `./ngrok http example.snplow.net`
 
-Where example `example.snplow.net` is the host that you wish to forward requests on to. ngrok will expose a local API (on port 4040 by default) which the debugger will call to retrieve these events.
+Where example `example.snplow.net` is the host that you wish to forward requests on to. This can be micro, mini or any other Snowplow collector / server that responds with a 200.
 
 Once your tunnel has started ngrok will return a HTTP and HTTPS url (under 'Forwarding') that you should then use as your collector host. Events sent to this host will be intercepted by ngrok and forwarded to the your Snowplow destination without modification.
+
+image::res/ngrok.png[]
+
+In addition ngrok will create a Web Interface that runs on localhost (port 4040) by default. The API for this interface is used to retrieve events and insert them into the tool. If you wish to override or change this address you can do so in the options settings of the Chrome extension by right-clicking on the icon and opening Options.
+
+If you wish to use a static address to forward to you can do so on one of the paid ngrok plans (a few dollars a month) to avoid having the hostname being dynamic.
 
 To start visualising these events open the debugger and select 'Start universal debugger' which will begin to poll (via the Ngrok agent API) for events.
 
