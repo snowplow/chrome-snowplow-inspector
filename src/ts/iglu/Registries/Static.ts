@@ -10,7 +10,7 @@ export class StaticRegistry extends Registry {
     uri: {
       title: "Base URI",
       type: "url",
-      description: "Base URL, path to root that contains /schemas directory",
+      description: "Base URL, path to root that contains /schemas directory. You probably want this to end in a /",
       required: true,
       default: "http://iglucentral.com/",
     },
@@ -32,7 +32,7 @@ export class StaticRegistry extends Registry {
     this.base = new URL(spec["uri"] || this.fields.uri.default);
     this.manifest = spec["manifestUri"]
       ? new URL(spec["manifestUri"])
-      : new URL("/schemas", this.base);
+      : new URL("schemas", this.base);
   }
 
   private fetch(schemaPath: string): ReturnType<typeof fetch> {
