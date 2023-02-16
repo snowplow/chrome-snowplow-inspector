@@ -24,5 +24,12 @@
   "devtools_page": "devtools.html",
   "permissions": ["storage"],
   "host_permissions": ["https://iglucentral.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://console.snowplowanalytics.com/*/*"],
+      "js": ["content_scripts/console.js"],
+      "run_at": "document_start"
+    }
+  ],
   "optional_host_permissions": ["*://*/*"]
 }

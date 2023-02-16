@@ -7,8 +7,8 @@
     "check": "tsc --noEmit",
     "fmt": "prettier -w src",
     "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/pd-logo.png ../res/poplin.png ../res/poplin-16.png ../res/poplin-48.png ../res/poplin-128.png ../src/popup.html ../LICENSE.txt dist/ && parcel watch src/panel.html src/options.html src/devtools.html",
-    "build": "npm run clean && mkdir -p dist && cp manifest.json res/pd-logo.png res/poplin.png res/poplin-16.png res/poplin-48.png res/poplin-128.png src/popup.html LICENSE.txt dist/ && parcel build --no-source-maps src/panel.html src/options.html src/devtools.html",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/pd-logo.png ../res/poplin.png ../res/poplin-16.png ../res/poplin-48.png ../res/poplin-128.png ../src/popup.html ../LICENSE.txt dist/ && parcel watch src/panel.html src/options.html src/devtools.html src/content_scripts/console.tsx",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/pd-logo.png res/poplin.png res/poplin-16.png res/poplin-48.png res/poplin-128.png src/popup.html LICENSE.txt dist/ && parcel build --no-source-maps src/panel.html src/options.html src/devtools.html src/content_scripts/console.tsx",
     "xpi": "npm run build && npx web-ext build --overwrite-dest -s dist/ -a .",
     "xpi-signed": "npm run build && npx web-ext sign -s dist/ -a .",
     "zip": "npm run build && zip -r poplin-chrome-extension.zip dist/"
