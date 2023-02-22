@@ -490,7 +490,7 @@ const formatBeacon = (
     {data.map(([setName, rows]) => (
       <RowSet key={setName} setName={setName}>
         {rows.map(([name, val, classes]) =>
-          !/Custom Context|(Unstructured|Self-Describing) Event/.test(name) ? (
+          !/Custom Entity|(Unstructured|Self-Describing) Event/.test(name) ? (
             <tr class={classes}>
               <th>{name}</th>
               <td>
