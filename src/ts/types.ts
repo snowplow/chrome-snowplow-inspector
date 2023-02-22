@@ -24,6 +24,7 @@ export type ExtensionOptions = LocalOptions & SyncOptions;
 
 export interface IDebugger {
   addRequests: (requests: Entry[]) => void;
+  clearRequests: () => void;
   events: Entry[];
   resolver: Resolver;
   setModal: ModalSetter;
@@ -79,10 +80,7 @@ export interface IErrorMessageSet {
 
 export interface IToolbar {
   application: Application;
-  addRequests: (requests: Entry[]) => void;
   changeApp: StateUpdater<Application>;
-  clearRequests: () => void;
-  setModal: ModalSetter;
 }
 
 export interface IRowSet {
@@ -91,6 +89,8 @@ export interface IRowSet {
 
 export interface ITimeline {
   isActive: (beacon: IBeaconSummary) => boolean;
+  addRequests: (requests: Entry[]) => void;
+  clearRequests: () => void;
   displayMode: DisplayItem["display"];
   requests: Entry[];
   resolver: Resolver;

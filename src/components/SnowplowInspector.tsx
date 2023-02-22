@@ -1,4 +1,4 @@
-import { Entry } from "har-format";
+import { Entry, Har } from "har-format";
 import { h, FunctionComponent, Fragment } from "preact";
 import {
   useCallback,
@@ -62,21 +62,12 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   const app = [];
 
-  app.push(
-    <Toolbar
-      addRequests={addRequests}
-      changeApp={setApplication}
-      application={application}
-      clearRequests={clearRequests}
-      setModal={setModal}
-    />
-  );
-
   switch (application) {
     case "debugger":
       app.push(
         <Debugger
           addRequests={addRequests}
+          clearRequests={clearRequests}
           events={events}
           resolver={resolver}
           setModal={setModal}
@@ -93,5 +84,10 @@ export const SnowplowInspector: FunctionComponent = () => {
     app.push(<Modal {...(modalOpts.current as any)} />);
   }
 
-  return <>{app}</>;
+  return (
+    <>
+      <Toolbar changeApp={setApplication} application={application} />
+      {app}
+    </>
+  );
 };
