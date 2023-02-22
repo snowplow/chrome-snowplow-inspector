@@ -11,6 +11,7 @@ import { Timeline } from "./Timeline";
 
 export const Debugger: FunctionComponent<IDebugger> = ({
   addRequests,
+  clearRequests,
   events,
   resolver,
   setModal,
@@ -92,6 +93,8 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         requests={events}
         resolver={resolver}
         setModal={setModal}
+        addRequests={addRequests}
+        clearRequests={clearRequests}
       />
       {!active || active.display === "beacon" ? (
         <div id="beacon" class="column">

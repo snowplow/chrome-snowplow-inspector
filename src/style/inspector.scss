@@ -85,6 +85,16 @@ input[type="file"]::file-selector-button {
   z-index: 1;
 }
 
+.filterPanel > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filterPanel > div > * {
+  flex: 1;
+  width: 0;
+}
+
 #filter {
   display: block;
   width: 100%;

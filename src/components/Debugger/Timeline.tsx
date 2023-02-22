@@ -1,12 +1,26 @@
-import { Entry } from "har-format";
+import { Entry, Har } from "har-format";
 import { h, FunctionComponent, VNode } from "preact";
-import { StateUpdater, useEffect, useMemo, useState } from "preact/hooks";
+import {
+  StateUpdater,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "preact/hooks";
 
 import { endpointAnalytics, trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
+import { immediatelyRequest } from "../../ts/permissions";
 import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
-import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
+import {
+  b64d,
+  colorOf,
+  hash,
+  isSnowplow,
+  parseNgrokRequests,
+  tryb64,
+} from "../../ts/util";
 
 import { TestSuites } from "./TestSuites";
 
@@ -15,6 +29,7 @@ const KNOWN_FAKE_PAGES = [
   "badbucket.invalid",
   "elasticsearch.invalid",
 ] as const;
+const ngrokStreamInterval: number = 1500;
 
 const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
   return (
@@ -401,6 +416,8 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   resolver,
   setActive,
   setModal,
+  addRequests,
+  clearRequests,
 }) => {
   const [filterStr, setFilterStr] = useState<string>("");
 
@@ -491,10 +508,148 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   if (displayMode === "beacon" && first)
     setActive((active) => active || { display: "beacon", item: first });
 
+  const importHar = useCallback(() => {
+    const f: HTMLInputElement = document.createElement("input");
+    f.type = "file";
+    f.multiple = true;
+    f.accept = ".har";
+
+    f.onchange = (change: Event) => {
+      if (change.target instanceof HTMLInputElement) {
+        const files = change.target.files || new FileList();
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files.item(i);
+
+          if (file !== null) {
+            const fr = new FileReader();
+
+            fr.addEventListener(
+              "load",
+              () => {
+                const content = JSON.parse(fr.result as string) as Har;
+                addRequests(
+                  content.log.entries.filter((entry) =>
+                    isSnowplow(entry.request)
+                  )
+                );
+              },
+              false
+            );
+
+            fr.readAsText(file);
+          }
+        }
+      }
+    };
+
+    f.click();
+  }, [addRequests]);
+
+  const badRowsModal = useCallback(
+    () => setModal("badRows", { addRequests }),
+    [setModal, addRequests]
+  );
+
+  const [streamLock, setStreamLock] = useState(-1);
+
+  const streamModal = useCallback(
+    () => setModal("stream", { addRequests, streamLock, setStreamLock }),
+    [setModal, addRequests, streamLock]
+  );
+
+  const [ngrokStreaming, setNgrokStreaming] = useState(false);
+  const [ngrokTunnel, setNgrokTunnel] = useState("http://localhost:4040/");
+
+  const ngrokHandler = useCallback(() => {
+    chrome.storage.sync.get(
+      { tunnelAddress: ngrokTunnel },
+      ({ tunnelAddress }) =>
+        chrome.permissions.contains({ origins: [tunnelAddress] }, (granted) =>
+          (granted
+            ? Promise.resolve()
+            : immediatelyRequest([tunnelAddress])
+          ).then(() => {
+            setNgrokTunnel(tunnelAddress);
+            setNgrokStreaming((ngrokStreaming) => !ngrokStreaming);
+          })
+        )
+    );
+  }, [ngrokTunnel, ngrokStreaming]);
+
+  useEffect(() => {
+    let ngrokStreamLock = -1;
+
+    if (ngrokStreaming) {
+      console.log("starting ngrok stream", ngrokTunnel);
+      ngrokStreamLock = window.setTimeout(function pollStream() {
+        console.log("requesting new data...", ngrokTunnel);
+        fetch(`${ngrokTunnel}api/requests/http`, {
+          headers: {
+            Accept: "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then(parseNgrokRequests)
+          .then(({ entries }) => {
+            addRequests(entries);
+            ngrokStreamLock = window.setTimeout(
+              pollStream,
+              ngrokStreamInterval
+            );
+          })
+          .catch(() => setNgrokStreaming(false));
+      }, 0);
+    }
+
+    return () => {
+      if (ngrokStreamLock !== -1) clearTimeout(ngrokStreamLock);
+    };
+  }, [addRequests, ngrokStreaming, ngrokTunnel]);
+
   return (
     <div class="column is-narrow timeline">
       <div class="timeline__events">
         <div class="panel filterPanel">
+          <div>
+            <button
+              class="button is-small"
+              type="button"
+              onClick={clearRequests}
+              disabled={!beacons.length}
+            >
+              Clear Events
+            </button>
+            <select
+              class="button is-small"
+              onChange={(e) => {
+                const { currentTarget } = e;
+                const { value } = currentTarget;
+
+                currentTarget.selectedIndex = 0;
+
+                switch (value) {
+                  case "har":
+                    return importHar();
+                  case "bad":
+                    return badRowsModal();
+                  case "stream":
+                    return streamModal();
+                  case "ngrok":
+                    return ngrokHandler();
+                }
+              }}
+            >
+              <option selected disabled>
+                Import
+              </option>
+              <option value="har">HAR File</option>
+              <option value="bad">Bad Rows</option>
+              <option value="stream">ElasticSearch</option>
+              <option value="ngrok">
+                {ngrokStreaming ? "Stop " : ""}Ngrok Tunnel
+              </option>
+            </select>
           <input
             id="filter"
             class={[
