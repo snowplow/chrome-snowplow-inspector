@@ -10,7 +10,8 @@ export class StaticRegistry extends Registry {
     uri: {
       title: "Base URI",
       type: "url",
-      description: "Base URL, path to root that contains /schemas directory. You probably want this to end in a /",
+      description:
+        "Base URL, path to root that contains /schemas directory. You probably want this to end in a /",
       required: true,
       default: "http://iglucentral.com/",
     },
