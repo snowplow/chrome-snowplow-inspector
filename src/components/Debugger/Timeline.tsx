@@ -226,7 +226,7 @@ const summariseBeacons = (
       validity: validateEvent(`#${id}-${i}`, req, resolver, updateValidity),
       collectorStatus: {
         code: entry.response.status,
-        text: entry.response.statusText,
+        text: (entry.response as any)._error || entry.response.statusText,
       },
     };
 
