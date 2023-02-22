@@ -2,7 +2,7 @@ import { Entry } from "har-format";
 import { h, FunctionComponent, VNode } from "preact";
 import { StateUpdater, useEffect, useMemo, useState } from "preact/hooks";
 
-import { trackerAnalytics } from "../../ts/analytics";
+import { endpointAnalytics, trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
@@ -11,6 +11,10 @@ import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 import { TestSuites } from "./TestSuites";
 
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
+const KNOWN_FAKE_PAGES = [
+  "badbucket.invalid",
+  "elasticsearch.invalid",
+] as const;
 
 const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
   return (
@@ -189,7 +193,14 @@ const summariseBeacons = (
   updateValidity: StateUpdater<number>
 ): IBeaconSummary[] => {
   const reqs = extractRequests(entry, index);
-  const { id, collector, method, pageref, beacons: requests } = reqs;
+  const {
+    id,
+    collector,
+    collectorPath,
+    method,
+    pageref,
+    beacons: requests,
+  } = reqs;
 
   const results = [];
 
@@ -219,7 +230,16 @@ const summariseBeacons = (
       },
     };
 
-    trackerAnalytics(collector, result.page, result.appId);
+    if (!KNOWN_FAKE_PAGES.includes(result.page as any)) {
+      trackerAnalytics(collector, result.page, result.appId);
+      endpointAnalytics(
+        req.get("tna") || "",
+        collector,
+        collectorPath,
+        method,
+        entry.response.status
+      );
+    }
 
     if (filterRequest(result, filter)) {
       results.push(result);
@@ -242,6 +262,7 @@ const extractRequests = (
 ): {
   id: string;
   collector: string;
+  collectorPath: string;
   method: string;
   pageref?: string;
   beacons: Map<string, string>[];
@@ -252,7 +273,10 @@ const extractRequests = (
   const id =
     (pageref || "beacon") +
     hash(new Date(entry.startedDateTime).toJSON() + req.url + index);
-  const collector = new URL(req.url).hostname;
+
+  const collectorUrl = new URL(req.url);
+  const collector = collectorUrl.hostname;
+  const collectorPath = collectorUrl.pathname;
   const method = req.method;
   const beacons = [];
 
@@ -367,7 +391,7 @@ const extractRequests = (
     beacons.push(beacon);
   }
 
-  return { id, collector, method, pageref, beacons };
+  return { id, collector, collectorPath, method, pageref, beacons };
 };
 
 export const Timeline: FunctionComponent<ITimeline> = ({

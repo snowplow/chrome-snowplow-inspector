@@ -13,6 +13,7 @@ newTracker("sp", SNOWPLOW_ENDPOINT, {
 });
 
 const seenCollectors: { [collector: string]: string[] } = {};
+const seenEndpoints: { [tracker: string]: string[] } = {};
 
 export const trackerAnalytics = (
   collector: string,
@@ -27,10 +28,6 @@ export const trackerAnalytics = (
     pageUrl = new URL(pageUrl).host.toLowerCase();
   } catch (e) {
     console.log(`Could not parse URL: ${pageUrl}`);
-    return;
-  }
-
-  if (pageUrl === "badbucket.invalid" || pageUrl === "elasticsearch.invalid") {
     return;
   }
 
@@ -52,6 +49,37 @@ export const trackerAnalytics = (
           action: collector,
           label: pageUrl,
           property: appId,
+        });
+      }
+    });
+  }
+};
+
+export const endpointAnalytics = (
+  tracker: string,
+  collector: string,
+  collectorPath: string,
+  method: string,
+  status: number
+) => {
+  collector = collector.toLowerCase();
+  const endpointKey = [tracker, collector, collectorPath, method].join(":");
+
+  if (!(tracker in seenEndpoints)) {
+    seenEndpoints[tracker] = [];
+  }
+
+  if (!seenEndpoints[tracker].includes(endpointKey)) {
+    seenEndpoints[tracker].push(endpointKey);
+
+    chrome.storage.sync.get({ enableTracking: true }, (settings) => {
+      if (settings.enableTracking) {
+        trackStructEvent({
+          category: "New Endpoint",
+          action: tracker,
+          label: collector + collectorPath,
+          property: method,
+          value: status,
         });
       }
     });
