@@ -136,7 +136,7 @@ const nameType = (val: unknown) => {
     return "null";
   }
   if (Array.isArray(val)) {
-    return "array";
+    return val.length ? "array" : "array (Empty)";
   }
   if (typeof val === "number" && isNaN(val)) {
     return "number (NaN)";
