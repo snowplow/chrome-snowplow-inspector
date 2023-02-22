@@ -1,5 +1,5 @@
 import { h, render } from "preact";
+import { GlacierThemeProvider } from "./glacier";
 import { SnowplowInspector } from "./components/SnowplowInspector";
 
-document.body.classList.add("theme" + chrome.devtools.panels.themeName);
-render(<SnowplowInspector />, document.body);
+render(<GlacierThemeProvider><SnowplowInspector /></GlacierThemeProvider>, document.body);
