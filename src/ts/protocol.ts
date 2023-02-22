@@ -85,7 +85,7 @@ export const groupPriorities: TrackingProtocol.FieldGroup[] = [
       "tv",
     ],
   },
-  { name: "Context", fields: ["cv", "co", "cx"] },
+  { name: "Entities", fields: ["cv", "co", "cx"] },
   { name: "User", fields: ["duid", "nuid", "tnuid", "uid"] },
   { name: "Session", fields: ["vid", "sid"] },
   { name: "Page", fields: ["url", "page", "refr", "ds", "cs"] },
@@ -205,9 +205,9 @@ const rawParamMap = {
   se_va: { name: "Event Value", type: "doub" },
   ue_pr: { name: "Self-Describing Event", type: "json" },
   ue_px: { name: "Self-Describing Event", type: "ba64", then: "json" },
-  cv: { name: "Context Vendor", type: "text", deprecated: true },
-  co: { name: "Custom Context", type: "json" },
-  cx: { name: "Custom Context", type: "ba64", then: "json" },
+  cv: { name: "Entity Vendor", type: "text", deprecated: true },
+  co: { name: "Custom Entity", type: "json" },
+  cx: { name: "Custom Entity", type: "ba64", then: "json" },
   u: { name: "Redirect To", type: "text" },
 } as const;
 

@@ -8,8 +8,8 @@ A debugging tool to help you examine and debug your link:https://snowplow.io[Sno
 - List and filter all your tracking events
 - See tracking parameters in human-friendly format
 - GET and POST tracking support
-- Automatically decode and parse link:https://snowplow.io/blog/introducing-self-describing-jsons/[Self-Describing Events and Custom Contexts]
-- Validate your Contexts and Events against the schemas in your link:https://github.com/snowplow/iglu[Iglu Repository]
+- Automatically decode and parse link:https://snowplow.io/blog/introducing-self-describing-jsons/[Self-Describing Events and Custom Entities]
+- Validate your Entities and Events against the schemas in your link:https://github.com/snowplow/iglu[Iglu Repository]
 - Import events from your bad rows bucket/stream and see why they failed enrichment
 
 Feedback, feature requests, pull requests, and bug reports are welcome! Please link:https://github.com/poplindata/chrome-snowplow-inspector/issues[file an issue].
