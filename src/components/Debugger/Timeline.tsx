@@ -650,6 +650,83 @@ export const Timeline: FunctionComponent<ITimeline> = ({
                 {ngrokStreaming ? "Stop " : ""}Ngrok Tunnel
               </option>
             </select>
+            <select
+              class="button is-small"
+              disabled={!beacons.length}
+              onChange={(e) => {
+                const { currentTarget } = e;
+                const { value } = currentTarget;
+
+                currentTarget.selectedIndex = 0;
+                const fakeA = document.createElement("a");
+
+                switch (value) {
+                  case "har":
+                    const manifest = chrome.runtime.getManifest();
+                    const har: Har = {
+                      log: {
+                        version: "1.1",
+                        entries: requests,
+                        creator: {
+                          name: manifest.name,
+                          version: manifest.version,
+                        },
+                      },
+                    };
+
+                    fakeA.download = "Snowplow Inspector Export.har";
+                    fakeA.href = "data:application/json," + JSON.stringify(har);
+                    break;
+                  case "json":
+                    fakeA.download = "Snowplow Inspector Export.json";
+                    fakeA.href =
+                      "data:application/json," +
+                      JSON.stringify(
+                        events.flatMap((summaries) =>
+                          summaries.map(({ payload }) =>
+                            Object.fromEntries(payload.entries())
+                          )
+                        )
+                      );
+                    break;
+                  case "csv":
+                    const header = Object.keys(protocol.paramMap);
+                    fakeA.download = "Snowplow Inspector Export.csv";
+                    fakeA.href =
+                      "data:text/csv," +
+                      header.join(",") +
+                      "\r\n" +
+                      events
+                        .flatMap((summaries) =>
+                          summaries.map(({ payload }) =>
+                            header
+                              .map((field) => {
+                                const val = payload.get(field) || "";
+                                if (val.includes(",")) {
+                                  return ["", val.replace(/"/g, '""'), ""].join(
+                                    '"'
+                                  );
+                                } else {
+                                  return val;
+                                }
+                              })
+                              .join(",")
+                          )
+                        )
+                        .join("\r\n");
+                }
+
+                fakeA.click();
+              }}
+            >
+              <option selected disabled>
+                Export
+              </option>
+              <option value="csv">CSV</option>
+              <option value="har">HAR</option>
+              <option value="json">JSON</option>
+            </select>
+          </div>
           <input
             id="filter"
             class={[
