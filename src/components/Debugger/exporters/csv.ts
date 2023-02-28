@@ -20,12 +20,10 @@ export default (requests: Entry[], events: IBeaconSummary[][]): File => {
                   .map((field) => {
                     let val = payload.get(field) || "";
 
-                    if (field === "cx") {
-                      val = tryb64(val);
-                      field = "co";
-                    } else if (field === "ue_px") {
-                      val = tryb64(val);
-                      field = "ue_pr";
+                    if (field === "co" && !val) {
+                      val = tryb64(payload.get("cx") || "");
+                    } else if (field === "ue_pr" && !val) {
+                      val = tryb64(payload.get("ue_px") || "");
                     }
 
                     if (val.includes(",")) {
