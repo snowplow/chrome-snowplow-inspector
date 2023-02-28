@@ -41,9 +41,9 @@ are supported.
 By default we include the URL for link:https://github.com/snowplow/iglu-central[Iglu Central], which includes schemas for the built-in tracking JSONs. You can add as many repositories as you like.
 
 
-==== Using the Universal Debugger
+==== Importing from Ngrok Tunnels
 
-The universal debugger uses an link:https://ngrok.com/[Ngrok] tunnel in order to process events from remote devices.
+The Ngrok Tunnel import uses an link:https://ngrok.com/[Ngrok] tunnel in order to process events from remote devices.
 Ngrok provides a HTTP endpoint that we can use as the temporary collector endpoint.
 
 By using this tunnel this allows you to test and debug events from additional devices and platforms including:
@@ -74,9 +74,9 @@ If you wish to override or change this address you can do so in the options sett
 
 If you wish to use a static address to forward to you can do so on one of the paid ngrok plans (a few dollars a month) to avoid having the hostname being dynamic.
 
-To start visualizing these events open the debugger and select 'Start Universal Debugger' which will begin to poll (via the link:https://ngrok.com/docs/ngrok-agent/api[Ngrok Agent API]) for events.
+To start visualizing these events open the debugger and select 'Import' then 'Ngrok Tunnel' which will begin to poll (via the link:https://ngrok.com/docs/ngrok-agent/api[Ngrok Agent API]) for events.
 
-To stop streaming these events select 'Stop Universal Debugger'.
+To stop streaming these events select 'Import' then 'Stop Ngrok Tunnel'.
 
 == Develop
 === Build
