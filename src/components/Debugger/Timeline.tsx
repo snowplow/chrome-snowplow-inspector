@@ -1,4 +1,4 @@
-import { Entry, Har } from "har-format";
+import { Entry } from "har-format";
 import { h, FunctionComponent, VNode } from "preact";
 import {
   StateUpdater,
@@ -10,18 +10,12 @@ import {
 
 import { endpointAnalytics, trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
-import { immediatelyRequest } from "../../ts/permissions";
 import { protocol } from "../../ts/protocol";
 import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
-import {
-  b64d,
-  colorOf,
-  hash,
-  isSnowplow,
-  parseNgrokRequests,
-  tryb64,
-} from "../../ts/util";
+import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 
+import * as importers from "./importers";
+import * as exporters from "./exporters";
 import { TestSuites } from "./TestSuites";
 
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
@@ -29,7 +23,6 @@ const KNOWN_FAKE_PAGES = [
   "badbucket.invalid",
   "elasticsearch.invalid",
 ] as const;
-const ngrokStreamInterval: number = 1500;
 
 const filterRequest = (beacon: IBeaconSummary, filter?: RegExp) => {
   return (
@@ -508,104 +501,54 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   if (displayMode === "beacon" && first)
     setActive((active) => active || { display: "beacon", item: first });
 
-  const importHar = useCallback(() => {
-    const f: HTMLInputElement = document.createElement("input");
-    f.type = "file";
-    f.multiple = true;
-    f.accept = ".har";
-
-    f.onchange = (change: Event) => {
-      if (change.target instanceof HTMLInputElement) {
-        const files = change.target.files || new FileList();
-
-        for (let i = 0; i < files.length; i++) {
-          const file = files.item(i);
-
-          if (file !== null) {
-            const fr = new FileReader();
-
-            fr.addEventListener(
-              "load",
-              () => {
-                const content = JSON.parse(fr.result as string) as Har;
-                addRequests(
-                  content.log.entries.filter((entry) =>
-                    isSnowplow(entry.request)
-                  )
-                );
-              },
-              false
-            );
-
-            fr.readAsText(file);
-          }
-        }
-      }
-    };
-
-    f.click();
-  }, [addRequests]);
-
-  const badRowsModal = useCallback(
-    () => setModal("badRows", { addRequests }),
-    [setModal, addRequests]
-  );
-
   const [streamLock, setStreamLock] = useState(-1);
+  const [ngrokStreaming, setNgrokStreaming] = useState(false);
 
-  const streamModal = useCallback(
-    () => setModal("stream", { addRequests, streamLock, setStreamLock }),
-    [setModal, addRequests, streamLock]
+  const importHandler = useCallback(
+    (format: importers.ImporterFormat) =>
+      importers.importFromFormat(
+        format,
+        addRequests,
+        setModal,
+        { ngrokStreaming, setNgrokStreaming },
+        { streamLock, setStreamLock }
+      ),
+    [addRequests, setModal, ngrokStreaming, streamLock]
   );
 
-  const [ngrokStreaming, setNgrokStreaming] = useState(false);
-  const [ngrokTunnel, setNgrokTunnel] = useState("http://localhost:4040/");
+  useEffect(() => importHandler("ngrok"), [importHandler, ngrokStreaming]);
 
-  const ngrokHandler = useCallback(() => {
-    chrome.storage.sync.get(
-      { tunnelAddress: ngrokTunnel },
-      ({ tunnelAddress }) =>
-        chrome.permissions.contains({ origins: [tunnelAddress] }, (granted) =>
-          (granted
-            ? Promise.resolve()
-            : immediatelyRequest([tunnelAddress])
-          ).then(() => {
-            setNgrokTunnel(tunnelAddress);
-            setNgrokStreaming((ngrokStreaming) => !ngrokStreaming);
-          })
-        )
+  const importButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
+    useCallback(
+      (e) => {
+        const { currentTarget } = e;
+        const { value } = currentTarget;
+
+        currentTarget.selectedIndex = 0;
+        if (value === "ngrok") {
+          setNgrokStreaming((n) => !n);
+        } else {
+          importHandler(value as importers.ImporterFormat);
+        }
+      },
+      [importHandler]
     );
-  }, [ngrokTunnel, ngrokStreaming]);
 
-  useEffect(() => {
-    let ngrokStreamLock = -1;
+  const exportButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
+    useCallback(
+      (e) => {
+        const { currentTarget } = e;
+        const { value } = currentTarget;
 
-    if (ngrokStreaming) {
-      console.log("starting ngrok stream", ngrokTunnel);
-      ngrokStreamLock = window.setTimeout(function pollStream() {
-        console.log("requesting new data...", ngrokTunnel);
-        fetch(`${ngrokTunnel}api/requests/http`, {
-          headers: {
-            Accept: "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then(parseNgrokRequests)
-          .then(({ entries }) => {
-            addRequests(entries);
-            ngrokStreamLock = window.setTimeout(
-              pollStream,
-              ngrokStreamInterval
-            );
-          })
-          .catch(() => setNgrokStreaming(false));
-      }, 0);
-    }
-
-    return () => {
-      if (ngrokStreamLock !== -1) clearTimeout(ngrokStreamLock);
-    };
-  }, [addRequests, ngrokStreaming, ngrokTunnel]);
+        currentTarget.selectedIndex = 0;
+        exporters.exportToFormat(
+          value as exporters.ExporterFormat,
+          requests,
+          events
+        );
+      },
+      [requests, events]
+    );
 
   return (
     <div class="column is-narrow timeline">
@@ -620,111 +563,27 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             >
               Clear Events
             </button>
-            <select
-              class="button is-small"
-              onChange={(e) => {
-                const { currentTarget } = e;
-                const { value } = currentTarget;
-
-                currentTarget.selectedIndex = 0;
-
-                switch (value) {
-                  case "har":
-                    return importHar();
-                  case "bad":
-                    return badRowsModal();
-                  case "stream":
-                    return streamModal();
-                  case "ngrok":
-                    return ngrokHandler();
-                }
-              }}
-            >
+            <select class="button is-small" onChange={importButtonHandler}>
               <option selected disabled>
                 Import
               </option>
-              <option value="har">HAR File</option>
-              <option value="bad">Bad Rows</option>
-              <option value="stream">ElasticSearch</option>
-              <option value="ngrok">
-                {ngrokStreaming ? "Stop " : ""}Ngrok Tunnel
-              </option>
+              {Object.entries(importers.formats).map(([key, label]) => (
+                <option value={key}>
+                  {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
+                </option>
+              ))}
             </select>
             <select
               class="button is-small"
               disabled={!beacons.length}
-              onChange={(e) => {
-                const { currentTarget } = e;
-                const { value } = currentTarget;
-
-                currentTarget.selectedIndex = 0;
-                const fakeA = document.createElement("a");
-
-                switch (value) {
-                  case "har":
-                    const manifest = chrome.runtime.getManifest();
-                    const har: Har = {
-                      log: {
-                        version: "1.1",
-                        entries: requests,
-                        creator: {
-                          name: manifest.name,
-                          version: manifest.version,
-                        },
-                      },
-                    };
-
-                    fakeA.download = "Snowplow Inspector Export.har";
-                    fakeA.href = "data:application/json," + JSON.stringify(har);
-                    break;
-                  case "json":
-                    fakeA.download = "Snowplow Inspector Export.json";
-                    fakeA.href =
-                      "data:application/json," +
-                      JSON.stringify(
-                        events.flatMap((summaries) =>
-                          summaries.map(({ payload }) =>
-                            Object.fromEntries(payload.entries())
-                          )
-                        )
-                      );
-                    break;
-                  case "csv":
-                    const header = Object.keys(protocol.paramMap);
-                    fakeA.download = "Snowplow Inspector Export.csv";
-                    fakeA.href =
-                      "data:text/csv," +
-                      header.join(",") +
-                      "\r\n" +
-                      events
-                        .flatMap((summaries) =>
-                          summaries.map(({ payload }) =>
-                            header
-                              .map((field) => {
-                                const val = payload.get(field) || "";
-                                if (val.includes(",")) {
-                                  return ["", val.replace(/"/g, '""'), ""].join(
-                                    '"'
-                                  );
-                                } else {
-                                  return val;
-                                }
-                              })
-                              .join(",")
-                          )
-                        )
-                        .join("\r\n");
-                }
-
-                fakeA.click();
-              }}
+              onChange={exportButtonHandler}
             >
               <option selected disabled>
                 Export
               </option>
-              <option value="csv">CSV</option>
-              <option value="har">HAR</option>
-              <option value="json">JSON</option>
+              {Object.entries(exporters.formats).map(([key, label]) => (
+                <option value={key}>{label}</option>
+              ))}
             </select>
           </div>
           <input
