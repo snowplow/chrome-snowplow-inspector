@@ -83,7 +83,7 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
   );
 
   return (
-    <section class="schema-manager columns section" ref={smRef}>
+    <main class="app app--schema_manager schema_manager" ref={smRef}>
       <Directory
         setCollapsed={setCollapsed}
         resolver={resolver}
@@ -100,6 +100,6 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
         setWatermark={setWatermark}
         selectedRegistries={filters.selections}
       />
-    </section>
+    </main>
   );
 };

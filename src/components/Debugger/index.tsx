@@ -85,7 +85,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   }, []);
 
   return (
-    <section class="columns section">
+    <main class="app app--debugger debugger">
       <Timeline
         setActive={setActive}
         isActive={isActive}
@@ -114,6 +114,6 @@ export const Debugger: FunctionComponent<IDebugger> = ({
           </div>
         </div>
       )}
-    </section>
+    </main>
   );
 };

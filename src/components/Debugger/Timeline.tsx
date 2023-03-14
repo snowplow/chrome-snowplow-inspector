@@ -560,7 +560,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
     );
 
   return (
-    <div class="column is-narrow timeline">
+    <aside class="debugger__timeline">
       <div class="timeline__events">
         <div class="panel filterPanel">
           <div>
@@ -622,6 +622,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         ))}
         <TestSuites events={events} setActive={setActive} setModal={setModal} />
       </div>
-    </div>
+    </aside>
   );
 };
