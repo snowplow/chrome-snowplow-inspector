@@ -1,4 +1,4 @@
-import { Entry } from "har-format";
+import { Cookie, Entry } from "har-format";
 import { h, FunctionComponent, VNode } from "preact";
 import {
   StateUpdater,
@@ -264,6 +264,18 @@ const getPageUrl = (entries: Entry[]) => {
   return page ? new URL(page.value) : null;
 };
 
+const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
+  // consider only cookies with the UUID format
+  const uuidRegexp =
+    /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+  const uuidCookies = cookies.filter((x) => uuidRegexp.test(x.value));
+  // prefer a cookie with the name `sp` or take the first one
+  return (
+    uuidCookies.find((x) => x.name === "sp") ??
+    (uuidCookies.length > 0 ? cookies[0] : undefined)
+  );
+};
+
 const extractRequests = (
   entry: Entry,
   index: number
@@ -288,7 +300,7 @@ const extractRequests = (
   const method = req.method;
   const beacons = [];
 
-  const nuid = entry.request.cookies.filter((x) => x.name === "sp")[0];
+  const nuid = extractNetworkUserId(entry.response.cookies);
   const ua = entry.request.headers.find(
     (x) => x.name.toLowerCase() === "user-agent"
   );
