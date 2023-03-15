@@ -270,10 +270,7 @@ const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const uuidCookies = cookies.filter((x) => uuidRegexp.test(x.value));
   // prefer a cookie with the name `sp` or take the first one
-  return (
-    uuidCookies.find((x) => x.name === "sp") ??
-    (uuidCookies.length > 0 ? uuidCookies[0] : undefined)
-  );
+  return uuidCookies.find((x) => x.name === "sp") ?? uuidCookies.shift();
 };
 
 const extractRequests = (
