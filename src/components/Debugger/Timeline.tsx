@@ -272,7 +272,7 @@ const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
   // prefer a cookie with the name `sp` or take the first one
   return (
     uuidCookies.find((x) => x.name === "sp") ??
-    (uuidCookies.length > 0 ? cookies[0] : undefined)
+    (uuidCookies.length > 0 ? uuidCookies[0] : undefined)
   );
 };
 
