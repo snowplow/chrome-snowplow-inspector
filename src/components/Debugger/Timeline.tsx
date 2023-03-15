@@ -267,7 +267,7 @@ const getPageUrl = (entries: Entry[]) => {
 const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
   // consider only cookies with the UUID format
   const uuidRegexp =
-    /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const uuidCookies = cookies.filter((x) => uuidRegexp.test(x.value));
   // prefer a cookie with the name `sp` or take the first one
   return (
