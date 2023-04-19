@@ -29,7 +29,7 @@
     "@mui/material": "^5.8.4",
     "@snowplow/browser-tracker": "^3.1.1",
     "bulma": "^0.7.5",
-    "canonicalize": "^1.0.5",
+    "canonicalize": "^2.0.0",
     "jsonschema": "1.*",
     "preact": "*"
   },
@@ -52,7 +52,7 @@
     "querystring-es3": "^0.2.1",
     "sass": "^1.23.7",
     "tslib": "*",
-    "typescript": "^4.2.4",
+    "typescript": "^5.0.0",
     "url": "^0.11.0"
   }
 }
