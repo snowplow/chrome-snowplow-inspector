@@ -69,7 +69,7 @@ const nameEvent = (params: Map<string, string>): string => {
       try {
         sde = JSON.parse(tryb64(payload));
       } catch (e) {
-        sde = JSON.parse(payload);
+        sde = payload ? JSON.parse(payload) : payload;
       } finally {
         if (
           typeof sde === "object" &&
