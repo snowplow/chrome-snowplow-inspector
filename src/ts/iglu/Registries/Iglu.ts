@@ -9,7 +9,7 @@ export class IgluRegistry extends Registry {
     uri: {
       title: "Iglu API Endpoint",
       type: "url",
-      description: "Iglu URI, usually ending in /endpoint",
+      description: "Iglu URI, usually ending in /api",
       required: true,
       default: "http://example.com/api",
     },
