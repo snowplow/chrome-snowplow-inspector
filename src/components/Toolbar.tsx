@@ -21,23 +21,23 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
     case "debugger":
       return (
         <>
-          <a
+          <button
             class="button is-outlined is-small control"
             onClick={changeToSchemaManager}
           >
             Manage Schemas
-          </a>
+          </button>
         </>
       );
     case "schemaManager":
       return (
         <>
-          <a
+          <button
             class="button is-outlined is-small control"
             onClick={changeToDebugger}
           >
             Back to Debugger
-          </a>
+          </button>
         </>
       );
   }
