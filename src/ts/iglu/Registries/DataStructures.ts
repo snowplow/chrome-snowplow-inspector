@@ -48,13 +48,13 @@ export class DataStructuresRegistry extends Registry {
       type: "text",
       description: "Insights Console Organization UUID",
       required: true,
-      pattern: "^[a-fA-F0-9-]{36}$",
+      pattern: "^[a-fA-F0-9\\-]{36}$",
     },
     apiKey: {
       title: "Insights Console API Key",
       type: "password",
       description: "Insights Console API key to request access token with",
-      pattern: "^[a-fA-F0-9-]{36}$",
+      pattern: "^[a-fA-F0-9\\-]{36}$",
       required: true,
     },
     dsApiEndpoint: {

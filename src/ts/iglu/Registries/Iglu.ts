@@ -19,7 +19,7 @@ export class IgluRegistry extends Registry {
       description:
         "API key, required to access non-public schemas in the registry",
       required: false,
-      pattern: "^[a-fA-F0-9-]{36}$",
+      pattern: "^[a-fA-F0-9\\-]{36}$",
     },
   };
 
