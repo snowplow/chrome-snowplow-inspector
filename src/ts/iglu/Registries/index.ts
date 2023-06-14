@@ -1,4 +1,4 @@
-import { RegistrySpec } from "../../types";
+import type { RegistrySpec } from "../../types";
 import { Registry } from "./Registry";
 
 import { DataStructuresRegistry } from "./DataStructures";

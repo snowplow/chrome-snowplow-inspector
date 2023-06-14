@@ -1,13 +1,14 @@
 import {
   Registry,
-  RegistrySpec,
   DataStructuresRegistry,
   IgluRegistry,
   LocalRegistry,
   StaticRegistry,
 } from "./Registries";
 import { Resolver } from "./Resolver";
-import { $SCHEMA, IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
+import { $SCHEMA, IgluSchema, ResolvedIgluSchema } from "./IgluSchema";
+import type { IgluUri } from "./IgluSchema";
+import type {RegistrySpec} from "./Registries";
 
 const build = (spec: RegistrySpec): Registry => {
   switch (spec.kind) {
