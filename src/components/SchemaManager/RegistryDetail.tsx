@@ -72,7 +72,7 @@ const EditableRegistry: FunctionComponent<{
       </div>
       {Object.entries(registry.fields).map(
         ([field, { title, type, description, required, pattern }]) => (
-          <label class="label">
+          <label class="label" key={field}>
             {title}
             <input
               class="input"
