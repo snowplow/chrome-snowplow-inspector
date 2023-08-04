@@ -45,14 +45,12 @@
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/node": "*",
-    "buffer": "^5.7.1",
+    "buffer": "^6.0.3",
     "parcel": "^2.0.0",
     "prettier": "^2.3.2",
-    "punycode": "^1.4.1",
-    "querystring-es3": "^0.2.1",
     "sass": "^1.23.7",
     "tslib": "*",
     "typescript": "^5.0.0",
-    "url": "^0.11.0"
+    "url": "^0.11.1"
   }
 }
