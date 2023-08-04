@@ -200,7 +200,6 @@ const summariseBeacons = (
   filter: RegExp | undefined,
   updateValidity: StateUpdater<number>
 ): IBeaconSummary[] => {
-  const reqs = extractRequests(entry, index);
   const {
     id,
     collector,
@@ -208,7 +207,8 @@ const summariseBeacons = (
     method,
     pageref,
     beacons: requests,
-  } = reqs;
+    serverAnonymous,
+  } = extractRequests(entry, index);
 
   const results = [];
 
@@ -236,6 +236,7 @@ const summariseBeacons = (
         code: entry.response.status,
         text: (entry.response as any)._error || entry.response.statusText,
       },
+      serverAnonymous,
     };
 
     if (!KNOWN_FAKE_PAGES.includes(result.page as any)) {
@@ -283,6 +284,7 @@ const extractRequests = (
   method: string;
   pageref?: string;
   beacons: Map<string, string>[];
+  serverAnonymous: boolean;
 } => {
   const req = entry.request;
   const pageref =
@@ -408,7 +410,19 @@ const extractRequests = (
     beacons.push(beacon);
   }
 
-  return { id, collector, collectorPath, method, pageref, beacons };
+  const serverAnonymous = !!req.headers.find(
+    (h) => /sp-anonymous/i.test(h.name) && h.value === "*"
+  );
+
+  return {
+    id,
+    collector,
+    collectorPath,
+    method,
+    pageref,
+    beacons,
+    serverAnonymous,
+  };
 };
 
 export const Timeline: FunctionComponent<ITimeline> = ({

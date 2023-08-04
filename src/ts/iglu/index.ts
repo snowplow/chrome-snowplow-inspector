@@ -8,7 +8,7 @@ import {
 import { Resolver } from "./Resolver";
 import { $SCHEMA, IgluSchema, ResolvedIgluSchema } from "./IgluSchema";
 import type { IgluUri } from "./IgluSchema";
-import type {RegistrySpec} from "./Registries";
+import type { RegistrySpec } from "./Registries";
 
 const build = (spec: RegistrySpec): Registry => {
   switch (spec.kind) {
