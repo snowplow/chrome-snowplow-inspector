@@ -2,6 +2,7 @@ import { h, FunctionComponent } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import { ModalOptions } from ".";
+import { BaseModal } from "./BaseModal";
 import {
   $SCHEMA,
   IgluSchema,
@@ -206,92 +207,85 @@ export const EditSchemas: FunctionComponent<EditSchemasOptions> = ({
   }, [registries]);
 
   return (
-    <div class="modal is-active">
-      <div class="modal-background" onClick={() => setModal()}></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Edit Local Schemas</p>
-          <button class="delete" onClick={() => setModal()}></button>
-        </header>
-        <section class="modal-card-body">
-          <form
-            id="edit-schemas"
-            class="form schemas-definition"
-            onSubmit={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
+    <BaseModal title="Edit Local Schemas" onClose={setModal}>
+      <section class="modal-card-body">
+        <form
+          id="edit-schemas"
+          class="form schemas-definition"
+          onSubmit={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
 
-              const form = event.currentTarget;
-              if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-              }
+            const form = event.currentTarget;
+            if (!form.checkValidity()) {
+              form.reportValidity();
+              return;
+            }
 
-              registries.forEach((registry, i) => {
-                if (registry.spec.kind !== "local") return;
-                const local = registry as LocalRegistry;
+            registries.forEach((registry, i) => {
+              if (registry.spec.kind !== "local") return;
+              const local = registry as LocalRegistry;
 
-                const edited = Array.prototype.filter
-                  .call(form.elements, (el: HTMLElement) => {
-                    if (el instanceof HTMLTextAreaElement) {
-                      let parent: Node = el;
-                      while (
-                        parent.parentNode &&
-                        parent.nodeName.toUpperCase() !== "FIELDSET"
-                      )
-                        parent = parent.parentNode;
+              const edited = Array.prototype.filter
+                .call(form.elements, (el: HTMLElement) => {
+                  if (el instanceof HTMLTextAreaElement) {
+                    let parent: Node = el;
+                    while (
+                      parent.parentNode &&
+                      parent.nodeName.toUpperCase() !== "FIELDSET"
+                    )
+                      parent = parent.parentNode;
 
-                      if (parent instanceof HTMLFieldSetElement) {
-                        return registry.id === parent.name;
-                      }
+                    if (parent instanceof HTMLFieldSetElement) {
+                      return registry.id === parent.name;
                     }
-                  })
-                  .map((el: HTMLTextAreaElement) => el.value);
+                  }
+                })
+                .map((el: HTMLTextAreaElement) => el.value);
 
-                const resolved = edited
-                  .map((s) => (s ? validateEdited(s, local) : null))
-                  .filter((r): r is ResolvedIgluSchema => r !== null);
+              const resolved = edited
+                .map((s) => (s ? validateEdited(s, local) : null))
+                .filter((r): r is ResolvedIgluSchema => r !== null);
 
-                local.update(resolved).then(() => setModal());
-              });
-            }}
-          >
-            {editableSchemas.map((regSchemas, i) => (
-              <EditRegistrySchemas
-                registry={registries[i]}
-                existing={regSchemas}
-                added={addedSchemas[i]}
-                removeAddedSchema={(index: number) =>
-                  setAddedSchemas((added) => {
-                    added[i][index] = undefined;
-                    return [...added];
-                  })
-                }
-                removeEditableSchema={(index: number) =>
-                  setEditableSchemas((existing) => {
-                    existing[i][index] = undefined;
-                    return [...existing];
-                  })
-                }
-                addSchema={(schema: string | string[]) =>
-                  setAddedSchemas((added) => {
-                    const adding = Array.isArray(schema) ? schema : [schema];
-                    return added
-                      .slice(0, i)
-                      .concat([added[i].concat(adding)])
-                      .concat(added.slice(i));
-                  })
-                }
-              />
-            ))}
-          </form>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button" form="edit-schemas" name="save-schemas">
-            Save Schemas
-          </button>
-        </footer>
-      </div>
-    </div>
+              local.update(resolved).then(() => setModal());
+            });
+          }}
+        >
+          {editableSchemas.map((regSchemas, i) => (
+            <EditRegistrySchemas
+              registry={registries[i]}
+              existing={regSchemas}
+              added={addedSchemas[i]}
+              removeAddedSchema={(index: number) =>
+                setAddedSchemas((added) => {
+                  added[i][index] = undefined;
+                  return [...added];
+                })
+              }
+              removeEditableSchema={(index: number) =>
+                setEditableSchemas((existing) => {
+                  existing[i][index] = undefined;
+                  return [...existing];
+                })
+              }
+              addSchema={(schema: string | string[]) =>
+                setAddedSchemas((added) => {
+                  const adding = Array.isArray(schema) ? schema : [schema];
+                  return added
+                    .slice(0, i)
+                    .concat([added[i].concat(adding)])
+                    .concat(added.slice(i));
+                })
+              }
+            />
+          ))}
+        </form>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button" form="edit-schemas" name="save-schemas">
+          Save Schemas
+        </button>
+      </footer>
+    </BaseModal>
   );
 };

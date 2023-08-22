@@ -2,6 +2,7 @@ import { h, FunctionComponent } from "preact";
 import { StateUpdater, useEffect, useState } from "preact/hooks";
 
 import { ModalOptions } from ".";
+import { BaseModal } from "./BaseModal";
 import { buildRegistry, Registry, Resolver } from "../../ts/iglu";
 import { RegistryDetail } from "../SchemaManager/RegistryDetail";
 import { RegistrySpec } from "../../ts/types";
@@ -77,54 +78,41 @@ export const EditRegistries: FunctionComponent<EditRegistriesOptions> = ({
   useEffect(() => {
     setEditing(
       registries.map((reg) =>
-        buildRegistry({ ...reg.spec, ...reg.opts, id: reg.id })
-      )
+        buildRegistry({ ...reg.spec, ...reg.opts, id: reg.id }),
+      ),
     );
   }, [registries]);
 
   useEffect(() => void checkRegistries(editing, setCounts), [editing]);
 
   return (
-    <div class="modal is-active">
-      <div class="modal-background" onClick={() => setModal()}></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Edit Schema Registry</p>
-          <button class="delete" onClick={() => setModal()} />
-        </header>
-        <section class="modal-card-body">
-          <form
-            id="edit-registries"
-            class="form registry-definition"
-            onChange={(event) => {
-              const target = event.currentTarget;
+    <BaseModal
+      title="Edit Schema Registry"
+      onClose={setModal}
+      onChange={({ currentTarget }) => {
+        const modelled = modelRegistries(currentTarget, editing);
+        setEditing(modelled);
+        if (currentTarget.checkValidity()) checkRegistries(modelled, setCounts);
+      }}
+      onSubmit={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
 
-              const modelled = modelRegistries(target, editing);
-              setEditing(modelled);
-              if (target.checkValidity()) checkRegistries(modelled, setCounts);
-            }}
-            onSubmit={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-
-              const target = event.currentTarget;
-              if (target.reportValidity()) {
-                resolver.import(true, ...modelRegistries(target, editing));
-                resolver.persist().then(() => setModal());
-              }
-            }}
-          >
-            {editing.map((reg, i) => (
-              <RegistryDetail registry={reg} editing schemaCount={counts[i]} />
-            ))}
-          </form>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button" form="edit-registries">
-            Save Registries
-          </button>
-        </footer>
-      </div>
-    </div>
+        const { currentTarget } = event;
+        if (currentTarget.reportValidity()) {
+          resolver.import(true, ...modelRegistries(currentTarget, editing));
+          resolver.persist().then(() => setModal());
+        }
+      }}
+    >
+      <section>
+        {editing.map((reg, i) => (
+          <RegistryDetail registry={reg} editing schemaCount={counts[i]} />
+        ))}
+      </section>
+      <footer>
+        <button>Save Registries</button>
+      </footer>
+    </BaseModal>
   );
 };
