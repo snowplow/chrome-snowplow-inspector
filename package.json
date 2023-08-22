@@ -36,12 +36,12 @@
     "url": "./src/ts/uri.ts"
   },
   "devDependencies": {
-    "@parcel/transformer-sass": "^2.0.0",
+    "@parcel/transformer-sass": "^2.8.3",
     "@types/chrome": "*",
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/node": "*",
-    "parcel": "^2.0.0",
+    "parcel": "^2.8.3",
     "prettier": "^3.0.2",
     "sass": "^1.23.7",
     "tslib": "*",
