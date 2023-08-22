@@ -1,8 +1,15 @@
-import { newTracker, trackStructEvent } from "@snowplow/browser-tracker";
+import {
+  newTracker,
+  trackSelfDescribingEvent,
+  trackStructEvent,
+} from "@snowplow/browser-tracker";
 
 import { RegistrySpec } from "./iglu/Registries";
 
-const SNOWPLOW_ENDPOINT = "https://d.poplindata.com";
+const SNOWPLOW_ENDPOINT = "https://c.snowplow.io";
+
+const SCHEMA_COLLECTOR_TELEMETRY =
+  "iglu:com.snowplowanalytics.telemetry/collector_telemetry/jsonschema/1-0-0" as const;
 
 newTracker("sp", SNOWPLOW_ENDPOINT, {
   appId: "snowplow-chrome-extension",
@@ -82,6 +89,19 @@ export const endpointAnalytics = (
           property: method,
           value: status,
         });
+
+        trackSelfDescribingEvent({
+          event: {
+            schema: SCHEMA_COLLECTOR_TELEMETRY,
+            data: {
+              collectorHost: collector,
+              collectorPath: collectorPath,
+              appId: appId || tracker || undefined,
+              statusCode: status,
+              method,
+            },
+          },
+        });
       }
     });
   }
@@ -111,7 +131,7 @@ export const repoAnalytics = (
 };
 
 export const landingUrl =
-  "https://poplindata.com/?" +
+  "https://snowplow.io/?" +
   [
     "utm_source=debugger%20extension",
     "utm_medium=software",

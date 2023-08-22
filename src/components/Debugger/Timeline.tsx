@@ -246,6 +246,7 @@ const summariseBeacons = (
       trackerAnalytics(collector, result.page, result.appId);
       endpointAnalytics(
         req.get("tna") || "",
+        req.get("aid") || "",
         collector,
         collectorPath,
         method,
