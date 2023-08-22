@@ -4,6 +4,8 @@ import { useCallback } from "preact/hooks";
 import { landingUrl } from "../ts/analytics";
 import { IToolbar } from "../ts/types";
 
+import "./Toolbar.scss";
+
 const ToolbarView: FunctionComponent<IToolbar> = ({
   application,
   changeApp,
@@ -46,7 +48,7 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
 export const Toolbar: FunctionComponent<IToolbar> = (props) => (
   <header class="toolbar">
     <a class="toolbar__logo" href={landingUrl} target="_blank">
-      <img alt="Poplin Data logo" src="pd-logo.png" />
+      <img alt="Snowplow logo" src="logo.svg" />
     </a>
     <nav class="toolbar__buttons">
       <ToolbarView {...props} />

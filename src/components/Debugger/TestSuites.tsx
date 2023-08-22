@@ -12,6 +12,8 @@ import {
 import { tryb64 } from "../../ts/util";
 import { ModalSetter } from "../Modals";
 
+import "./TestSuites.scss";
+
 const substitute = (s: string, params?: Record<string, string>) =>
   s.replace(/(^|.)\{([^}])\}/g, (full, prefix, lookup): string => {
     if (prefix === "\\") return full;

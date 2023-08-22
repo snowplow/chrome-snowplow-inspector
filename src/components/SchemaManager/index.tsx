@@ -7,6 +7,8 @@ import { ModalSetter } from "../../components/Modals";
 import { Directory } from "./Directory";
 import { RegistryList } from "./RegistryList";
 
+import "./SchemaManager.scss";
+
 type Filter = {
   search?: RegExp;
   selections: Registry[];

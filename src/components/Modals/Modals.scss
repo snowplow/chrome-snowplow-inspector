@@ -1,0 +1,109 @@
+@keyframes modal-slide {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+dialog[open] {
+  position: fixed;
+  max-width: 800px;
+  height: auto;
+  top: 0;
+  left: auto;
+  bottom: 0;
+  right: 0;
+
+  margin: 2rem 2rem 0;
+  padding: 0;
+  border-radius: 0.4rem 0.4rem 0 0;
+  border: 0;
+
+  background-color: var(--color-background);
+  color: var(--color-text);
+
+  animation: modal-slide 0.2s cubic-bezier(0, 0, 0.2, 1) normal forwards;
+
+  form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  fieldset {
+    border: 0;
+    min-width: 30rem;
+  }
+
+  label {
+    display: block;
+  }
+
+  .close {
+    padding: 0.625rem;
+    line-height: 0.625;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      fill: currentColor;
+    }
+  }
+
+  header {
+    background-color: var(--color-contrast);
+    color: var(--color-text-contrast);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem 1.5rem 3rem;
+    font-size: 1.25rem;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  footer {
+    justify-self: end;
+    padding: 1.5rem 3rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: start;
+  }
+
+  section {
+    padding: 0 3rem;
+    overflow-y: auto;
+
+    details {
+      margin: 1rem 0;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      appearance: none;
+      border: 0 none;
+      border-radius: 0.25rem;
+      margin-top: 0.5rem;
+      padding: 0 1rem;
+      color: var(--color-text);
+      box-shadow:
+        0 0 2px rgba(0, 0, 0, 0.5),
+        0 1px 2px rgba(16, 24, 40, 0.05);
+      background-color: var(--color-highlight);
+      line-height: 2.75rem;
+      font-size: 0.875rem;
+      outline: 0;
+    }
+  }
+
+  &::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}

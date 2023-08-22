@@ -18,6 +18,8 @@ import * as importers from "./importers";
 import * as exporters from "./exporters";
 import { TestSuites } from "./TestSuites";
 
+import "./Timeline.scss";
+
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
 const KNOWN_FAKE_PAGES = [
   "badbucket.invalid",

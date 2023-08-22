@@ -16,6 +16,8 @@ import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
 
+import "./SnowplowInspector.scss";
+
 export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
   const [activeModal, setActiveModal] = useState<Modal>();

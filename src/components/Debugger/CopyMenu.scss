@@ -1,0 +1,25 @@
+.copy-menu.button {
+  position: fixed;
+  box-sizing: border-box;
+  bottom: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid currentColor;
+  border-radius: 100%;
+  appearance: none;
+
+  &:active {
+    width: auto;
+    border-radius: 0 0 0.25rem 0.25rem;
+  }
+
+  &:hover {
+    background-color: var(--color-background);
+  }
+}
+
+#clipboard {
+  width: 0;
+  height: 0;
+  flex: 0;
+}

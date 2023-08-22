@@ -1,0 +1,37 @@
+@import "npm:@fontsource/rubik/latin-400.css";
+@import "npm:@fontsource/roboto/latin-400.css";
+
+html {
+  margin: 0;
+  padding: 0;
+}
+body {
+  min-width: 540px;
+  margin: 0;
+  padding: 0;
+  background-color: ghostwhite;
+  font-family: "Roboto", sans-serif;
+}
+h1 {
+  font-family: "Rubik", sans-serif;
+}
+div.banner {
+  text-align: center;
+  background-color: #6738b8;
+}
+div.banner a {
+  display: block;
+  width: 100%;
+  padding: 1em;
+}
+div.banner img {
+  vertical-align: middle;
+  max-width: 400px;
+}
+div.wrapper {
+  padding: 1em;
+}
+a {
+  text-decoration: none;
+  color: #549fd6;
+}

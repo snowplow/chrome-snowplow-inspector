@@ -3,6 +3,8 @@ import { IBeaconSummary } from "../../ts/types";
 import { copyToClipboard, tryb64 } from "../../ts/util";
 import { unpackSDJ } from "./TestSuites";
 
+import "./CopyMenu.scss";
+
 const wrapPost = (data: object) => {
   return {
     schema: "iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-4",

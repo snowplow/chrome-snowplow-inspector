@@ -9,6 +9,8 @@ import { Beacon } from "./Beacon";
 import { TestResults } from "./TestResults";
 import { Timeline } from "./Timeline";
 
+import "./Debugger.scss";
+
 export const Debugger: FunctionComponent<IDebugger> = ({
   addRequests,
   clearRequests,
