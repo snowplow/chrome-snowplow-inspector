@@ -6,7 +6,7 @@ import { DisplayItem, IBeaconSummary, IDebugger } from "../../ts/types";
 import { isSnowplow } from "../../ts/util";
 
 import { Beacon } from "./Beacon";
-import { TestResults } from "./TestResults";
+import { TestReport } from "./TestReport";
 import { Timeline } from "./Timeline";
 
 import "./Debugger.scss";
@@ -110,10 +110,8 @@ export const Debugger: FunctionComponent<IDebugger> = ({
           </div>
         </div>
       ) : (
-        <div id="testdetail" class="column">
-          <div class="tile is-ancestor is-vertical">
-            <TestResults activeSuite={active.item} setActive={setActive} />
-          </div>
+        <div class="debugger__display debugger--testcase">
+          <TestReport activeSuite={active.item} setActive={setActive} />
         </div>
       )}
     </main>
