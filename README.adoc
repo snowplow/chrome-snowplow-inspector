@@ -1,6 +1,5 @@
 = Snowplow Inspector Web Extension
-:Author: Poplin Data
-:Email: <contact@poplindata.com>
+:Author: Snowplow Australia
 
 A debugging tool to help you examine and debug your link:https://snowplow.io[Snowplow] tracking implementation.
 

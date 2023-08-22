@@ -14,17 +14,17 @@
     "default_title": "Snowplow Inspector",
     "default_popup": "popup.html",
     "default_icon": {
-      "280": "poplin.png"
+      "280": "icon.png"
     }
   },
   "options_page": "options.html",
   "icons": {
-    "16": "poplin-16.png",
-    "48": "poplin-48.png",
-    "128": "poplin-128.png",
-    "280": "poplin.png"
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png",
+    "280": "icon.png"
   },
-  "author": "Poplin Data",
+  "author": "Snowplow Australia",
   "minimum_chrome_version": "88.0",
   "devtools_page": "devtools.html",
   "permissions": ["storage"],

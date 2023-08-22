@@ -7,11 +7,11 @@
     "check": "tsc --noEmit",
     "fmt": "prettier -w src",
     "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/pd-logo.png ../res/poplin.png ../res/poplin-16.png ../res/poplin-48.png ../res/poplin-128.png ../src/popup.html ../LICENSE.txt dist/ && parcel watch src/panel.html src/options.html src/devtools.html",
-    "build": "npm run clean && mkdir -p dist && cp manifest.json res/pd-logo.png res/poplin.png res/poplin-16.png res/poplin-48.png res/poplin-128.png src/popup.html LICENSE.txt dist/ && parcel build --no-source-maps src/panel.html src/options.html src/devtools.html",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/logo.svg ../res/icon.png ../res/icon-16.png ../res/icon-48.png ../res/icon-128.png ../LICENSE.txt dist/ && parcel watch src/*.html",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/logo.svg res/icon.png res/icon-16.png res/icon-48.png res/icon-128.png LICENSE.txt dist/ && parcel build --no-source-maps src/*.html",
     "xpi": "npm run build && npx web-ext build --overwrite-dest -s dist/ -a .",
     "xpi-signed": "npm run build && npx web-ext sign -s dist/ -a .",
-    "zip": "npm run build && zip -r poplin-chrome-extension.zip dist/"
+    "zip": "npm run build && zip -r snowplow-chrome-extension.zip dist/"
   },
   "repository": {
     "type": "git",
@@ -24,22 +24,16 @@
   },
   "homepage": "https://github.com/poplindata/chrome-snowplow-inspector#readme",
   "dependencies": {
-    "@emotion/react": "^11.9.3",
-    "@emotion/styled": "^11.9.3",
-    "@fontsource/roboto": "^4.5.8",
-    "@fontsource/rubik": "^4.5.14",
-    "@mui/material": "^5.8.4",
+    "@fontsource/roboto": "^5.0.0",
+    "@fontsource/rubik": "^5.0.0",
     "@snowplow/browser-tracker": "^3.1.1",
-    "bulma": "^0.7.5",
     "canonicalize": "^2.0.0",
     "jsonschema": "1.*",
     "preact": "*"
   },
   "alias": {
-    "react": "preact/compat",
-    "react-dom/test-utils": "preact/test-utils",
-    "react-dom": "preact/compat",
-    "react/jsx-runtime": "preact/jsx-runtime"
+    "buffer": false,
+    "url": "./src/ts/uri.ts"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.0.0",
@@ -47,14 +41,10 @@
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/node": "*",
-    "buffer": "^5.7.1",
     "parcel": "^2.0.0",
-    "prettier": "^2.3.2",
-    "punycode": "^1.4.1",
-    "querystring-es3": "^0.2.1",
+    "prettier": "^3.0.2",
     "sass": "^1.23.7",
     "tslib": "*",
-    "typescript": "^5.0.0",
-    "url": "^0.11.0"
+    "typescript": "^5.0.0"
   }
 }
