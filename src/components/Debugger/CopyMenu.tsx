@@ -114,26 +114,22 @@ const checks: Record<string, (beacon: IBeaconSummary) => boolean> = {
 export const CopyMenu: FunctionComponent<{
   beacon: IBeaconSummary;
 }> = ({ beacon }) => (
-  <div class="dropdown button is-hoverable is-up is-dark">
-    <div class="dropdown-trigger">{"\u29c9"}</div>
-    <div class="dropdown-menu">
-      <div class="dropdown-content">
-        <div class="dropdown-item">{"Copy as\u2026"}</div>
-        {Object.entries(formatters).map(([format, fn]) => {
-          const eligible = !checks[format] || checks[format](beacon);
+  <select
+    class="copy-menu button"
+    onChange={(e) => {
+      const { currentTarget } = e;
+      const { value } = currentTarget;
 
-          if (eligible)
-            return (
-              <div
-                class="dropdown-item"
-                onClick={() => copyToClipboard(fn(beacon))}
-              >
-                {format}
-              </div>
-            );
-          return null;
-        })}
-      </div>
-    </div>
-  </div>
+      currentTarget.selectedIndex = 0;
+      copyToClipboard(formatters[value](beacon));
+    }}
+  >
+    <option selected disabled>
+      {"\u29c9"} Copy as...
+    </option>
+    {Object.keys(formatters).map((format) => {
+      const eligible = !checks[format] || checks[format](beacon);
+      return eligible ? <option>{format}</option> : null;
+    })}
+  </select>
 );

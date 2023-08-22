@@ -299,7 +299,7 @@ const ValidityOptions = {
 const ValidityBadge: FunctionComponent<{
   status: TestSuiteResult["status"];
 }> = ({ status }) => (
-  <span class="panel-icon validity" title={ValidityOptions["title"][status]}>
+  <span class="validity" title={ValidityOptions["title"][status]}>
     {ValidityOptions["emoji"][status]}
   </span>
 );
@@ -309,7 +309,7 @@ const TestResult: FunctionComponent<{
   setActive: (beacon: DisplayItem) => void;
 }> = ({ result, setActive }) =>
   "results" in result ? (
-    <details class="panel-block">
+    <details class="testgroup">
       <summary title={result.test.description}>
         {result.test.name}
         <ValidityBadge status={result.status} />
@@ -320,7 +320,7 @@ const TestResult: FunctionComponent<{
     </details>
   ) : (
     <a
-      class="panel-block"
+      class="testresult"
       title={result.test.description}
       onClick={() => setActive({ display: "testsuite", item: result })}
     >
@@ -363,14 +363,14 @@ export const TestSuites: FunctionComponent<{
   );
 
   return (
-    <div class="panel testsuites">
+    <div class="testsuites">
       <p
-        class="panel-heading"
+        class="testsuites__title"
         title="Test Suites allow you to define assertions about events in the timeline."
       >
         Test Suites
         <button
-          class="button"
+          class="testsuites__edit"
           type="button"
           title="Edit Test Suites"
           onClick={() =>

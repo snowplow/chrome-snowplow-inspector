@@ -13,101 +13,88 @@ export const RegistryList: FunctionComponent<{
   filterRegistries: (selected: Registry[]) => void;
   setModal: ModalSetter;
   selectedRegistries: Registry[];
-  setWatermark: StateUpdater<number>;
 }> = ({
   resolver,
   clearSearch,
   filterRegistries,
   setModal,
   selectedRegistries,
-  setWatermark,
-}) => {
-  return (
-    <div class="registries column is-narrow">
-      <ResolverListing
-        resolver={resolver}
-        selected={selectedRegistries}
-        selectRegistries={filterRegistries}
-      />
-      <menu>
-        <button
-          class="button clear"
-          onClick={() => (filterRegistries([]), clearSearch())}
-        >
-          Clear Filters
-        </button>
-        <select
-          class="button registries"
-          onChange={(event) => {
-            const target = event.currentTarget;
+}) => (
+  <div class="registry_list">
+    <ResolverListing
+      resolver={resolver}
+      selected={selectedRegistries}
+      selectRegistries={filterRegistries}
+    />
+    <menu>
+      <button onClick={() => (filterRegistries([]), clearSearch())}>
+        Clear Filters
+      </button>
+      <select
+        class="button"
+        onChange={(event) => {
+          const target = event.currentTarget;
 
-            const callback = () => setWatermark(Date.now());
-            switch (target.value) {
-              case "Edit":
-                if (selectedRegistries.length)
-                  setModal("editRegistries", {
-                    registries: selectedRegistries,
-                    resolver,
-                    callback,
-                  });
-                break;
-              case "Add":
-                const newReg = new LocalRegistry({
-                  kind: "local",
-                  name: "My New Registry",
-                });
+          switch (target.value) {
+            case "Edit":
+              if (selectedRegistries.length)
                 setModal("editRegistries", {
-                  registries: [newReg],
+                  registries: selectedRegistries,
                   resolver,
-                  callback,
                 });
-                break;
-              case "Remove":
-                if (selectedRegistries.length)
-                  setModal("deleteRegistries", {
-                    registries: selectedRegistries,
-                    resolver,
-                    callback,
-                  });
-
-                filterRegistries([]);
-                clearSearch();
-                break;
-              case "Import":
-                setModal("importRegistries", { resolver, callback });
-                break;
-            }
-            target.selectedIndex = 0;
-          }}
-        >
-          <option selected disabled>
-            Registries...
-          </option>
-          <option>Add</option>
-          <option disabled={selectedRegistries.length === 0}>Edit</option>
-          <option>Import</option>
-          <option disabled={selectedRegistries.length === 0}>Remove</option>
-        </select>
-        <button
-          class="button"
-          disabled={
-            !selectedRegistries.length ||
-            selectedRegistries.some((reg) => reg.spec.kind !== "local")
-          }
-          onClick={() => {
-            if (selectedRegistries.length) {
-              setModal("editSchemas", {
-                registries: selectedRegistries.filter(
-                  (reg) => reg.spec.kind === "local"
-                ),
-                callback: () => setWatermark(Date.now()),
+              break;
+            case "Add":
+              const newReg = new LocalRegistry({
+                kind: "local",
+                name: "My New Registry",
               });
-            }
-          }}
-        >
-          Schemas...
-        </button>
-      </menu>
-    </div>
-  );
-};
+              setModal("editRegistries", {
+                registries: [newReg],
+                resolver,
+              });
+              break;
+            case "Remove":
+              if (selectedRegistries.length)
+                setModal("deleteRegistries", {
+                  registries: selectedRegistries,
+                  resolver,
+                });
+
+              filterRegistries([]);
+              clearSearch();
+              break;
+            case "Import":
+              setModal("importRegistries", { resolver });
+              break;
+          }
+          target.selectedIndex = 0;
+        }}
+      >
+        <option selected disabled>
+          Registries...
+        </option>
+        <option>Add</option>
+        <option disabled={selectedRegistries.length === 0}>Edit</option>
+        <option>Import</option>
+        <option disabled={selectedRegistries.length === 0}>Remove</option>
+      </select>
+      <button
+        disabled={
+          !selectedRegistries.length ||
+          selectedRegistries.some((reg) => reg.spec.kind !== "local")
+        }
+        onClick={() => {
+          if (selectedRegistries.length) {
+            setModal("editSchemas", {
+              registries: selectedRegistries.filter(
+                (reg) => reg.spec.kind === "local",
+              ),
+            });
+          }
+        }}
+      >
+        Schemas...
+      </button>
+    </menu>
+  </div>
+);

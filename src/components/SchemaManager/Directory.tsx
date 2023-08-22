@@ -32,12 +32,12 @@ type DirectoryAttrs = {
   search?: RegExp;
   selections: Registry[];
   setCollapsed: StateUpdater<boolean>;
-  watermark: number;
 };
 
 const refreshSchemas = (
   resolver: Resolver,
-  setCatalog: StateUpdater<(IgluSchema | ResolvedIgluSchema)[]>
+  setCatalog: StateUpdater<(IgluSchema | ResolvedIgluSchema)[]>,
+  signal: AbortSignal,
 ) => {
   const seenRegs = new Map<IgluUri, Registry[]>();
   setCatalog([]);
@@ -63,16 +63,16 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
   resolver,
   setCollapsed,
   children,
-  watermark,
 }) => {
   const [catalog, setCatalog] = useState<(IgluSchema | ResolvedIgluSchema)[]>(
     [],
   );
 
-  useEffect(
-    () => refreshSchemas(resolver, setCatalog),
-    [resolver, watermark, resolver.registries]
-  );
+  useEffect(() => {
+    const aborter = new AbortController();
+    refreshSchemas(resolver, setCatalog, aborter.signal);
+    return () => aborter.abort();
+  }, [resolver, ...resolver.registries]);
 
   const filtered = useMemo(
     () =>
@@ -164,9 +164,14 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                           )
                           .map(([registries, deployment]) => ({
                             val:
-                              deployment instanceof ResolvedIgluSchema
-                                ? JSON.stringify(deployment.data, null, 4)
-                                : deployment.uri(),
+                              deployment instanceof ResolvedIgluSchema ? (
+                                JSON.stringify(deployment.data, null, 4)
+                              ) : (
+                                <label>
+                                  Loading {deployment.uri()}&hellip;{" "}
+                                  <progress />
+                                </label>
+                              ),
                             registries,
                           }))
                           .map(({ val, registries }) => (
@@ -185,9 +190,16 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                                   </span>
                                 ))}
                               </summary>
-                              <textarea readOnly rows={val.split("\n").length}>
-                                {val}
-                              </textarea>
+                              {typeof val === "string" ? (
+                                <textarea
+                                  readOnly
+                                  rows={val.split("\n").length}
+                                >
+                                  {val}
+                                </textarea>
+                              ) : (
+                                val
+                              )}
                             </details>
                           )),
                     )}
@@ -202,7 +214,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
   );
 
   return (
-    <div class="directory column box">
+    <div class="directory">
       {children}
       {listings}
     </div>

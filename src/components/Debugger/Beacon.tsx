@@ -1,5 +1,5 @@
 import { h, FunctionComponent, Fragment, VNode } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 
 import { protocol } from "../../ts/protocol";
 import {
@@ -9,9 +9,13 @@ import {
   IRowSet,
   FieldDetail,
 } from "../../ts/types";
-import { b64d, hasMembers, nameType, copyToClipboard } from "../../ts/util";
-import { IgluUri, IgluSchema, Resolver } from "../../ts/iglu";
-import { LocalRegistry } from "../../ts/iglu/Registries";
+import { b64d, nameType, copyToClipboard } from "../../ts/util";
+import {
+  IgluUri,
+  IgluSchema,
+  ResolvedIgluSchema,
+  Resolver,
+} from "../../ts/iglu";
 
 import { ModalSetter } from "../Modals";
 
@@ -49,7 +53,7 @@ function parseBeacon({
         payload.get("dtm") ||
         (payload.get("_gid") || "").split(".").pop() ||
         undefined,
-      protocol.paramMap.stm
+      protocol.paramMap.stm,
     ),
     payload,
   };
@@ -97,9 +101,15 @@ function parseBeacon({
 
 const LabelType: FunctionComponent<{ val: unknown }> = ({ val }) => (
   <button
-    class="button typeinfo is-pulled-right is-info"
-    title="Click to copy"
-    onClick={() => typeof val === "string" && copyToClipboard(val)}
+    class={[
+      "typeinfo",
+      "typeinfo--" + nameType(val).split(" ").shift()?.toLowerCase(),
+    ].join(" ")}
+    type="button"
+    title="Click to copy value"
+    onClick={() =>
+      copyToClipboard(typeof val === "string" ? val : JSON.stringify(val))
+    }
   >
     {nameType(val)}
   </button>
@@ -123,20 +133,72 @@ function isSDJ(obj: unknown): obj is { data: unknown; schema: string } {
   );
 }
 
-const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
+const Tabs = <T extends Record<string, () => VNode>>({
+  options,
+  defaultTab,
+  name,
+}: {
+  options: T;
+  defaultTab: keyof T;
+  name: string;
+}) => {
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  const tabHandler = useCallback((e: Event) => {
+    const { target } = e;
+    if (target instanceof HTMLInputElement) {
+      e.stopPropagation();
+      setActiveTab(target.value as typeof activeTab);
+    }
+  }, []);
+
+  return (
+    <>
+      <form class="iglu__tabs-control" onChange={tabHandler}>
+        {Object.keys(options).map((tabName) => (
+          <label
+            class={["tab", activeTab === tabName ? "tab--active" : ""].join(
+              " ",
+            )}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={tabName}
+              checked={activeTab === tabName}
+            />
+            {tabName}
+          </label>
+        ))}
+      </form>
+      <div
+        class={["iglu__payload", "iglu__payload--" + activeTab.toString()].join(
+          " ",
+        )}
+      >
+        {options[activeTab]()}
+      </div>
+    </>
+  );
+};
+
+const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   obj,
   resolver,
   setModal,
 }) => {
-  const [schemaValidity, setSchemaValidity] = useState<ValidityState | null>(
-    null
-  );
+  if (!isSDJ(obj)) return null;
 
-  const validityCheck = useMemo((): Promise<ValidityState | null> => {
-    if (!schemaValidity && isSDJ(obj)) {
-      const schema = IgluSchema.fromUri(obj.schema as IgluUri);
-      if (schema) {
-        return resolver.resolve(schema).then(
+  const [schemaValidity, setSchemaValidity] = useState<ValidityState>({
+    validity: "Unrecognised",
+  });
+
+  useEffect(() => {
+    const schema = IgluSchema.fromUri(obj.schema as IgluUri);
+    if (schema) {
+      resolver
+        .resolve(schema)
+        .then<ValidityState, ValidityState>(
           (schema) => {
             const validation = schema.validate(obj.data);
             return validation.valid
@@ -155,17 +217,99 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
             errorText:
               "Could not find or access schema definition in any configured repositories.",
             schema,
-          })
-        );
-      } else {
-        return Promise.resolve({
-          validity: "Invalid",
-          errorText: "Invalid Iglu URI identifying schema.",
-        });
-      }
-    } else return Promise.resolve(null);
-  }, [obj, resolver, schemaValidity]);
+          }),
+        )
+        .then(setSchemaValidity);
+    } else {
+      setSchemaValidity({
+        validity: "Invalid",
+        errorText: "Invalid Iglu URI identifying schema.",
+      });
+    }
+  }, [obj, resolver]);
 
+  const children: (VNode<BeaconValueAttrs> | string)[] = [];
+
+  if (isSDJ(obj.data)) {
+    children.push(
+      <SDJValue obj={obj.data} resolver={resolver} setModal={setModal} />,
+    );
+  } else if (typeof obj.data === "object" && obj.data !== null) {
+    children.push(
+      ...Object.entries(obj.data).map(([p, val]) => (
+        <tr>
+          <th>{p}</th>
+          <td>
+            <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
+            {isSDJ(val) ? null : <LabelType val={val} />}
+          </td>
+        </tr>
+      )),
+    );
+  }
+
+  const { validity, errorText, schema } = schemaValidity;
+
+  const tabs = {
+    Data: () => (
+      <>
+        <table class={Array.isArray(obj.data) ? "array" : "object"}>
+          {children}
+        </table>
+        <LabelType val={obj.data} />
+      </>
+    ),
+    JSON: () => {
+      const jsonText = JSON.stringify(obj, null, 2);
+      const lineCounter = jsonText.match(/\n/g) || [];
+      return (
+        <textarea readOnly value={jsonText} rows={lineCounter.length + 1} />
+      );
+    },
+    Schema: () => {
+      const resolved =
+        schema instanceof ResolvedIgluSchema ? schema.data : schema || {};
+      const jsonText = JSON.stringify(resolved, null, 2);
+      const lineCounter = jsonText.match(/\n/g) || [];
+      return (
+        <textarea readOnly value={jsonText} rows={lineCounter.length + 1} />
+      );
+    },
+    Errors: () => (
+      <ul>
+        {(errorText || "No errors found").split("\n").map((text) => (
+          <li>{text}</li>
+        ))}
+      </ul>
+    ),
+  };
+
+  return (
+    <details class={["iglu", "iglu--" + validity.toLowerCase()].join(" ")} open>
+      <summary>
+        {obj.schema}
+        <abbr
+          class="iglu__validation"
+          title={errorText}
+          onClick={() => {
+            if (errorText) {
+              copyToClipboard(errorText);
+            }
+          }}
+        >
+          {validity}
+        </abbr>
+      </summary>
+      <Tabs defaultTab="Data" options={tabs} name="format" />
+    </details>
+  );
+};
+
+const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
+  obj,
+  resolver,
+  setModal,
+}) => {
   if (typeof obj !== "object" || obj === null) {
     switch (typeof obj) {
       case "undefined":
@@ -177,170 +321,34 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
             <BeaconValue resolver={resolver} obj={json} setModal={setModal} />
           );
         } catch (e) {
-          return <>{obj}</>;
+          return <span>{obj}</span>;
         }
       default:
-        return <>{JSON.stringify(obj)}</>;
+        return <span>{JSON.stringify(obj)}</span>;
     }
-  }
-
-  const children: (VNode<BeaconValueAttrs> | string)[] = [];
-  let p;
-  if (isSDJ(obj)) {
-    if (!schemaValidity)
-      validityCheck.then((validity) => {
-        setSchemaValidity((orig) => {
-          return orig || validity;
-        });
-      });
-
-    if (isSDJ(obj.data)) {
-      children.push(
-        <BeaconValue obj={obj.data} resolver={resolver} setModal={setModal} />
-      );
-    } else if (typeof obj.data === "object" && obj.data !== null) {
-      for (p in obj.data) {
-        const nested = obj.data as { [f: string]: unknown };
-        if (nested.hasOwnProperty(p)) {
-          if (hasMembers(nested[p])) {
-            children.push(
-              <tr>
-                <th>{p}</th>
-                <td>
-                  <BeaconValue
-                    obj={nested[p]}
-                    resolver={resolver}
-                    setModal={setModal}
-                  />
-                </td>
-              </tr>
-            );
-          } else {
-            children.push(
-              <tr>
-                <th>{p}</th>
-                <td>
-                  <LabelType val={nested[p]} />
-                  <BeaconValue
-                    obj={nested[p]}
-                    resolver={resolver}
-                    setModal={setModal}
-                  />
-                </td>
-              </tr>
-            );
-          }
-        }
-      }
-    }
-
-    const { validity, errorText } = schemaValidity || {
-      validity: "Unrecognised",
-    };
-
+  } else if (!isSDJ(obj)) {
     return (
-      <div class={["card", "iglu", validity.toLowerCase()].join(" ")}>
-        <header class="card-header">
-          <span class="card-header-title">{obj.schema}</span>
-          <span class="card-header-icon" />
-        </header>
-        <div class="card-content">
-          <table class="table is-fullwidth">{children}</table>
-        </div>
-        <footer class="card-footer">
-          <abbr
-            class="card-footer-item validation"
-            title={errorText}
-            onClick={() => {
-              if (validity === "Unrecognised" && setModal) {
-                const newReg = new LocalRegistry({
-                  kind: "local",
-                  name: "My New Registry",
-                });
-                setModal("editRegistries", {
-                  registries: [newReg],
-                  resolver,
-                  callback: () =>
-                    setSchemaValidity((v) => (v ? { validity } : null)),
-                });
-              } else if (errorText) {
-                copyToClipboard(errorText);
-              }
-            }}
-          >
-            {validity}
-          </abbr>
-          <textarea
-            class="card-footer-item"
-            readOnly
-            value={JSON.stringify(obj)}
-          />
-        </footer>
-      </div>
+      <table class={Array.isArray(obj) ? "array" : "object"}>
+        {Object.entries(obj).map(([p, val]) => (
+          <tr>
+            <th>{p}</th>
+            <td>
+              <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
+              <LabelType val={val} />
+            </td>
+          </tr>
+        ))}
+      </table>
     );
-  } else {
-    const nested = obj as { [f: string]: unknown };
-    for (p in nested) {
-      if (obj.hasOwnProperty(p)) {
-        if (hasMembers(nested[p])) {
-          children.push(
-            <tr>
-              <th>{p}</th>
-              <td>
-                <BeaconValue
-                  obj={nested[p]}
-                  resolver={resolver}
-                  setModal={setModal}
-                />
-              </td>
-            </tr>
-          );
-        } else {
-          children.push(
-            <tr>
-              <th>{p}</th>
-              <td>
-                <LabelType val={nested[p]} />
-                <BeaconValue
-                  obj={nested[p]}
-                  resolver={resolver}
-                  setModal={setModal}
-                />
-              </td>
-            </tr>
-          );
-        }
-      }
-    }
-
-    return <table class="table is-fullwidth">{children}</table>;
-  }
+  } else return <SDJValue obj={obj} resolver={resolver} />;
 };
 
-const RowSet: FunctionComponent<IRowSet> = ({ setName, children }) => {
-  const [visible, setVisible] = useState(true);
-  return (
-    <div
-      class={[
-        "card",
-        "tile",
-        "is-child",
-        visible ? "show-rows" : "hide-rows",
-      ].join(" ")}
-    >
-      <header
-        class="card-header"
-        onClick={() => setVisible((visible) => !visible)}
-      >
-        <p class="card-header-title">{setName}</p>
-        <p class="card-header-icon">{visible ? "[ - ]" : "[ + ]"}</p>
-      </header>
-      <div class="card-content">
-        <table class="table is-fullwidth">{children}</table>
-      </div>
-    </div>
-  );
-};
+const RowSet: FunctionComponent<IRowSet> = ({ setName, children }) => (
+  <details class="rowset" open>
+    <summary>{setName}</summary>
+    <table class="rowset__rows">{children}</table>
+  </details>
+);
 
 const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
   if (val === undefined || val === null || val === "") {

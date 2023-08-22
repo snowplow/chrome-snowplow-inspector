@@ -41,15 +41,12 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
 
   const [collapsed, setCollapsed] = useState(true);
 
-  const [watermark, setWatermark] = useState(Date.now());
-
   const smRef = useRef<HTMLElement>(null);
 
   const filterBar = useMemo(
     () => (
-      <div class="field is-grouped filterPanel">
+      <div class="directory__filter">
         <input
-          class="input"
           type="search"
           placeholder="Filter Pattern"
           title="Regular expression to search schemas for"
@@ -68,7 +65,6 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
           }}
         />
         <button
-          class="button"
           onClick={() => {
             if (smRef.current) {
               const details = smRef.current.getElementsByTagName("details");
@@ -81,17 +77,12 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
         </button>
       </div>
     ),
-    [clearSearch, collapsed, smRef]
+    [clearSearch, collapsed, smRef],
   );
 
   return (
     <main class="app app--schema_manager schema_manager" ref={smRef}>
-      <Directory
-        setCollapsed={setCollapsed}
-        resolver={resolver}
-        watermark={watermark}
-        {...filters}
-      >
+      <Directory setCollapsed={setCollapsed} resolver={resolver} {...filters}>
         {filterBar}
       </Directory>
       <RegistryList
@@ -99,7 +90,6 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
         clearSearch={clearSearch}
         resolver={resolver}
         setModal={setModal}
-        setWatermark={setWatermark}
         selectedRegistries={filters.selections}
       />
     </main>

@@ -456,15 +456,15 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       summary.pageref || (summary.page ? new URL(summary.page) : fallbackUrl),
       <a
         class={[
-          "panel-block",
-          isActive(summary) ? "is-active" : "",
+          "event",
+          isActive(summary) ? "event--active" : "",
           // Some race in Firefox where the response information isn't always populated
           summary.collectorStatus.code === 200 ||
           summary.collectorStatus.code === 0
             ? ""
-            : "not-ok",
-          colorOf(summary.collector + summary.appId),
-          summary.validity === "Invalid" ? "is-invalid" : "",
+            : "event--uncollected",
+          `event--destination-${colorOf(summary.collector + summary.appId)}`,
+          summary.validity === "Invalid" ? "event--invalid" : "",
         ].join(" ")}
         title={[
           `Time: ${summary.time}`,
@@ -475,11 +475,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         ].join("\n")}
         onClick={setActive.bind(null, { display: "beacon", item: summary })}
       >
-        <span class="panel-icon identifier" />
         {summary.eventName}
-        <span class="panel-icon validity">
-          {summary.validity === "Invalid" ? "\u26d4\ufe0f" : ""}
-        </span>
       </a>,
     ]);
   });
@@ -565,68 +561,63 @@ export const Timeline: FunctionComponent<ITimeline> = ({
     );
 
   return (
-    <aside class="debugger__timeline">
-      <div class="timeline__events">
-        <div class="panel filterPanel">
-          <div>
-            <button
-              class="button is-small"
-              type="button"
-              onClick={clearRequests}
-              disabled={!beacons.length}
-            >
-              Clear Events
-            </button>
-            <select class="button is-small" onChange={importButtonHandler}>
-              <option selected disabled>
-                Import
+    <aside class="timeline">
+      <div class="timeline__controls">
+        <div>
+          <button
+            type="button"
+            onClick={clearRequests}
+            disabled={!beacons.length}
+          >
+            Clear Events
+          </button>
+          <select class="button" onChange={importButtonHandler}>
+            <option selected disabled>
+              Import
+            </option>
+            {Object.entries(importers.formats).map(([key, label]) => (
+              <option value={key}>
+                {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
               </option>
-              {Object.entries(importers.formats).map(([key, label]) => (
-                <option value={key}>
-                  {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
-                </option>
-              ))}
-            </select>
-            <select
-              class="button is-small"
-              disabled={!beacons.length}
-              onChange={exportButtonHandler}
-            >
-              <option selected disabled>
-                Export
-              </option>
-              {Object.entries(exporters.formats).map(([key, label]) => (
-                <option value={key}>{label}</option>
-              ))}
-            </select>
-          </div>
-          <input
-            id="filter"
-            class={[
-              "input",
-              filter ? "valid" : filterStr ? "invalid" : "valid",
-            ].join(" ")}
-            type="text"
-            placeholder="Filter"
-            onKeyUp={(e) => {
-              if (e.currentTarget instanceof HTMLInputElement) {
-                const val = e.currentTarget.value;
-                setFilterStr(val);
-              }
-            }}
-            value={filterStr}
-          />
+            ))}
+          </select>
+          <select
+            class="button"
+            disabled={!beacons.length}
+            onChange={exportButtonHandler}
+          >
+            <option selected disabled>
+              Export
+            </option>
+            {Object.entries(exporters.formats).map(([key, label]) => (
+              <option value={key}>{label}</option>
+            ))}
+          </select>
         </div>
-        {byPage.map(([pageName, beacons]) => (
-          <div class="panel">
-            <p class="panel-heading" title="pageName">
-              {pageName}
-            </p>
-            {beacons}
-          </div>
-        ))}
-        <TestSuites events={events} setActive={setActive} setModal={setModal} />
+        <input
+          class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(" ")}
+          type="text"
+          placeholder="Start typing to filter events&hellip;"
+          onKeyUp={(e) => {
+            if (e.currentTarget instanceof HTMLInputElement) {
+              const val = e.currentTarget.value;
+              setFilterStr(val);
+            }
+          }}
+          value={filterStr}
+        />
       </div>
+      <div class="timeline__events">
+        {byPage.map(([pageName, beacons]) => (
+          <article class="event-group">
+            <h1 class="event-group__heading" title="Group Name">
+              {pageName}
+            </h1>
+            {beacons}
+          </article>
+        ))}
+      </div>
+      <TestSuites events={events} setActive={setActive} setModal={setModal} />
     </aside>
   );
 };
