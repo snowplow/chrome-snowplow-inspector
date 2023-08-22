@@ -379,18 +379,17 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
 
 const BeaconHeader: FunctionComponent<
   Omit<IBeaconDetails, "data" | "payload"> & {
-    compact: boolean;
     resolver: Resolver;
   }
-> = ({ appId, collector, compact, method, name, resolver, time }) => {
+> = ({ appId, collector, method, name, resolver, time }) => {
   const dt = new Date(time);
-  return compact ? (
-    <RowSet setName="Core">
+  return (
+    <RowSet key="Core" setName="Core">
       <tr>
         <th>App</th>
         <td>
-          <LabelType val={appId} />
           <BeaconValue obj={appId} resolver={resolver} />
+          <LabelType val={appId} />
         </td>
       </tr>
       <tr>
@@ -402,14 +401,11 @@ const BeaconHeader: FunctionComponent<
       <tr>
         <th>Time</th>
         <td>
-          <time
-            dateTime={dt.toISOString()}
-            title={dt.toLocaleString(undefined, {
-              dateStyle: "full",
+          <time dateTime={dt.toISOString()} title={dt.toUTCString()}>
+            {dt.toLocaleString(undefined, {
+              dateStyle: "medium",
               timeStyle: "full",
             })}
-          >
-            {dt.toUTCString()}
           </time>
         </td>
       </tr>
@@ -426,102 +422,41 @@ const BeaconHeader: FunctionComponent<
         </td>
       </tr>
     </RowSet>
-  ) : (
-    <>
-      <div class="level box">
-        <div class="level-item has-text-centered">
-          <div>
-            <p class="heading">App</p>
-            <p class="title">{appId}</p>
-          </div>
-        </div>
-        <div class="level-item has-text-centered">
-          <div>
-            <p class="heading">Event</p>
-            <p class="title">{name}</p>
-          </div>
-        </div>
-      </div>
-      <div class="level box">
-        <div class="level-item has-text-centered">
-          <div>
-            <p class="heading">Time</p>
-            <time
-              class="title"
-              dateTime={dt.toISOString()}
-              title={dt.toLocaleString(undefined, {
-                dateStyle: "full",
-                timeStyle: "full",
-              })}
-            >
-              {dt.toUTCString()}
-            </time>
-          </div>
-        </div>
-      </div>
-      <div class="level box">
-        <div class="level-item has-text-centered">
-          <div>
-            <p class="heading">Collector</p>
-            <p class="title">{collector}</p>
-          </div>
-        </div>
-        <div class="level-item has-text-centered">
-          <div>
-            <p class="heading">Method</p>
-            <p class="title">{method}</p>
-          </div>
-        </div>
-      </div>
-    </>
   );
 };
-const formatBeacon = (
-  { collector, data, payload, ...info }: IBeaconDetails,
-  resolver: Resolver,
-  setModal: ModalSetter,
-  compact = false
-) => (
-  <>
-    <BeaconHeader
-      compact={compact}
-      resolver={resolver}
-      collector={collector}
-      {...info}
-    />
-    {data.map(([setName, rows]) => (
-      <RowSet key={setName} setName={setName}>
-        {rows.map(([name, val, classes]) =>
-          !/Custom Entity|(Unstructured|Self-Describing) Event/.test(name) ? (
-            <tr class={classes}>
-              <th>{name}</th>
-              <td>
-                <LabelType val={val} />
-                <BeaconValue
-                  obj={val}
-                  resolver={resolver}
-                  setModal={setModal}
-                />
-              </td>
-            </tr>
-          ) : (
-            <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
-          )
-        )}
-      </RowSet>
-    ))}
-  </>
-);
 
 export const Beacon: FunctionComponent<IBeacon> = ({
   activeBeacon,
   resolver,
-  compact,
   setModal,
-}) =>
-  activeBeacon ? (
+}) => {
+  const { collector, data, payload, ...info } = parseBeacon(activeBeacon);
+
+  return (
     <>
-      {formatBeacon(parseBeacon(activeBeacon), resolver, setModal, compact)}
+      <BeaconHeader resolver={resolver} collector={collector} {...info} />
+      {data.map(([setName, rows]) => (
+        <RowSet key={setName} setName={setName}>
+          {rows.map(([name, val, classes]) =>
+            !/Custom Entity|(Unstructured|Self-Describing) Event/.test(name) ? (
+              <tr class={classes}>
+                <th>{name}</th>
+                <td>
+                  <BeaconValue
+                    obj={val}
+                    resolver={resolver}
+                    setModal={setModal}
+                  />
+                  <LabelType val={val} />
+                </td>
+              </tr>
+            ) : (
+              <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
+            ),
+          )}
+        </RowSet>
+      ))}
       <CopyMenu beacon={activeBeacon} />
     </>
-  ) : null;
+  );
+};

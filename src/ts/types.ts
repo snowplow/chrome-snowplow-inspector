@@ -99,9 +99,8 @@ export interface ITimeline {
 }
 
 export interface IBeacon {
-  activeBeacon?: IBeaconSummary;
+  activeBeacon: IBeaconSummary;
   resolver: Resolver;
-  compact?: boolean;
   setModal: ModalSetter;
 }
 

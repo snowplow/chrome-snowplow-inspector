@@ -40,25 +40,11 @@ export const Debugger: FunctionComponent<IDebugger> = ({
               !isSnowplow(req.request) ||
               req.request.method === "OPTIONS" ||
               req.response.statusText === "Service Worker Fallback Required"
-            )
-        )
+            ),
+        ),
       );
     },
-    [addRequests]
-  );
-
-  const [compactCore, setCompactCore] = useState(false);
-  useEffect(
-    () =>
-      chrome.storage.sync.get(
-        {
-          compactCoreMetadata: false,
-        },
-        ({ compactCoreMetadata }) => {
-          setCompactCore(compactCoreMetadata);
-        }
-      ),
-    []
+    [addRequests],
   );
 
   useEffect(() => {
@@ -99,15 +85,14 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         clearRequests={clearRequests}
       />
       {!active || active.display === "beacon" ? (
-        <div id="beacon" class="column">
-          <div class="tile is-ancestor is-vertical inspector">
+        <div class="debugger__display debugger--beacon">
+          {active && active.item ? (
             <Beacon
-              activeBeacon={active && active.item}
+              activeBeacon={active.item}
               resolver={resolver}
-              compact={compactCore}
               setModal={setModal}
             />
-          </div>
+          ) : null}
         </div>
       ) : (
         <div class="debugger__display debugger--testcase">
