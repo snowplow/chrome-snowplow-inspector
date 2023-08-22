@@ -551,6 +551,7 @@ const chunkEach = <T>(
     if (!chunk.length) fulfil();
 
     const step = (chunk: Promise<void>[]): Promise<void> => {
+      if (aborter?.aborted) return Promise.resolve();
       return Promise.race(chunk.map((p, i) => p.then(() => i))).then((i) => {
         if (next < arr.length) {
           chunk[i] = cb(arr[next], next);

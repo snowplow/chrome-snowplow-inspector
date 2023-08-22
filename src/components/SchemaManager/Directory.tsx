@@ -43,17 +43,24 @@ const refreshSchemas = (
   setCatalog([]);
 
   resolver.walk().then((discovered) => {
-    chunkEach(discovered, (ds, i) => {
-      setCatalog((catalog) => ((catalog[i] = ds), [...catalog]));
-      if (!seenRegs.has(ds.uri())) seenRegs.set(ds.uri(), []);
+    setCatalog(discovered);
+    chunkEach(
+      discovered,
+      (ds, i) => {
+        if (!seenRegs.has(ds.uri())) seenRegs.set(ds.uri(), []);
+        if (signal.aborted) return Promise.resolve();
 
-      return resolver
-        .resolve(ds, seenRegs.get(ds.uri())!)
-        .then((res) => {
-          setCatalog((catalog) => ((catalog[i] = res), [...catalog]));
-        })
-        .catch(() => console.log("couldn't find ", ds.uri()));
-    });
+        return resolver
+          .resolve(ds, seenRegs.get(ds.uri())!)
+          .then((res) => {
+            if (!signal.aborted)
+              setCatalog((catalog) => ((catalog[i] = res), [...catalog]));
+          })
+          .catch(() => console.log("couldn't find ", ds.uri()));
+      },
+      undefined,
+      signal,
+    );
   });
 };
 
