@@ -48,7 +48,7 @@ const isSnowplow = (request: Request): boolean => {
 
 const uuidv4 = (): string =>
   "00000000-0000-4000-8000-000000000000".replace(/0/g, () =>
-    Math.floor(Math.random() * 17).toString(16)
+    Math.floor(Math.random() * 17).toString(16),
   );
 
 const hash = (bytes: string): string => {
@@ -64,7 +64,7 @@ const hash = (bytes: string): string => {
 function sorted<T>(
   list: Iterable<T>,
   keycb?: (a: T) => any,
-  reverse = false
+  reverse = false,
 ): T[] {
   const sortees: T[] = [];
   const keys: any[] = [];
@@ -90,11 +90,12 @@ function sorted<T>(
   }
 
   return sortees;
+  */
 }
 
 const objHasProperty = <T extends {}, K extends PropertyKey>(
   obj: T,
-  prop: K
+  prop: K,
 ): obj is T & Record<K, unknown> => obj.hasOwnProperty(prop);
 
 const hasMembers = (obj: unknown) => {
@@ -207,7 +208,7 @@ const tomcat = [
 ];
 
 const thriftToRequest = (
-  payload?: ITomcatImport
+  payload?: ITomcatImport,
 ): Partial<Entry> | undefined => {
   if (
     typeof payload !== "object" ||
@@ -278,7 +279,7 @@ const esToRequests = (data: object[], index: string): Entry[] => {
     if (hit.hasOwnProperty("collector_tstamp")) {
       return goodToRequests(
         hit as { [esKeyName: string]: string },
-        base
+        base,
       ) as Entry;
     } else {
       return badToRequests([JSON.stringify(hit)])[0];
@@ -290,7 +291,7 @@ const goodToRequests = (
   data: {
     [esKeyName: string]: string | object;
   },
-  baseUri: string
+  baseUri: string,
 ): Partial<Entry> => {
   const uri = new URL(baseUri);
   const reverseTypeMap: { [event: string]: string } = {
@@ -495,7 +496,7 @@ const badToRequests = (data: string[]): Entry[] => {
         try {
           return decodeB64Thrift(
             js,
-            schemas["collector-payload"]
+            schemas["collector-payload"],
           ) as ITomcatImport;
         } catch (e) {
           console.log(e);
@@ -530,7 +531,7 @@ const colorOf = (id: string) => {
   if (!COLOR_ALLOCATIONS.has(id)) {
     COLOR_ALLOCATIONS.set(
       id,
-      COLOR_OPTIONS[COLOR_ALLOCATIONS.size % COLOR_OPTIONS.length || 0]
+      COLOR_OPTIONS[COLOR_ALLOCATIONS.size % COLOR_OPTIONS.length || 0],
     );
   }
 
@@ -540,7 +541,8 @@ const colorOf = (id: string) => {
 const chunkEach = <T>(
   arr: T[],
   cb: (e: T, i: number) => Promise<void>,
-  CHUNK_SIZE: number = 24
+  CHUNK_SIZE: number = 24,
+  aborter?: AbortSignal,
 ) => {
   return new Promise<void>((fulfil) => {
     let next = CHUNK_SIZE;
@@ -570,7 +572,7 @@ const ngrokEventToHAR = (event: NgrokEvent): Entry => {
     ([name, value]) => ({
       name,
       value,
-    })
+    }),
   );
   const parsed = tryb64(event.request.raw);
   const body = parsed.split("\n").pop()!;
@@ -623,14 +625,14 @@ const parseNgrokRequests = (data: {
 }): { entries: Entry[] } => {
   // inspect_db_size (ngrok) defaults to 50MB
   const afterWaterMark = data.requests.filter(
-    ({ start }) => +new Date(start) > ngrokWatermark
+    ({ start }) => +new Date(start) > ngrokWatermark,
   );
   // iterate through and build a HAR request for each event
   const entries = afterWaterMark.map(ngrokEventToHAR);
   // set ngrok watermark
   ngrokWatermark = Math.max(
     ngrokWatermark,
-    ...afterWaterMark.map(({ start }) => +new Date(start))
+    ...afterWaterMark.map(({ start }) => +new Date(start)),
   );
 
   return { entries };

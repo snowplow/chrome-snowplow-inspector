@@ -102,7 +102,7 @@ const validateEvent = (
   id: string,
   params: Map<string, string>,
   resolver: Resolver,
-  updateValidity: StateUpdater<number>
+  updateValidity: StateUpdater<number>,
 ) => {
   type SDJ = { schema: IgluUri; data: object | SDJ[] };
 
@@ -116,13 +116,13 @@ const validateEvent = (
 
   const validate = (
     schema: IgluSchema | null,
-    data: SDJ["data"]
+    data: SDJ["data"],
   ): Promise<BeaconValidity> =>
     schema
       ? resolver
           .resolve(schema)
           .then((res) =>
-            Promise.resolve(res.validate(data).valid ? "Valid" : "Invalid")
+            Promise.resolve(res.validate(data).valid ? "Valid" : "Invalid"),
           )
       : Promise.resolve("Invalid");
 
@@ -155,7 +155,9 @@ const validateEvent = (
         schema = IgluSchema.fromUri((sdj.data as SDJ).schema);
         if (schema)
           validations.push(
-            validate(schema, (sdj.data as SDJ).data).catch(() => "Unrecognised")
+            validate(schema, (sdj.data as SDJ).data).catch(
+              () => "Unrecognised",
+            ),
           );
         // this means data is not an SDJ. This is technically an invalid payload, but could just be old-style unstruct events.
         // the beacon view will show it as invalid, but to reduce UI noise, just pretend it's unrecognised because there is no
@@ -165,7 +167,7 @@ const validateEvent = (
         sdj.data.forEach((ctx: SDJ) => {
           schema = IgluSchema.fromUri(ctx.schema);
           validations.push(
-            validate(schema, ctx.data).catch(() => "Unrecognised")
+            validate(schema, ctx.data).catch(() => "Unrecognised"),
           );
         });
       } else {
@@ -200,7 +202,7 @@ const summariseBeacons = (
   index: number,
   resolver: Resolver,
   filter: RegExp | undefined,
-  updateValidity: StateUpdater<number>
+  updateValidity: StateUpdater<number>,
 ): IBeaconSummary[] => {
   const reqs = extractRequests(entry, index);
   const {
@@ -230,8 +232,8 @@ const summariseBeacons = (
             req.get("dtm") ||
             (req.get("_gid") ? req.get("_gid") + "000" : "").split(".").pop() ||
             "",
-          10
-        ) || +new Date()
+          10,
+        ) || +new Date(),
       ).toJSON(),
       validity: validateEvent(`#${id}-${i}`, req, resolver, updateValidity),
       collectorStatus: {
@@ -247,7 +249,7 @@ const summariseBeacons = (
         collector,
         collectorPath,
         method,
-        entry.response.status
+        entry.response.status,
       );
     }
 
@@ -277,7 +279,7 @@ const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
 
 const extractRequests = (
   entry: Entry,
-  index: number
+  index: number,
 ): {
   id: string;
   collector: string;
@@ -301,19 +303,19 @@ const extractRequests = (
 
   const nuid = extractNetworkUserId(entry.response.cookies);
   const ua = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "user-agent"
+    (x) => x.name.toLowerCase() === "user-agent",
   );
   const lang = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "accept-language"
+    (x) => x.name.toLowerCase() === "accept-language",
   );
   const refr = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "referer"
+    (x) => x.name.toLowerCase() === "referer",
   );
   const cl = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "content-length"
+    (x) => x.name.toLowerCase() === "content-length",
   );
   const ct = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "content-type"
+    (x) => x.name.toLowerCase() === "content-type",
   );
 
   if (req.method === "POST") {
@@ -333,7 +335,7 @@ const extractRequests = (
           payloadSize: cl.value,
           contentType: ct ? ct.value : "",
           stm: "" + +new Date(),
-        })
+        }),
       );
 
       if (nuid && nuid.value) beacon.set("nuid", nuid.value);
@@ -375,7 +377,7 @@ const extractRequests = (
           });
 
           const validGa = ga.filter((b) =>
-            GA_REQUIRED_FIELDS.every((k) => b.has(k))
+            GA_REQUIRED_FIELDS.every((k) => b.has(k)),
           );
           beacons.push.apply(beacons, validGa);
         } catch (urlErr) {
@@ -391,7 +393,7 @@ const extractRequests = (
   } else {
     const beacon: Map<string, string> = new Map();
     new URL(req.url).searchParams.forEach((value, key) =>
-      beacon.set(key, value)
+      beacon.set(key, value),
     );
     if (nuid && !beacon.has("nuid")) {
       beacon.set("nuid", nuid.value);
@@ -442,9 +444,9 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   const events = useMemo(
     () =>
       requests.map((batch, i) =>
-        summariseBeacons(batch, i, resolver, filter, updateValidity)
+        summariseBeacons(batch, i, resolver, filter, updateValidity),
       ),
-    [requests, resolver, filter, validity]
+    [requests, resolver, filter, validity],
   );
 
   const beacons = events.map((summaries) => {
@@ -498,7 +500,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         }
         return acc;
       }, acc),
-    [] as [string, VNode[]][]
+    [] as [string, VNode[]][],
   );
 
   useEffect(() => {
@@ -522,9 +524,9 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         addRequests,
         setModal,
         { ngrokStreaming, setNgrokStreaming },
-        { streamLock, setStreamLock }
+        { streamLock, setStreamLock },
       ),
-    [addRequests, setModal, ngrokStreaming, streamLock]
+    [addRequests, setModal, ngrokStreaming, streamLock],
   );
 
   useEffect(() => importHandler("ngrok"), [importHandler, ngrokStreaming]);
@@ -542,7 +544,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           importHandler(value as importers.ImporterFormat);
         }
       },
-      [importHandler]
+      [importHandler],
     );
 
   const exportButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
@@ -555,10 +557,10 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         exporters.exportToFormat(
           value as exporters.ExporterFormat,
           requests,
-          events
+          events,
         );
       },
-      [requests, events]
+      [requests, events],
     );
 
   return (

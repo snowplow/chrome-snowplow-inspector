@@ -28,7 +28,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
           "schema" in extracted &&
           "data" in extracted &&
           /^iglu:com.snowplowanalytics.snowplow\/unstruct_event\//.test(
-            extracted.schema
+            extracted.schema,
           )
         )
           Object.assign(event, {
@@ -43,7 +43,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
           "schema" in extracted &&
           "data" in extracted &&
           /^iglu:com.snowplowanalytics.snowplow\/contexts\//.test(
-            extracted.schema
+            extracted.schema,
           )
         )
           Object.assign(event, {
@@ -55,7 +55,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
     return JSON.stringify(
       [Object.assign({}, beacon, { payload: event })],
       null,
-      4
+      4,
     );
   },
   "URL - Get": ({ collector, payload }: IBeaconSummary) => {
@@ -88,10 +88,10 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
   "Snowplow CLI": ({ collector, payload }: IBeaconSummary) => {
     const aid = payload.get("aid");
     const ue = JSON.parse(
-      tryb64(payload.get("ue_pr") || payload.get("ue_px") || "{}")
+      tryb64(payload.get("ue_pr") || payload.get("ue_px") || "{}"),
     );
     const ctx = JSON.parse(
-      tryb64(payload.get("co") || payload.get("cx") || "{}")
+      tryb64(payload.get("co") || payload.get("cx") || "{}"),
     );
 
     const cmd = [

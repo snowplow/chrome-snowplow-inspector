@@ -32,7 +32,7 @@ const SCHEMA_TEMPLATE = `{
 
 const validateEdited = (
   text: string,
-  registry: Registry
+  registry: Registry,
 ): ResolvedIgluSchema | null => {
   const val: unknown = JSON.parse(text);
 
@@ -122,7 +122,7 @@ export const EditRegistrySchemas: FunctionComponent<{
               remove={() => removeEditableSchema(i)}
               schema={s}
             />
-          )
+          ),
       )}
       {added.map(
         (s, i) =>
@@ -132,7 +132,7 @@ export const EditRegistrySchemas: FunctionComponent<{
               remove={() => removeAddedSchema(i)}
               schema={s}
             />
-          )
+          ),
       )}
       <button
         type="button"
@@ -158,8 +158,8 @@ export const EditRegistrySchemas: FunctionComponent<{
                   file
                     .text()
                     .then((txt) => JSON.parse(txt))
-                    .catch()
-              )
+                    .catch(),
+              ),
             ).then((maybeSchemas) => {
               const found: string[] = [];
               maybeSchemas.forEach((schema) => {
@@ -183,10 +183,10 @@ export const EditSchemas: FunctionComponent<EditSchemasOptions> = ({
   setModal,
 }) => {
   const [editableSchemas, setEditableSchemas] = useState(() =>
-    registries.map(() => [] as (string | undefined)[])
+    registries.map(() => [] as (string | undefined)[]),
   );
   const [addedSchemas, setAddedSchemas] = useState(() =>
-    registries.map(() => [] as (string | undefined)[])
+    registries.map(() => [] as (string | undefined)[]),
   );
 
   useEffect(() => {
@@ -195,13 +195,13 @@ export const EditSchemas: FunctionComponent<EditSchemasOptions> = ({
         reg.walk().then((schemas) => {
           if (schemas.length) {
             return Promise.all(schemas.map((s) => reg.resolve(s))).then(
-              (results) => results.map((r) => JSON.stringify(r.data))
+              (results) => results.map((r) => JSON.stringify(r.data)),
             );
           } else {
             return Promise.resolve([""]);
           }
-        })
-      )
+        }),
+      ),
     ).then(setEditableSchemas);
   }, [registries]);
 

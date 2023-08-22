@@ -31,12 +31,12 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
   const filterRegistries = useCallback(
     (selections: Registry[]) =>
       setFilters((filters) => ({ ...filters, selections })),
-    []
+    [],
   );
 
   const clearSearch = useCallback(
     () => setFilters((filters) => ({ ...filters, search: undefined })),
-    []
+    [],
   );
 
   const [collapsed, setCollapsed] = useState(true);

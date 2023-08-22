@@ -17,9 +17,9 @@ export const immediatelyRequest = (batch: string[]) => {
             },
             () =>
               chrome.permissions.request({ origins: distinct }, (granted) =>
-                granted ? fulfil() : fail()
-              )
-          )
+                granted ? fulfil() : fail(),
+              ),
+          ),
         )
       : fail(distinct);
   });
@@ -44,7 +44,7 @@ const nextGesture = (missing: string[]) => {
 
 export const request = (...origins: string[]): Promise<void> => {
   const missing = origins.filter(
-    (origin, i, a) => !pending.has(origin) && a.indexOf(origin) === i
+    (origin, i, a) => !pending.has(origin) && a.indexOf(origin) === i,
   );
 
   if (missing.length) {
@@ -54,13 +54,13 @@ export const request = (...origins: string[]): Promise<void> => {
             if (granted) fulfil();
             else fail(missing);
           })
-        : fail(missing)
+        : fail(missing),
     ).catch(nextGesture);
 
     missing.forEach((origin) => pending.set(origin, p));
   }
 
   return Promise.all(
-    origins.map((origin) => pending.get(origin) || Promise.reject())
+    origins.map((origin) => pending.get(origin) || Promise.reject()),
   ).then();
 };

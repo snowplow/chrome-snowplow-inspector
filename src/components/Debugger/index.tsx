@@ -1,4 +1,4 @@
-import { Entry, Request } from "har-format";
+import { Entry } from "har-format";
 import { h, FunctionComponent } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
@@ -26,7 +26,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         return active.item.id === beacon.id;
       return false;
     },
-    [active]
+    [active],
   );
 
   const handleNewRequests = useCallback(
@@ -71,9 +71,9 @@ export const Debugger: FunctionComponent<IDebugger> = ({
                 event.startedDateTime === entry.startedDateTime &&
                 event.time === entry.time &&
                 event.request.url === entry.request.url &&
-                event._request_id === entry._request_id
-            )
-        )
+                event._request_id === entry._request_id,
+            ),
+        ),
       );
     });
 
@@ -81,7 +81,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
 
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(
-        handleNewRequests
+        handleNewRequests,
       );
     };
   }, []);

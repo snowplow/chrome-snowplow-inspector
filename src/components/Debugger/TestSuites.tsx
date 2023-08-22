@@ -35,7 +35,7 @@ const substitute = (s: string, params?: Record<string, string>) =>
         case "?":
           if (!val)
             throw Error(
-              `Required config parameter "${key}" not set (${mod.slice(1)})`
+              `Required config parameter "${key}" not set (${mod.slice(1)})`,
             );
           break;
       }
@@ -45,7 +45,7 @@ const substitute = (s: string, params?: Record<string, string>) =>
   });
 
 export const unpackSDJ = (
-  sdjs: { schema: string; data: any }[]
+  sdjs: { schema: string; data: any }[],
 ): Record<string, Record<string, any[]>> => {
   const result: Record<string, Record<string, any[]>> = {};
 
@@ -73,7 +73,7 @@ export const unpackSDJ = (
 const getTarget = (
   target: string,
   event: IBeaconSummary,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): string | undefined => {
   const path = substitute(target, params).split(".");
 
@@ -115,13 +115,13 @@ const getTarget = (
         ) {
           if (
             /^iglu:com.snowplowanalytics.snowplow\/contexts\//.test(
-              extracted.schema
+              extracted.schema,
             )
           ) {
             result = unpackSDJ(extracted.data);
           } else if (
             /^iglu:com.snowplowanalytics.snowplow\/unstruct_event\//.test(
-              extracted.schema
+              extracted.schema,
             )
           ) {
             result = unpackSDJ([extracted.data]);
@@ -141,7 +141,7 @@ const getTarget = (
 const evalCondition = (
   condition: TestSuiteCondition,
   event: IBeaconSummary,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): [boolean, string?] => {
   let target: string | undefined;
   try {
@@ -187,7 +187,7 @@ const evalCondition = (
 const evalTest = (
   test: TestSuiteCase,
   events: IBeaconSummary[],
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): TestSuiteResult => {
   const success: IBeaconSummary[] = [];
   const failure: IBeaconSummary[] = [];
@@ -247,7 +247,7 @@ const evalTest = (
 const runSuite = (
   spec: TestSuiteSpec,
   events: IBeaconSummary[],
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): TestSuiteResult => {
   const targeting = spec.targets || [];
   const targets = targeting.length
@@ -347,7 +347,7 @@ export const TestSuites: FunctionComponent<{
         } catch (e) {
           console.error("error parsing stored testSuites");
         }
-      }
+      },
     );
   }, []);
 
@@ -359,7 +359,7 @@ export const TestSuites: FunctionComponent<{
           setActive={setActive}
         />
       )),
-    [events, suites]
+    [events, suites],
   );
 
   return (
@@ -379,7 +379,7 @@ export const TestSuites: FunctionComponent<{
               setSuites: (newSuites: TestSuiteSpec[]) => {
                 chrome.storage.local.set(
                   { testSuites: JSON.stringify(newSuites) },
-                  () => setSuites(newSuites)
+                  () => setSuites(newSuites),
                 );
               },
             })

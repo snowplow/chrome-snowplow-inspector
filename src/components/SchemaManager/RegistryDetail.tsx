@@ -20,10 +20,10 @@ const EditableRegistry: FunctionComponent<{
   const [kind, setKind] = useState(registry.spec.kind);
   const [priority, setPriority] = useState(registry.priority || 0);
   const [vendorPrefixes, setVendorPrefixes] = useState(
-    registry.vendorPrefixes || []
+    registry.vendorPrefixes || [],
   );
   const [fieldVals, setFieldVals] = useState<Record<string, string>>(
-    registry.opts
+    registry.opts,
   );
 
   return (
@@ -91,7 +91,7 @@ const EditableRegistry: FunctionComponent<{
               value={fieldVals[field] || ""}
             />
           </label>
-        )
+        ),
       )}
       <label
         class="label"
@@ -118,7 +118,7 @@ const EditableRegistry: FunctionComponent<{
           size={Math.min(5, vendorPrefixes.length || 1)}
           onChange={(event) =>
             setVendorPrefixes(
-              event.currentTarget.value.split("\n").filter(Boolean)
+              event.currentTarget.value.split("\n").filter(Boolean),
             )
           }
           value={vendorPrefixes.join("\n")}

@@ -26,7 +26,7 @@ export class IgluSchema {
     readonly vendor: string,
     readonly name: string,
     readonly format: string,
-    readonly version: string
+    readonly version: string,
   ) {}
 
   static fromUri(uri?: IgluUri): IgluSchema | null {
@@ -42,14 +42,14 @@ export class IgluSchema {
 
   resolve(
     potentialSchema: unknown,
-    registry: Registry
+    registry: Registry,
   ): ResolvedIgluSchema | null {
     if (typeof potentialSchema === "object" && potentialSchema) {
       if ("$schema" in potentialSchema) {
         const { $schema } = potentialSchema as { $schema: string };
         if ($schema === $SCHEMA && "self" in potentialSchema) {
           const schema = JSON.parse(
-            canonicalize(potentialSchema) || JSON.stringify(potentialSchema)
+            canonicalize(potentialSchema) || JSON.stringify(potentialSchema),
           ) as SelfDescribingSchema;
           const { vendor, name, format, version } = schema.self;
           const matches =
@@ -94,7 +94,7 @@ export class ResolvedIgluSchema extends IgluSchema {
   constructor(
     readonly registry: Registry,
     readonly self: IgluSchema,
-    readonly data: SelfDescribingSchema
+    readonly data: SelfDescribingSchema,
   ) {
     super(self.vendor, self.name, self.format, self.version);
   }

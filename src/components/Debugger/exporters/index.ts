@@ -23,7 +23,7 @@ export type ExporterFormat = keyof typeof formats;
 export const exportToFormat = (
   format: ExporterFormat,
   requests: Entry[],
-  events: IBeaconSummary[][]
+  events: IBeaconSummary[][],
 ) => {
   const fakeA = document.createElement("a");
 

@@ -15,6 +15,6 @@ export default (requests: Entry[]): File => {
 
   return new File(
     [new Blob([JSON.stringify(har)], { type: "application/json" })],
-    "Snowplow Inspector Export.har"
+    "Snowplow Inspector Export.har",
   );
 };

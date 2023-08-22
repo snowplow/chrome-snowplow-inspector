@@ -55,7 +55,7 @@ export class StaticRegistry extends Registry {
           const origins = [`*://${this.base.host}/*`];
           if (this.manifest) origins.push(`*://${this.manifest.host}/*`);
           return this.requestPermissions(...origins).then(() =>
-            this.fetch(schemaPath)
+            this.fetch(schemaPath),
           );
         } else return Promise.reject(reason.message);
       })
@@ -76,7 +76,7 @@ export class StaticRegistry extends Registry {
       if (this.vendorPrefixes && this.vendorPrefixes.length) {
         if (
           !this.vendorPrefixes.some((prefix) =>
-            schema.vendor.startsWith(prefix)
+            schema.vendor.startsWith(prefix),
           )
         ) {
           const mismatch = Promise.reject("PREFIX_MISMATCH");
@@ -142,7 +142,7 @@ export class StaticRegistry extends Registry {
                   (typeof val === "object" &&
                     !!val &&
                     objHasProperty(val, "path") &&
-                    typeof val["path"] === "string")
+                    typeof val["path"] === "string"),
               )
               .map((almostSchema): IgluUri | null => {
                 const maybeUri =
@@ -151,7 +151,7 @@ export class StaticRegistry extends Registry {
                     : almostSchema.path;
                 const schemaparts =
                   /(([^\/]+)\/([^\/]+)\/jsonschema\/([\d+]-[\d+]-[\d+]))(\.json(schema)?)?$/i.exec(
-                    maybeUri
+                    maybeUri,
                   );
 
                 if (schemaparts) {
@@ -163,7 +163,7 @@ export class StaticRegistry extends Registry {
                 } else return schemaparts;
               })
               .map((uri) => uri && IgluSchema.fromUri(uri))
-              .filter((schema): schema is IgluSchema => schema !== null)
+              .filter((schema): schema is IgluSchema => schema !== null),
           );
         } else return Promise.resolve([]);
       });
@@ -171,7 +171,7 @@ export class StaticRegistry extends Registry {
 
   _walk() {
     const cached = Array.from(this.cache.values()).map((p) =>
-      p.catch(() => null)
+      p.catch(() => null),
     );
     return Promise.all([this.parseManifest(), Promise.all(cached)])
       .then(([claimed, cached]) => {

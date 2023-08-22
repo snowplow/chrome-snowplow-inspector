@@ -13,7 +13,7 @@ export interface EditRegistriesOptions extends ModalOptions {
 
 const checkRegistries = (
   existing: Registry[],
-  setCounts: StateUpdater<number[]>
+  setCounts: StateUpdater<number[]>,
 ) =>
   Promise.all(
     existing.map((r, i) =>
@@ -22,16 +22,16 @@ const checkRegistries = (
         .then(() => r.walk())
         .then(
           (x) => length,
-          () => 0
-        )
-    )
+          () => 0,
+        ),
+    ),
   ).then(setCounts);
 
 const modelRegistries = (form: HTMLFormElement, existing: Registry[]) =>
   Array.from(form.elements)
     .filter(
       (field): field is HTMLFieldSetElement =>
-        field instanceof HTMLFieldSetElement
+        field instanceof HTMLFieldSetElement,
     )
     .reduce<RegistrySpec[]>((acc, fs) => {
       const options = Array.from(fs.elements);

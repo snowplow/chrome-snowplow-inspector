@@ -25,7 +25,7 @@ export const importFromFormat = (
   {
     streamLock,
     setStreamLock,
-  }: { streamLock: number; setStreamLock: StateUpdater<number> }
+  }: { streamLock: number; setStreamLock: StateUpdater<number> },
 ) => {
   switch (format) {
     case "bad":

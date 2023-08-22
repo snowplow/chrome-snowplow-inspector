@@ -110,7 +110,7 @@ const validateTestSuite = (text: string): TestSuiteSpec => {
     throw Error("Test Suite name must be a string");
   if (objHasProperty(val, "tests") && objHasProperty(val, "conditions"))
     throw Error(
-      "Test Suite may only contain its own conditions or other tests"
+      "Test Suite may only contain its own conditions or other tests",
     );
 
   if (objHasProperty(val, "targets")) {
@@ -143,7 +143,7 @@ const validateTestSuite = (text: string): TestSuiteSpec => {
   } else if (objHasProperty(val, "conditions")) {
     if (!Array.isArray(val.conditions) || !val.conditions.length)
       throw Error(
-        "Test Suite conditions must be an array of at least one condition"
+        "Test Suite conditions must be an array of at least one condition",
       );
 
     try {
@@ -154,7 +154,7 @@ const validateTestSuite = (text: string): TestSuiteSpec => {
     }
   } else {
     throw Error(
-      "One of 'tests' or 'conditions' must be supplied in a Test Suite"
+      "One of 'tests' or 'conditions' must be supplied in a Test Suite",
     );
   }
 

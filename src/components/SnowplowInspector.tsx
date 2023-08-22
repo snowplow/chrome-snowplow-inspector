@@ -1,4 +1,4 @@
-import { Entry, Har } from "har-format";
+import { Entry } from "har-format";
 import { h, FunctionComponent, Fragment } from "preact";
 import {
   useCallback,
@@ -39,7 +39,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           ? 0
           : a.startedDateTime < b.startedDateTime
           ? -1
-          : 1
+          : 1,
       );
 
       return merged;
@@ -59,7 +59,7 @@ export const SnowplowInspector: FunctionComponent = () => {
       }
       setActiveModal(modalName);
     },
-    [modalOpts]
+    [modalOpts],
   );
 
   const app = [];
@@ -73,7 +73,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           events={events}
           resolver={resolver}
           setModal={setModal}
-        />
+        />,
       );
       break;
     case "schemaManager":

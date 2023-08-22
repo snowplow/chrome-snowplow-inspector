@@ -18,7 +18,7 @@ const seenEndpoints: { [tracker: string]: string[] } = {};
 export const trackerAnalytics = (
   collector: string,
   pageUrl?: string,
-  appId?: string
+  appId?: string,
 ) => {
   if (!pageUrl) {
     return;
@@ -57,10 +57,11 @@ export const trackerAnalytics = (
 
 export const endpointAnalytics = (
   tracker: string,
+  appId: string,
   collector: string,
   collectorPath: string,
   method: string,
-  status: number
+  status: number,
 ) => {
   collector = collector.toLowerCase();
   const endpointKey = [tracker, collector, collectorPath, method].join(":");
@@ -89,7 +90,7 @@ export const endpointAnalytics = (
 export const repoAnalytics = (
   kind: RegistrySpec["kind"],
   name: string,
-  uri?: URL
+  uri?: URL,
 ) => {
   chrome.storage.sync.get({ enableTracking: true }, (settings) => {
     if (settings.enableTracking) {

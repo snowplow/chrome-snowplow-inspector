@@ -63,10 +63,10 @@ export class IgluRegistry extends Registry {
               this.spec.name,
               schema.vendor,
               prefix,
-              schema.vendor.startsWith(prefix)
+              schema.vendor.startsWith(prefix),
             ),
             schema.vendor.startsWith(prefix)
-          )
+          ),
         )
       )
         return Promise.reject("PREFIX_MISMATCH");
@@ -96,12 +96,12 @@ export class IgluRegistry extends Registry {
       .then((text) =>
         text === "OK"
           ? this.fetch("api/meta/health/db").then((resp) => resp.text())
-          : Promise.reject("REGISTRY_ERROR")
+          : Promise.reject("REGISTRY_ERROR"),
       )
       .then((text) =>
         text === "OK"
           ? this.fetch("api/meta/server").then((resp) => resp.json())
-          : Promise.reject("REGISTRY_DB_ERROR")
+          : Promise.reject("REGISTRY_DB_ERROR"),
       )
       .then<RegistryStatus>((json) => {
         Object.assign(this.opts, json);

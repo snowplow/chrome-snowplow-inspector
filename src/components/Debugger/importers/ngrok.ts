@@ -9,7 +9,7 @@ const ngrokStreamInterval: number = 1500;
 export default (
   cb: (entries: Entry[]) => void,
   ngrokStreaming: boolean,
-  setNgrokStreaming: StateUpdater<boolean>
+  setNgrokStreaming: StateUpdater<boolean>,
 ) => {
   let ngrokStreamLock = -1;
 
@@ -36,13 +36,13 @@ export default (
                   cb(entries);
                   ngrokStreamLock = window.setTimeout(
                     pollStream,
-                    ngrokStreamInterval
+                    ngrokStreamInterval,
                   );
                 })
                 .catch(() => setNgrokStreaming(false));
-            })
+            }),
           );
-        }
+        },
       );
     }, 0);
   }

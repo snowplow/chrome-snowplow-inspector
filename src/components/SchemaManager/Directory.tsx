@@ -66,7 +66,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
   watermark,
 }) => {
   const [catalog, setCatalog] = useState<(IgluSchema | ResolvedIgluSchema)[]>(
-    []
+    [],
   );
 
   useEffect(
@@ -86,7 +86,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
             return filterHit && (!search || s.like(search));
           })
         : catalog,
-    [selections, search, catalog]
+    [selections, search, catalog],
   );
 
   const directory: SchemaDirectory = useMemo(
@@ -100,7 +100,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
 
         return acc;
       }, {} as SchemaDirectory),
-    [filtered]
+    [filtered],
   );
 
   const listings = useMemo(
@@ -141,7 +141,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                           .map((d) =>
                             d instanceof ResolvedIgluSchema
                               ? canonicalize(d.data) || JSON.stringify(d.data)
-                              : d.uri()
+                              : d.uri(),
                           )
                           .map((d, _, a) => a.indexOf(d))
                           .reduce<Registry[][]>((canon, e, i) => {
@@ -156,11 +156,11 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                           .map(
                             (
                               registries,
-                              i
+                              i,
                             ): [
                               Registry[],
-                              IgluSchema | ResolvedIgluSchema
-                            ] => [registries, deployments[i]]
+                              IgluSchema | ResolvedIgluSchema,
+                            ] => [registries, deployments[i]],
                           )
                           .map(([registries, deployment]) => ({
                             val:
@@ -189,16 +189,16 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                                 {val}
                               </textarea>
                             </details>
-                          ))
+                          )),
                     )}
                   </details>
                 ))}
               </details>
-            )
+            ),
           )}
         </details>
       )),
-    [directory]
+    [directory],
   );
 
   return (

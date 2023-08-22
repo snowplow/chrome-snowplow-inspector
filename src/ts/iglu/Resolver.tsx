@@ -37,7 +37,7 @@ export class Resolver extends Registry {
           repoAnalytics(
             built.spec.kind,
             built.spec.name,
-            built.spec.uri && new URL(built.spec.uri)
+            built.spec.uri && new URL(built.spec.uri),
           );
           this.registries.push(built);
         }
@@ -67,9 +67,9 @@ export class Resolver extends Registry {
                   kindPriority.indexOf(b.spec.kind);
 
               return result;
-            })
+            }),
           );
-      }
+      },
     );
   }
 
@@ -90,7 +90,7 @@ export class Resolver extends Registry {
                 const { vendor, name, format, version } = data["self"];
 
                 const built = IgluSchema.fromUri(
-                  `iglu:${vendor}/${name}/${format}/${version}`
+                  `iglu:${vendor}/${name}/${format}/${version}`,
                 );
                 if (built) {
                   const res = built.resolve(data, this);
@@ -103,7 +103,7 @@ export class Resolver extends Registry {
 
             let registry = this.registries.find(
               ({ spec: { kind, name } }) =>
-                kind === "local" && name === MIGRATION_NAME
+                kind === "local" && name === MIGRATION_NAME,
             );
             if (!registry)
               this.registries.push(
@@ -111,7 +111,7 @@ export class Resolver extends Registry {
                   kind: "local",
                   name: MIGRATION_NAME,
                   priority: 0,
-                }))
+                })),
               );
 
             ls[registry.id] = (ls[registry.id] || []).concat(schemas);
@@ -121,10 +121,10 @@ export class Resolver extends Registry {
                 schemalist: remainder,
                 localSchemas: JSON.stringify(ls),
               },
-              fulfil
+              fulfil,
             );
           } else fulfil();
-        }
+        },
       );
     });
   }
@@ -155,11 +155,15 @@ export class Resolver extends Registry {
               name: legacy,
               uri: uri.origin + uri.pathname,
               apiKey: uri.username,
-            })
+            }),
           );
         } else {
           migrated.push(
-            buildRegistry({ kind: "static", name: uri.hostname, uri: uri.href })
+            buildRegistry({
+              kind: "static",
+              name: uri.hostname,
+              uri: uri.href,
+            }),
           );
         }
       }
@@ -189,13 +193,13 @@ export class Resolver extends Registry {
 
             return Promise.reject(res);
           },
-          () => Promise.resolve()
-        )
-      )
+          () => Promise.resolve(),
+        ),
+      ),
     )
       .then(
         () => Promise.reject(), // everything rejected
-        (res: ResolvedIgluSchema) => Promise.resolve(res) // successfully found schema
+        (res: ResolvedIgluSchema) => Promise.resolve(res), // successfully found schema
       )
       .then((res) => {
         if (exclude !== undefined) exclude.push(res.registry);
@@ -207,7 +211,7 @@ export class Resolver extends Registry {
 
   status() {
     return Promise.all(this.registries.map((r) => r.status())).then((s) =>
-      s.reduce((res, s) => (s === "OK" ? res : "UNHEALTHY"), "OK")
+      s.reduce((res, s) => (s === "OK" ? res : "UNHEALTHY"), "OK"),
     );
   }
 
@@ -226,8 +230,8 @@ export class Resolver extends Registry {
             }
 
             return schemas;
-          })
-      )
+          }),
+      ),
     ).then((args) => {
       return ([] as IgluSchema[]).concat(...args);
     });
@@ -252,7 +256,7 @@ export class Resolver extends Registry {
     for (const [key, regs] of this.hitCache) {
       this.hitCache.set(
         key,
-        regs.filter((reg) => !remIds.has(reg.id))
+        regs.filter((reg) => !remIds.has(reg.id)),
       );
     }
 
@@ -306,8 +310,8 @@ export class Resolver extends Registry {
         {
           registries: this.registries.map((r) => JSON.stringify(r)),
         },
-        fulfil
-      )
+        fulfil,
+      ),
     );
   }
 }

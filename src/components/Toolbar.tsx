@@ -12,11 +12,11 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
 }) => {
   const changeToSchemaManager = useCallback(
     () => changeApp("schemaManager"),
-    [changeApp]
+    [changeApp],
   );
   const changeToDebugger = useCallback(
     () => changeApp("debugger"),
-    [changeApp]
+    [changeApp],
   );
 
   switch (application) {

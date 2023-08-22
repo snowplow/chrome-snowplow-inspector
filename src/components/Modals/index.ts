@@ -28,5 +28,5 @@ export interface ModalOptions {
 
 export type ModalSetter = (
   modal?: Modal,
-  opts?: Omit<ModalOptions, "setModal">
+  opts?: Omit<ModalOptions, "setModal">,
 ) => void;

@@ -58,7 +58,7 @@ export abstract class Registry {
   walk(): ReturnType<Registry["_walk"]> {
     if (this.walkLock) return this.walkLock;
     return (this.walkLock = this._walk().finally(
-      () => (this.walkLock = undefined)
+      () => (this.walkLock = undefined),
     ));
   }
 
