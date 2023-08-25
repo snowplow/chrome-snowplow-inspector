@@ -17,5 +17,10 @@
     flex-flow: column nowrap;
     align-items: stretch;
     gap: 1rem;
+
+    &:after {
+      content: " ";
+      white-space: pre;
+    }
   }
 }

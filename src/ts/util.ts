@@ -162,8 +162,6 @@ const copyToClipboard = (text: string): void => {
   if (cb === null) {
     cb = document.createElement("textarea") as HTMLTextAreaElement;
     cb.id = "clipboard";
-    cb.style.position = "relative";
-    cb.style.left = "-10000px";
     document.body.appendChild(cb);
   }
 

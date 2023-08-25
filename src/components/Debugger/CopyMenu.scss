@@ -2,8 +2,8 @@
   position: fixed;
   box-sizing: border-box;
   bottom: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid currentColor;
   border-radius: 100%;
   appearance: none;
@@ -11,6 +11,11 @@
   &:active {
     width: auto;
     border-radius: 0 0 0.25rem 0.25rem;
+    text-decoration: none;
+  }
+
+  &:focus {
+    text-decoration: none;
   }
 
   &:hover {
@@ -22,4 +27,6 @@
   width: 0;
   height: 0;
   flex: 0;
+  position: fixed;
+  left: -10000px;
 }
