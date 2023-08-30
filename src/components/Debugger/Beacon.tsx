@@ -39,6 +39,7 @@ function parseBeacon({
   collector,
   method,
   payload,
+  serverAnonymous,
 }: IBeaconSummary): IBeaconDetails {
   const result: IBeaconDetails = {
     appId: printableValue(payload.get("aid"), protocol.paramMap.aid),
@@ -56,14 +57,14 @@ function parseBeacon({
       protocol.paramMap.stm,
     ),
     payload,
+    serverAnonymous,
   };
 
   const seen = new Set<string>();
 
   if (payload.has("e")) {
     for (const gp of protocol.groupPriorities) {
-      const name = gp.name;
-      const fields = gp.fields;
+      const { name, fields } = gp;
       const rows: FieldDetail[] = [];
 
       for (const field of fields) {
@@ -77,6 +78,14 @@ function parseBeacon({
           rows.push([finfo.name, val, genClasses(finfo)]);
           seen.add(field);
         }
+      }
+
+      if (name === "User" && rows.length) {
+        rows.push([
+          "Server Anonymization",
+          serverAnonymous ? "Enabled" : "Disabled",
+          "",
+        ]);
       }
 
       if (rows.length) {
@@ -389,8 +398,13 @@ const BeaconHeader: FunctionComponent<
   Omit<IBeaconDetails, "data" | "payload"> & {
     resolver: Resolver;
   }
-> = ({ appId, collector, method, name, resolver, time }) => {
+> = ({ appId, collector, method, name, resolver, serverAnonymous, time }) => {
   const dt = new Date(time);
+  const anonDesc = [
+    "This event was sent in a request with the SP-Anonymous header.",
+    "The IP and Network User ID will not be included in the payload sent to the Enricher.",
+  ].join("\n ");
+
   return (
     <RowSet key="Core" setName="Core">
       <tr>
@@ -429,6 +443,14 @@ const BeaconHeader: FunctionComponent<
           <BeaconValue obj={method} resolver={resolver} />
         </td>
       </tr>
+      {serverAnonymous ? (
+        <tr title={anonDesc}>
+          <th>Server Anonymization</th>
+          <td>
+            <BeaconValue obj={serverAnonymous} resolver={resolver} />
+          </td>
+        </tr>
+      ) : null}
     </RowSet>
   );
 };

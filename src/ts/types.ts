@@ -59,6 +59,7 @@ export interface IBeaconSummary {
   payload: Map<string, string>;
   time: string;
   validity: BeaconValidity;
+  serverAnonymous: boolean;
   collectorStatus: {
     code: number;
     text: string;
@@ -77,6 +78,7 @@ export interface IBeaconDetails {
   name: string;
   time: string;
   payload?: IBeaconSummary["payload"];
+  serverAnonymous: boolean;
 }
 
 export interface ICache {
