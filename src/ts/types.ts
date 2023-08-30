@@ -20,7 +20,20 @@ interface SyncOptions {
   repolist: string[];
 }
 
+export interface IConsoleStatus {
+  resolver: Resolver;
+  setModal: ModalSetter;
+}
+
 export type ExtensionOptions = LocalOptions & SyncOptions;
+
+export type OAuthIdentity = {
+  iss: string;
+  name: string;
+  sub: string;
+  updated_at: string;
+  picture: string;
+};
 
 export interface IDebugger {
   addRequests: (requests: Entry[]) => void;
@@ -81,6 +94,8 @@ export interface IErrorMessageSet {
 export interface IToolbar {
   application: Application;
   changeApp: StateUpdater<Application>;
+  setModal: ModalSetter;
+  resolver: Resolver;
 }
 
 export interface IRowSet {
@@ -102,6 +117,7 @@ export interface IBeacon {
   activeBeacon: IBeaconSummary;
   resolver: Resolver;
   setModal: ModalSetter;
+  pipelines: PipelineInfo[];
 }
 
 export interface IBadRowsSummary {
@@ -112,6 +128,24 @@ export interface IBadRowsSummary {
 export interface ITomcatImport {
   [fieldName: string]: string | { [header: string]: string };
 }
+
+export type PipelineInfo = {
+  id: string;
+  organization: string;
+  organizationName: string;
+  domain: string;
+  domains: string[];
+  enrichments: {
+    id: string;
+    filename: string;
+    lastUpdate: string;
+    enabled: boolean;
+    content: unknown;
+  }[];
+  resource: "minis" | "pipelines";
+  cleanEndpoint: string | undefined;
+  cloudProvider: string;
+};
 
 export interface RegistrySpec {
   kind: "local" | "ds" | "static" | "iglu";

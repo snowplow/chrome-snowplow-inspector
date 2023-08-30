@@ -1,0 +1,15 @@
+.console {
+  margin-right: 1.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+
+  &:disabled {
+    color: var(--color-text);
+  }
+
+  img {
+    max-height: 2rem;
+    margin-right: 0.5rem;
+  }
+}

@@ -88,7 +88,12 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   return (
     <>
-      <Toolbar changeApp={setApplication} application={application} />
+      <Toolbar
+        changeApp={setApplication}
+        application={application}
+        setModal={setModal}
+        resolver={resolver}
+      />
       {app}
     </>
   );

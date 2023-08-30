@@ -27,7 +27,7 @@
   "author": "Snowplow Australia",
   "minimum_chrome_version": "88.0",
   "devtools_page": "devtools.html",
-  "permissions": ["storage"],
+  "permissions": ["identity", "storage"],
   "host_permissions": ["https://iglucentral.com/*"],
   "optional_host_permissions": ["*://*/*"]
 }

@@ -2,7 +2,12 @@ import { Entry } from "har-format";
 import { h, FunctionComponent } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
-import { DisplayItem, IBeaconSummary, IDebugger } from "../../ts/types";
+import {
+  DisplayItem,
+  IBeaconSummary,
+  IDebugger,
+  PipelineInfo,
+} from "../../ts/types";
 import { isSnowplow } from "../../ts/util";
 
 import { Beacon } from "./Beacon";
@@ -19,6 +24,15 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   setModal,
 }) => {
   const [active, setActive] = useState<DisplayItem>();
+  const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
+
+  useEffect(
+    () =>
+      chrome.storage.local.get({ pipelines: "[]" }, ({ pipelines }) => {
+        setPipelines(JSON.parse(pipelines));
+      }),
+    [],
+  );
 
   const isActive = useCallback(
     (beacon: IBeaconSummary) => {
@@ -91,6 +105,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
               activeBeacon={active.item}
               resolver={resolver}
               setModal={setModal}
+              pipelines={pipelines}
             />
           ) : null}
         </div>

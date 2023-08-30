@@ -3,12 +3,14 @@ import { useCallback } from "preact/hooks";
 
 import { landingUrl } from "../ts/analytics";
 import { IToolbar } from "../ts/types";
+import { ConsoleStatus } from "./ConsoleStatus";
 
 import "./Toolbar.scss";
 
 const ToolbarView: FunctionComponent<IToolbar> = ({
   application,
   changeApp,
+  setModal,
 }) => {
   const changeToSchemaManager = useCallback(
     () => changeApp("schemaManager"),
@@ -53,5 +55,6 @@ export const Toolbar: FunctionComponent<IToolbar> = (props) => (
     <nav class="toolbar__buttons">
       <ToolbarView {...props} />
     </nav>
+    <ConsoleStatus setModal={props.setModal} resolver={props.resolver} />
   </header>
 );
