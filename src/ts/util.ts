@@ -730,11 +730,11 @@ const chunkEach = <T>(
           chunk = chunk.filter((_, j) => j !== i);
         }
 
-        if (chunk.length) return step(chunk);
+        if (chunk.length && !(aborter?.aborted ?? false)) return step(chunk);
       });
     };
 
-    return step(chunk);
+    fulfil(step(chunk));
   });
 };
 
