@@ -1,5 +1,6 @@
 import { h, FunctionComponent } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
+import { Validator } from "jsonschema";
 
 import {
   DisplayItem,
@@ -13,6 +14,8 @@ import { tryb64 } from "../../ts/util";
 import { ModalSetter } from "../Modals";
 
 import "./TestSuites.scss";
+
+const validator = new Validator();
 
 const substitute = (s: string, params?: Record<string, string>) =>
   s.replace(/(^|.)\{([^}])\}/g, (full, prefix, lookup): string => {
@@ -169,9 +172,25 @@ const evalCondition = (
       }
     case "exists":
       return [typeof target !== "undefined", target];
+    case "not_exists":
+      return [typeof target === "undefined", target];
     case "matches":
       const re = new RegExp(condition.value, "i");
       return [target != null ? re.test(target) : false, target];
+    case "validates":
+      const subject = JSON.parse(target || "null");
+
+      // Our metadata might fail validation if additionalProperties = false
+      if (typeof subject === "object" && subject) {
+        delete subject["$format"];
+        delete subject["$vendor"];
+        delete subject["$version"];
+        delete subject["$name"];
+      }
+
+      const validation = validator.validate(subject, condition.value);
+
+      return [validation.valid, target];
     case "one_of":
       return [
         Array.isArray(condition.value)

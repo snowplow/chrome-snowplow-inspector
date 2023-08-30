@@ -165,6 +165,10 @@ export type TestSuiteCondition = {
     }
   | {
       target: string;
+      operator: "not_exists";
+    }
+  | {
+      target: string;
       operator: "matches";
       value: string;
     }
@@ -177,6 +181,11 @@ export type TestSuiteCondition = {
       target: string;
       operator: "equals";
       value: any;
+    }
+  | {
+      target: string;
+      operator: "validates";
+      value: Schema;
     }
 );
 

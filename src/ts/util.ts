@@ -1,7 +1,14 @@
-import { Cookie, Entry, Har, Header, Request } from "har-format";
+import { Cookie, Entry, Header, Request } from "har-format";
+import { Schema } from "jsonschema";
+
 import { protocol } from "./protocol";
 import { schemas, decodeB64Thrift } from "./thriftcodec";
-import { ITomcatImport, NgrokEvent } from "./types";
+import {
+  ITomcatImport,
+  NgrokEvent,
+  TestSuiteCondition,
+  TestSuiteSpec,
+} from "./types";
 
 /*
   This looks for requests matching known Snowplow endpoints.
@@ -46,10 +53,207 @@ const isSnowplow = (request: Request): boolean => {
   return false;
 };
 
-const uuidv4 = (): string =>
-  "00000000-0000-4000-8000-000000000000".replace(/0/g, () =>
-    Math.floor(Math.random() * 17).toString(16),
+type TrackingScenario = {
+  id: string;
+  message: string;
+  date: string;
+  version: number;
+  status: "draft" | "published" | "deprecated";
+  name: string;
+  author: string;
+  owner?: string;
+  dataProductId?: string;
+  description?: string;
+  appIds?: string[];
+  triggers?: string[];
+  event?: {
+    source: string;
+    schema?: Schema;
+  };
+  entities?: {
+    tracked?: {
+      source: string;
+      minCardinality?: number;
+      maxCardinality?: number;
+    }[];
+    enriched?: {
+      source: string;
+      minCardinality?: number;
+      maxCardinality?: number;
+    }[];
+  };
+};
+
+const specFromTrackingScenario = (
+  scenario: TrackingScenario,
+): TestSuiteSpec => {
+  const triggers = scenario.triggers || [];
+  const triggerText = triggers.length
+    ? "Should trigger when:\n- " + triggers.join("\n- ")
+    : "";
+
+  let uncheckableWarning = "";
+  if (scenario.entities && scenario.entities.enriched) {
+    uncheckableWarning =
+      "Entities added during enrichment will not be validated.";
+  }
+
+  const description = `${scenario.description || "No description found."}
+
+  ${triggerText}
+
+  ${uncheckableWarning}
+
+  Tracking Scenario Information:
+  Version: ${scenario.version}
+  Status: ${scenario.status}
+  Last Modified: ${scenario.date}
+  Owner: ${scenario.owner || "Nobody"}
+  Scenario ID: ${scenario.id}
+  Author ID: ${scenario.author}
+  Message: ${scenario.message}
+  `;
+
+  const targets: TestSuiteSpec["targets"] = [];
+  const conditions: TestSuiteCondition[] = [];
+
+  if (scenario.appIds && scenario.appIds.length) {
+    targets.push({
+      type: "condition",
+      operator: "one_of",
+      value: scenario.appIds,
+      target: "payload.aid",
+      description: "Scenario applies to specific App IDs.",
+    });
+  }
+
+  if (scenario.event) {
+    const { source, schema } = scenario.event;
+    const [vendor, name, format, version] = source
+      .replace("iglu:", "")
+      .replace(/\./g, "_")
+      .split("/");
+
+    targets.push({
+      type: "condition",
+      operator: "exists",
+      target: `payload.unstruct.${vendor}.${name}`,
+    });
+    conditions.push(
+      {
+        type: "condition",
+        operator: "equals",
+        target: `payload.unstruct.${vendor}.${name}.$format`,
+        value: format,
+      },
+      {
+        type: "condition",
+        operator: "equals",
+        target: `payload.unstruct.${vendor}.${name}.$version`,
+        value: version,
+      },
+    );
+
+    if (schema) {
+      targets.push({
+        type: "condition",
+        operator: "validates",
+        target: `payload.unstruct.${vendor}.${name}.[0]`,
+        value: schema,
+      });
+    }
+  }
+
+  (scenario.entities?.tracked || []).forEach(
+    ({ source, minCardinality, maxCardinality }) => {
+      const [vendor, name, format, version] = source
+        .replace("iglu:", "")
+        .replace(/\./g, "_")
+        .split("/");
+
+      conditions.push({
+        type: "condition",
+        operator: "exists",
+        target: `payload.context.${vendor}.${name}`,
+      });
+
+      if (minCardinality) {
+        for (let i = 0; i < minCardinality; i++) {
+          conditions.push({
+            type: "condition",
+            operator: "exists",
+            target: `payload.context.${vendor}.${name}.[${i}]`,
+            description: `Check ${vendor}/${name} minCardinality of ${minCardinality}`,
+          });
+        }
+      }
+
+      if (maxCardinality) {
+        conditions.push({
+          type: "condition",
+          operator: "not_exists",
+          target: `payload.context.${vendor}.${name}.[${maxCardinality + 1}]`,
+          description: `Check ${vendor}/${name} maxCardinality of ${maxCardinality}`,
+        });
+      }
+    },
   );
+
+  return {
+    type: "case",
+    combinator: "and",
+    name: scenario.name,
+    description,
+    targets,
+    conditions,
+  };
+};
+
+const specFromTrackingScenarios = (
+  name: string,
+  scenarios: TrackingScenario[],
+): TestSuiteSpec => {
+  const DEFAULT_GROUP = "ungrouped";
+  const groups: Record<string, TrackingScenario[]> = {};
+  scenarios.forEach((s) => {
+    const group = s.dataProductId || DEFAULT_GROUP;
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(s);
+  });
+
+  const tests = Object.entries(groups).flatMap(
+    ([group, items]): TestSuiteSpec[] => {
+      if (group === DEFAULT_GROUP) {
+        return items.map(specFromTrackingScenario);
+      } else {
+        return [
+          {
+            type: "group",
+            name: group,
+            description: `Tracking Scenarios for the ${group} Data Product.`,
+            tests: items.map(specFromTrackingScenario),
+            combinator: "and",
+          },
+        ];
+      }
+    },
+  );
+
+  return {
+    name: `${name} Scenarios`,
+    description: `Tests generated from tracking scenarios defined in the ${name} console.`,
+    type: "group",
+    combinator: "and",
+    tests,
+  };
+};
+
+const uuidv4 = (): string =>
+  crypto.randomUUID
+    ? crypto.randomUUID()
+    : "00000000-0000-4000-8000-000000000000".replace(/0/g, () =>
+        Math.floor(Math.random() * 17).toString(16),
+      );
 
 const hash = (bytes: string): string => {
   let h = 5381;
@@ -654,4 +858,5 @@ export {
   uuidv4,
   sorted,
   parseNgrokRequests,
+  specFromTrackingScenarios,
 };
