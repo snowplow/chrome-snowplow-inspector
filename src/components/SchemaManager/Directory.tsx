@@ -9,7 +9,7 @@ import {
   Resolver,
   IgluUri,
 } from "../../ts/iglu";
-import { chunkEach, colorOf, sorted } from "../../ts/util";
+import { chunkEach, colorOf } from "../../ts/util";
 
 interface SchemaDirectory {
   [vendor: string]: VendorDirectory;
@@ -83,7 +83,7 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
 
   const filtered = useMemo(
     () =>
-      selections.length || search
+      (selections.length || search
         ? catalog.filter((s) => {
             const filterHit =
               !selections.length ||
@@ -92,13 +92,19 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
                 : false);
             return filterHit && (!search || s.like(search));
           })
-        : catalog,
+        : catalog
+      ).sort((a, b) => {
+        const ua = a.uri(),
+          ub = b.uri();
+        if (ua === ub) return 0;
+        return ua < ub ? -1 : 1;
+      }),
     [selections, search, catalog],
   );
 
   const directory: SchemaDirectory = useMemo(
     () =>
-      sorted(filtered, (s) => s.uri()).reduce((acc, el) => {
+      filtered.reduce((acc, el) => {
         const v = (acc[el.vendor] = acc[el.vendor] || {});
         const n = (v[el.name] = v[el.name] || {});
         const f = (n[el.format] = n[el.format] || {});
@@ -135,86 +141,79 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
           }}
         >
           <summary>{vendor}</summary>
-          {sorted(Object.entries(schemas), (x) => x[0]).map(
-            ([name, formats]) => (
-              <details class="name" key={name}>
-                <summary>{name}</summary>
-                {Object.entries(formats).map(([format, versions]) => (
-                  <details class="format" key={format} open>
-                    <summary>{format}</summary>
-                    {sorted(Object.entries(versions), (x) => x[0], true).map(
-                      ([version, deployments]) =>
-                        deployments
-                          .map((d) =>
-                            d instanceof ResolvedIgluSchema
-                              ? canonicalize(d.data) || JSON.stringify(d.data)
-                              : d.uri(),
-                          )
-                          .map((d, _, a) => a.indexOf(d))
-                          .reduce<Registry[][]>((canon, e, i) => {
-                            const s = deployments[i];
-                            canon[e] = canon[e] || [];
-                            if (s instanceof ResolvedIgluSchema) {
-                              canon[e].push(s.registry);
-                            }
+          {Object.entries(schemas).map(([name, formats]) => (
+            <details class="name" key={name}>
+              <summary>{name}</summary>
+              {Object.entries(formats).map(([format, versions]) => (
+                <details class="format" key={format} open>
+                  <summary>{format}</summary>
+                  {Object.entries(versions).map(([version, deployments]) =>
+                    deployments
+                      .map((d) =>
+                        d instanceof ResolvedIgluSchema
+                          ? canonicalize(d.data) || JSON.stringify(d.data)
+                          : d.uri(),
+                      )
+                      .map((d, _, a) => a.indexOf(d))
+                      .reduce<Registry[][]>((canon, e, i) => {
+                        const s = deployments[i];
+                        canon[e] = canon[e] || [];
+                        if (s instanceof ResolvedIgluSchema) {
+                          canon[e].push(s.registry);
+                        }
 
-                            return canon;
-                          }, [])
-                          .map(
-                            (
-                              registries,
-                              i,
-                            ): [
-                              Registry[],
-                              IgluSchema | ResolvedIgluSchema,
-                            ] => [registries, deployments[i]],
-                          )
-                          .map(([registries, deployment]) => ({
-                            val:
-                              deployment instanceof ResolvedIgluSchema ? (
-                                JSON.stringify(deployment.data, null, 4)
-                              ) : (
-                                <label>
-                                  Loading {deployment.uri()}&hellip;{" "}
-                                  <progress />
-                                </label>
-                              ),
-                            registries,
-                          }))
-                          .map(({ val, registries }) => (
-                            <details class="version">
-                              <summary>
-                                {version}
-                                {registries.map((r) => (
-                                  <span
-                                    class={[
-                                      "registry",
-                                      "is-pulled-right",
-                                      colorOf(r.spec.id!),
-                                    ].join(" ")}
-                                  >
-                                    {r.spec.name}
-                                  </span>
-                                ))}
-                              </summary>
-                              {typeof val === "string" ? (
-                                <textarea
-                                  readOnly
-                                  rows={val.split("\n").length}
-                                >
-                                  {val}
-                                </textarea>
-                              ) : (
-                                val
-                              )}
-                            </details>
-                          )),
-                    )}
-                  </details>
-                ))}
-              </details>
-            ),
-          )}
+                        return canon;
+                      }, [])
+                      .map(
+                        (
+                          registries,
+                          i,
+                        ): [Registry[], IgluSchema | ResolvedIgluSchema] => [
+                          registries,
+                          deployments[i],
+                        ],
+                      )
+                      .map(([registries, deployment]) => ({
+                        val:
+                          deployment instanceof ResolvedIgluSchema ? (
+                            JSON.stringify(deployment.data, null, 4)
+                          ) : (
+                            <label>
+                              Loading {deployment.uri()}&hellip; <progress />
+                            </label>
+                          ),
+                        registries,
+                      }))
+                      .map(({ val, registries }) => (
+                        <details class="version">
+                          <summary>
+                            {version}
+                            {registries.map((r) => (
+                              <span
+                                class={[
+                                  "registry",
+                                  "is-pulled-right",
+                                  colorOf(r.spec.id!),
+                                ].join(" ")}
+                              >
+                                {r.spec.name}
+                              </span>
+                            ))}
+                          </summary>
+                          {typeof val === "string" ? (
+                            <textarea readOnly rows={val.split("\n").length}>
+                              {val}
+                            </textarea>
+                          ) : (
+                            val
+                          )}
+                        </details>
+                      )),
+                  )}
+                </details>
+              ))}
+            </details>
+          ))}
         </details>
       )),
     [directory],

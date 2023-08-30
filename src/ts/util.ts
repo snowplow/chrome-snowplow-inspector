@@ -265,38 +265,6 @@ const hash = (bytes: string): string => {
   return String(h);
 };
 
-function sorted<T>(
-  list: Iterable<T>,
-  keycb?: (a: T) => any,
-  reverse = false,
-): T[] {
-  const sortees: T[] = [];
-  const keys: any[] = [];
-
-  for (const e of list) {
-    let max = keys.length - 1;
-    const key = keycb ? keycb(e) : e;
-    sortees.push(e);
-    keys.push(key);
-
-    let swap = false;
-    while (max >= 0 && reverse ? keys[max] <= key : keys[max] > key) {
-      swap = true;
-      max--;
-    }
-
-    if (swap) {
-      sortees.copyWithin(max + 2, max + 1);
-      sortees[max + 1] = e;
-      keys.copyWithin(max + 2, max + 1);
-      keys[max + 1] = key;
-    }
-  }
-
-  return sortees;
-  */
-}
-
 const objHasProperty = <T extends {}, K extends PropertyKey>(
   obj: T,
   prop: K,
@@ -856,7 +824,6 @@ export {
   thriftToRequest,
   tryb64,
   uuidv4,
-  sorted,
   parseNgrokRequests,
   specFromTrackingScenarios,
 };
