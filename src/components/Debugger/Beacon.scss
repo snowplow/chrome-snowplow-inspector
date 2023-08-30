@@ -52,10 +52,11 @@
   }
 }
 
-.iglu {
+.rowset .iglu {
   background-color: var(--color-contrast);
   color: var(--color-text-contrast);
   border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
 
   .array {
     > tr > th {

@@ -15,18 +15,15 @@
   font-family: "Roboto", sans-serif;
   color: var(--color-text);
 
-  &.themelight,
-  &.themedefault {
-    --color-text: rgb(16, 24, 40);
-    --color-text-light: rgb(102, 112, 133);
-    --color-text-contrast: white;
-    --color-background: rgb(242, 244, 247);
-    --color-foreground: white;
-    --color-highlight: rgb(212, 199, 235);
-    --color-interactive: rgb(212, 199, 235);
-    --color-highlight-layered: rgb(212, 199, 235);
-    --color-contrast: #6738b8;
-  }
+  --color-text: rgb(16, 24, 40);
+  --color-text-light: rgb(102, 112, 133);
+  --color-text-contrast: white;
+  --color-background: rgb(242, 244, 247);
+  --color-foreground: white;
+  --color-highlight: rgb(212, 199, 235);
+  --color-interactive: rgb(212, 199, 235);
+  --color-highlight-layered: rgb(212, 199, 235);
+  --color-contrast: #6738b8;
 
   &.themedark {
     --color-text: white;

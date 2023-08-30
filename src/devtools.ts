@@ -3,8 +3,9 @@ chrome.devtools.panels.create(
   "icon-16.png",
   "panel.html",
   (panel) => {
-    panel.onShown.addListener(({document}) => {
-      document.documentElement.className = "theme" + chrome.devtools.panels.themeName;
-    })
-  }
+    panel.onShown.addListener(({ document }) => {
+      document.documentElement.className =
+        "theme" + chrome.devtools.panels.themeName;
+    });
+  },
 );

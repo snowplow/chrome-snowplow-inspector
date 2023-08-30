@@ -114,6 +114,12 @@
     &--destination-turquoise::before {
       background-color: turquoise;
     }
+    &--destination-yellow::before {
+      background-color: yellow;
+    }
+    &--destination-light::before {
+      background-color: var(--color-highlight);
+    }
 
     &--invalid::after {
       content: "\0026d4\00fe0f";

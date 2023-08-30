@@ -60,6 +60,12 @@
       &.turquoise {
         background-color: turquoise;
       }
+      &.yellow {
+        background-color: yellow;
+      }
+      &.light {
+        background-color: var(--color-highlight);
+      }
     }
   }
 
