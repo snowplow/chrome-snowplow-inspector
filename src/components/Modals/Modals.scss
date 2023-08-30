@@ -101,6 +101,27 @@ dialog[open] {
       font-size: 0.875rem;
       outline: 0;
     }
+
+    input[type="checkbox"] {
+      display: initial;
+      width: initial;
+      appearance: auto;
+      border: initial;
+      border-radius: initial;
+      margin-top: initial;
+      padding: initial;
+      color: initial;
+      box-shadow: initial;
+      background-color: initial;
+      line-height: initial;
+      font-size: initial;
+      outline: initial;
+    }
+
+    .syncoptions,
+    .syncorgs {
+      list-style: none;
+    }
   }
 
   &::backdrop {

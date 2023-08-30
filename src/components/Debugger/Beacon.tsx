@@ -1,5 +1,5 @@
 import { h, FunctionComponent, Fragment, VNode } from "preact";
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { protocol } from "../../ts/protocol";
 import {
@@ -435,14 +435,83 @@ const BeaconHeader: FunctionComponent<
 
 export const Beacon: FunctionComponent<IBeacon> = ({
   activeBeacon,
+  pipelines,
   resolver,
   setModal,
 }) => {
   const { collector, data, payload, ...info } = parseBeacon(activeBeacon);
 
+  const pipeline = useMemo(
+    () =>
+      pipelines.find(
+        (line) => !!line.domains.find((dom) => dom.endsWith(collector)),
+      ),
+    [pipelines, collector],
+  );
+
   return (
     <>
       <BeaconHeader resolver={resolver} collector={collector} {...info} />
+      {pipeline ? (
+        <RowSet key="pipeline" setName="Pipeline Configuration">
+          {Object.entries({
+            "Pipeline Name": pipeline.domain,
+            Organization: pipeline.organizationName,
+            "Organization ID": pipeline.organization,
+            "Cloud Provider": pipeline.cloudProvider,
+            Type: pipeline.resource === "minis" ? "Mini" : "Full Pipeline",
+          }).map(([name, val]) => (
+            <tr>
+              <th>{name}</th>
+              <td>
+                <BeaconValue
+                  obj={val}
+                  resolver={resolver}
+                  setModal={setModal}
+                />
+                <LabelType val={val} />
+              </td>
+            </tr>
+          ))}
+          <tr>
+            <th>Enrichments</th>
+            <td>
+              <details>
+                {pipeline.enrichments
+                  .sort((a, b) =>
+                    a.enabled > b.enabled
+                      ? -1
+                      : a.enabled < b.enabled
+                      ? 1
+                      : a.filename < b.filename
+                      ? -1
+                      : 1,
+                  )
+                  .map((enr) => (
+                    <BeaconValue
+                      obj={
+                        enr.content || {
+                          schema: `iglu:com.snowplowanalytics.snowplow/${enr.filename.replace(
+                            "_config.json",
+                            "",
+                          )}/jsonschema/1-0-0`,
+                          data: {
+                            name: enr.filename,
+                            enabled: enr.enabled,
+                            sensitive:
+                              "This configuration is considered sensitive and not available",
+                          },
+                        }
+                      }
+                      resolver={resolver}
+                      setModal={setModal}
+                    />
+                  ))}
+              </details>
+            </td>
+          </tr>
+        </RowSet>
+      ) : undefined}
       {data.map(([setName, rows]) => (
         <RowSet key={setName} setName={setName}>
           {rows.map(([name, val, classes]) =>
