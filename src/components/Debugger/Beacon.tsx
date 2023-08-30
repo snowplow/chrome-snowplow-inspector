@@ -492,14 +492,14 @@ export const Beacon: FunctionComponent<IBeacon> = ({
                       obj={
                         enr.content || {
                           schema: `iglu:com.snowplowanalytics.snowplow/${enr.filename.replace(
-                            "_config.json",
+                            ".json",
                             "",
                           )}/jsonschema/1-0-0`,
                           data: {
                             name: enr.filename,
                             enabled: enr.enabled,
                             sensitive:
-                              "This configuration is considered sensitive and not available",
+                              "This configuration is unavailable as it may contain sensitive values.",
                           },
                         }
                       }
