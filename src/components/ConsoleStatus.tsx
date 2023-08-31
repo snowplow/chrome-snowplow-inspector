@@ -139,7 +139,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
     );
   }, []);
 
-  return status === "authenticated" && identity ? (
+  return !chrome.identity ? null : status === "authenticated" && identity ? (
     <button
       class="console"
       disabled

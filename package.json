@@ -7,8 +7,8 @@
     "check": "tsc --noEmit",
     "fmt": "prettier -w src",
     "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/logo.svg ../res/icon.png ../res/icon-16.png ../res/icon-48.png ../res/icon-128.png ../LICENSE.txt dist/ && parcel watch src/*.html",
-    "build": "npm run clean && mkdir -p dist && cp manifest.json res/logo.svg res/icon.png res/icon-16.png res/icon-48.png res/icon-128.png LICENSE.txt dist/ && parcel build --no-source-maps src/*.html",
+    "start": "npm run clean && mkdir -p dist && ln -s ../manifest.json ../res/logo.svg ../res/icon.png ../res/icon-16.png ../res/icon-48.png ../res/icon-128.png ../LICENSE.md dist/ && parcel watch src/*.html",
+    "build": "npm run clean && mkdir -p dist && cp manifest.json res/logo.svg res/icon.png res/icon-16.png res/icon-48.png res/icon-128.png LICENSE.md dist/ && parcel build --no-source-maps src/*.html",
     "xpi": "npm run build && npx web-ext build --overwrite-dest -s dist/ -a .",
     "xpi-signed": "npm run build && npx web-ext sign -s dist/ -a .",
     "zip": "npm run build && zip -r snowplow-chrome-extension.zip dist/"
@@ -18,7 +18,7 @@
     "url": "git+https://github.com/poplindata/chrome-snowplow-inspector.git"
   },
   "author": "Poplin Data",
-  "license": "GPL-3.0-or-later",
+  "license": "SEE LICENSE IN LICENSE.md",
   "bugs": {
     "url": "https://github.com/poplindata/chrome-snowplow-inspector/issues"
   },
