@@ -6,7 +6,7 @@ import {
 
 import { RegistrySpec } from "./iglu/Registries";
 
-const SNOWPLOW_ENDPOINT = "https://c.snowplow.io";
+const SNOWPLOW_ENDPOINT = "https://d.poplindata.com";
 
 const SCHEMA_COLLECTOR_TELEMETRY =
   "iglu:com.snowplowanalytics.telemetry/collector_telemetry/jsonschema/1-0-0" as const;
@@ -105,6 +105,25 @@ export const endpointAnalytics = (
       }
     });
   }
+};
+
+export const consoleAnalytics = (
+  action: string,
+  label?: string,
+  property?: string,
+  value?: number,
+) => {
+  chrome.storage.sync.get({ enableTracking: true }, (settings) => {
+    if (settings.enableTracking) {
+      trackStructEvent({
+        category: "Console Sync",
+        action,
+        label,
+        property,
+        value,
+      });
+    }
+  });
 };
 
 export const repoAnalytics = (

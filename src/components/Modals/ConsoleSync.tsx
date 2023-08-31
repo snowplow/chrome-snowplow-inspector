@@ -1,11 +1,12 @@
 import { h, Fragment, FunctionComponent } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 import { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
 
 import { apiFetch } from "../ConsoleStatus";
 import { buildRegistry, Resolver } from "../../ts/iglu";
+import { consoleAnalytics } from "../../ts/analytics";
 import { request as requestPermissions } from "../../ts/permissions";
 import type {
   OAuthIdentity,
@@ -46,6 +47,8 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
   const [error, setError] = useState<unknown>();
   const [status, setStatus] = useState("idle");
 
+  useEffect(() => consoleAnalytics("Sync Display"), []);
+
   return (
     <BaseModal
       title="Synchronize with Console"
@@ -54,6 +57,16 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
         event.preventDefault();
         setStatus("working");
         const tasks: Promise<void>[] = [];
+
+        consoleAnalytics(
+          "Sync Begin",
+          JSON.stringify({
+            scenarios: doScenarios,
+            enrichments: doEnrichments,
+            igluDev: doIgluDev,
+            igluProd: doIgluProd,
+          }),
+        );
 
         if (doScenarios)
           tasks.push(
@@ -70,26 +83,36 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                   ];
                 } else return [];
               }),
-            ).then((transformed) => {
-              chrome.storage.local.get(
-                {
-                  testSuites: "[]",
-                },
-                ({ testSuites }) => {
-                  const existing = JSON.parse(testSuites);
-                  const transformedNames = transformed.map((t) => t.name);
-                  const nonConflicting = existing.filter(
-                    (e: TestSuiteSpec) => !transformedNames.includes(e.name),
-                  );
-                  chrome.storage.local.set({
-                    testSuites: JSON.stringify([
-                      ...nonConflicting,
-                      ...transformed,
-                    ]),
-                  });
-                },
-              );
-            }),
+            )
+              .then((transformed) => {
+                chrome.storage.local.get(
+                  {
+                    testSuites: "[]",
+                  },
+                  ({ testSuites }) => {
+                    consoleAnalytics(
+                      "Scenario Import Success",
+                      undefined,
+                      undefined,
+                      transformed.length,
+                    );
+                    const existing = JSON.parse(testSuites);
+                    const transformedNames = transformed.map((t) => t.name);
+                    const nonConflicting = existing.filter(
+                      (e: TestSuiteSpec) => !transformedNames.includes(e.name),
+                    );
+                    chrome.storage.local.set({
+                      testSuites: JSON.stringify([
+                        ...nonConflicting,
+                        ...transformed,
+                      ]),
+                    });
+                  },
+                );
+              })
+              .catch((e) =>
+                consoleAnalytics("Scenario Import Failure", "" + e),
+              ),
           );
 
         if (doIgluDev || doIgluProd)
@@ -119,6 +142,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                           );
 
                           if (!existing) {
+                            consoleAnalytics("Iglu Credential Create", env);
                             return [
                               apiFetch(
                                 `organizations/${org.id}/resources/v1/iglus/${env}/keys`,
@@ -130,18 +154,30 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                                     keyType: "ReadOnly",
                                   }),
                                 },
-                              ).then(
-                                (keyDetails: {
-                                  name: string;
-                                  key: { value: string };
-                                }) => ({
-                                  name: `${org.name} (${env})`,
-                                  uri: endpoint,
-                                  apiKey: keyDetails.key.value,
+                              )
+                                .then(
+                                  (keyDetails: {
+                                    name: string;
+                                    key: { value: string };
+                                  }) => ({
+                                    name: `${org.name} (${env})`,
+                                    uri: endpoint,
+                                    apiKey: keyDetails.key.value,
+                                  }),
+                                )
+                                .catch((e) => {
+                                  consoleAnalytics(
+                                    "Iglu Credential Create Failure",
+                                    env,
+                                    "" + e,
+                                  );
+                                  throw e;
                                 }),
-                              ),
                             ];
-                          } else return [];
+                          } else {
+                            consoleAnalytics("Iglu Credential Exists", env);
+                            return [];
+                          }
                         },
                       ),
                     );
@@ -263,6 +299,12 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                   pipelines: "[]",
                 },
                 ({ pipelines }) => {
+                  consoleAnalytics(
+                    "Pipeline Sync",
+                    undefined,
+                    undefined,
+                    pipelines.length,
+                  );
                   const existing: PipelineInfo[] = JSON.parse(pipelines);
                   const syncedNames = orgResources
                     .flat()

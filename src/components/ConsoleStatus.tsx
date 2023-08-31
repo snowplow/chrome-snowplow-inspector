@@ -2,6 +2,7 @@ import { h, FunctionComponent } from "preact";
 import { useCallback, useState } from "preact/hooks";
 
 import { uuidv4, tryb64 } from "../ts/util";
+import { consoleAnalytics } from "../ts/analytics";
 import { IConsoleStatus, OAuthIdentity } from "../ts/types";
 
 import "./ConsoleStatus.scss";
@@ -42,6 +43,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
   const [identity, setIdentity] = useState<OAuthIdentity>();
 
   const handler = useCallback(() => {
+    consoleAnalytics("Auth Flow Start");
     setStatus("pending");
     const flowUrl = new URL("authorize", OAUTH_FLOW);
 
@@ -66,6 +68,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
       { interactive: true, url: flowUrl.toString() },
       (responseUrl) => {
         if (responseUrl) {
+          consoleAnalytics("Auth Flow Response");
           const response = new URL(responseUrl);
           const fragParams = new URLSearchParams(response.hash.slice(1));
           const access_token = fragParams.get("access_token");
@@ -80,6 +83,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
             !id_token
           ) {
             setStatus("idle");
+            consoleAnalytics("Auth Flow Invalid");
             return console.error(
               "auth failed",
               access_token,
@@ -92,6 +96,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
           const decIdentity = tryb64(encIdentity);
           if (decIdentity === encIdentity) {
             setStatus("idle");
+            consoleAnalytics("Auth Flow Identity Error");
             return console.error(
               "could not decode identity token",
               encIdentity,
@@ -101,6 +106,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
           const identity: OAuthIdentity = JSON.parse(decIdentity);
           setStatus("authenticated");
           setIdentity(identity);
+          consoleAnalytics("Auth Flow Complete");
 
           const authentication = {
             headers: { Authorization: `Bearer ${access_token}` },
@@ -108,7 +114,12 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
 
           apiFetch("organizations", authentication)
             .then((organizations) => {
-              console.log("orgs", organizations);
+              consoleAnalytics(
+                "Organization Discovery",
+                undefined,
+                undefined,
+                organizations.length,
+              );
               setModal("consoleSync", {
                 organizations,
                 authentication,
@@ -116,8 +127,14 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
                 resolver,
               });
             })
-            .catch(console.error);
-        } else setStatus("idle");
+            .catch((e) => {
+              consoleAnalytics("Organization Discovery Failure");
+              console.error(e);
+            });
+        } else {
+          consoleAnalytics("Auth Flow Failure");
+          setStatus("idle");
+        }
       },
     );
   }, []);
