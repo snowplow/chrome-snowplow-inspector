@@ -564,6 +564,53 @@ const goodToRequests = (
   };
 };
 
+const parseBadRowJson = (
+  data: unknown,
+  schema: string,
+): ITomcatImport | undefined => {
+  if (typeof data !== "object" || !data) return;
+  if (data.hasOwnProperty("querystring")) return data as ITomcatImport;
+  if (!("parameters" in data)) return;
+
+  const result: ITomcatImport = {};
+
+  for (const [key, raw] of Object.entries(data)) {
+    const value = typeof raw === "string" ? raw : JSON.stringify(raw);
+    switch (key) {
+      case "userAgent":
+      case "contentType":
+        if (value !== null) {
+          result[key] = decodeURIComponent(value.replace(/\+/g, " "));
+        } else {
+          result[key] = value;
+        }
+        break;
+
+      case "refererUri":
+        result[key] = value;
+        if (typeof result.headers === "object") {
+          result.headers.Referer = value;
+        }
+        break;
+
+      default:
+        result[key] = value;
+        break;
+    }
+  }
+  result["schema"] = schema;
+  result["path"] = "bad_rows";
+
+  if (Array.isArray(data["parameters"]) && data["parameters"].length) {
+    const qs = new URLSearchParams(
+      data["parameters"].map(({ name, value }) => [name, value]),
+    );
+    result["querystring"] = qs.toString();
+  }
+
+  return result;
+};
+
 const badToRequests = (data: string[]): Entry[] => {
   const logs = data.map((row) => {
     if (!row.length) {
@@ -578,8 +625,25 @@ const badToRequests = (data: string[]): Entry[] => {
       js = row;
     }
 
-    if (typeof js === "object" && js !== null && js.hasOwnProperty("line")) {
-      js = js.line;
+    if (typeof js === "object" && js !== null) {
+      if (js.hasOwnProperty("line")) {
+        // legacy bad row format
+        js = js.line;
+      } else if (
+        // modern bad row format
+        js.hasOwnProperty("schema") &&
+        js.hasOwnProperty("data") &&
+        /^iglu:com\.snowplowanalytics\.snowplow\.badrows\//.test(js.schema)
+      ) {
+        if (typeof js.data.payload === "string") {
+          js = js.data.payload;
+        } else {
+          return parseBadRowJson(
+            js.data.payload?.raw || js.data.payload || js.data,
+            js.schema,
+          );
+        }
+      } else console.error("Unknown bad row format", js);
     }
 
     if (typeof js === "string") {
