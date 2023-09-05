@@ -13,21 +13,28 @@ const prodExtIds = [
 ];
 
 const PROD_OAUTH_FLOW = "https://id.snowplowanalytics.com/";
+const PROD_CONSOLE_API = "https://console.snowplowanalytics.com/api/msc/v1/";
+const PROD_OAUTH_CLIENTID = "ljiYxb2Cs1gyN0wTWvfByrt1jdRaqxyM";
+
 const NONPROD_OAUTH_FLOW = "https://next.id.snowplowanalytics.com/";
+const NONPROD_CONSOLE_API =
+  "https://next.console.snowplowanalytics.com/api/msc/v1/";
+const NONPROD_OAUTH_CLIENTID = "xLciUpURW0s0SV5wF2kZ7WLQWkaa9fS9";
+
+const CONSOLE_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api/";
+const CONSOLE_OAUTH_SCOPES = "openid profile";
+
 const OAUTH_FLOW = prodExtIds.includes(chrome.runtime.id)
   ? PROD_OAUTH_FLOW
   : NONPROD_OAUTH_FLOW;
 
-const PROD_CONSOLE_API = "https://console.snowplowanalytics.com/api/msc/v1/";
-const NONPROD_CONSOLE_API =
-  "https://next.console.snowplowanalytics.com/api/msc/v1/";
 const CONSOLE_API = prodExtIds.includes(chrome.runtime.id)
   ? PROD_CONSOLE_API
   : NONPROD_CONSOLE_API;
 
-const CONSOLE_OAUTH_CLIENTID = "tL5d0RJbXuUNTOmSETFMUBf8FaWAKXhu";
-const CONSOLE_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api/";
-const CONSOLE_OAUTH_SCOPES = "openid profile";
+const CONSOLE_OAUTH_CLIENTID = prodExtIds.includes(chrome.runtime.id)
+  ? PROD_OAUTH_CLIENTID
+  : NONPROD_OAUTH_CLIENTID;
 
 export const apiFetch = (path: string, opts?: Parameters<typeof fetch>[1]) =>
   fetch(new URL(path, CONSOLE_API), opts).then((r) => r.json());
