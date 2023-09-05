@@ -1,4 +1,4 @@
-import { Entry, Har } from "har-format";
+import { Entry } from "har-format";
 import { h, FunctionComponent, Fragment } from "preact";
 import {
   useCallback,
@@ -15,6 +15,8 @@ import { modals, Modal, ModalOptions, ModalSetter } from "./Modals";
 import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
+
+import "./SnowplowInspector.scss";
 
 export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
@@ -37,7 +39,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           ? 0
           : a.startedDateTime < b.startedDateTime
           ? -1
-          : 1
+          : 1,
       );
 
       return merged;
@@ -57,7 +59,7 @@ export const SnowplowInspector: FunctionComponent = () => {
       }
       setActiveModal(modalName);
     },
-    [modalOpts]
+    [modalOpts],
   );
 
   const app = [];
@@ -71,7 +73,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           events={events}
           resolver={resolver}
           setModal={setModal}
-        />
+        />,
       );
       break;
     case "schemaManager":
@@ -86,7 +88,12 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   return (
     <>
-      <Toolbar changeApp={setApplication} application={application} />
+      <Toolbar
+        changeApp={setApplication}
+        application={application}
+        setModal={setModal}
+        resolver={resolver}
+      />
       {app}
     </>
   );

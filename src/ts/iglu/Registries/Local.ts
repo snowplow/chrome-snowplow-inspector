@@ -29,13 +29,13 @@ export class LocalRegistry extends Registry {
                 const schema = new IgluSchema(vendor, name, format, version);
                 const resolved = schema.resolve(data, this);
                 if (resolved) this.manifest.set(resolved.uri(), resolved);
-              }
+              },
             );
           }
 
           fulfil();
-        }
-      )
+        },
+      ),
     );
   }
 
@@ -73,11 +73,11 @@ export class LocalRegistry extends Registry {
                   this.manifest.set(s.uri(), s);
                 });
                 fulfil();
-              }
+              },
             );
           }
-        }
-      )
+        },
+      ),
     );
   }
 }

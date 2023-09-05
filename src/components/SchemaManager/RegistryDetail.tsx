@@ -20,42 +20,34 @@ const EditableRegistry: FunctionComponent<{
   const [kind, setKind] = useState(registry.spec.kind);
   const [priority, setPriority] = useState(registry.priority || 0);
   const [vendorPrefixes, setVendorPrefixes] = useState(
-    registry.vendorPrefixes || []
+    registry.vendorPrefixes || [],
   );
   const [fieldVals, setFieldVals] = useState<Record<string, string>>(
-    registry.opts
+    registry.opts,
   );
 
   return (
-    <fieldset class="box" name={registry.id}>
+    <fieldset name={registry.id}>
       <input
-        class="input"
         type="hidden"
         name="id"
         readOnly
         onInput={(event) => setId(event.currentTarget.value)}
         value={id}
       />
-      <label
-        class="label"
-        title="Name for this registry. Used only in the extension"
-      >
+      <label title="Name for this registry. Used only in the extension">
         Name
         <input
           type="text"
           name="name"
-          class="input"
           required
           pattern=".+"
           onInput={(event) => setName(event.currentTarget.value)}
           value={name}
         />
       </label>
-      <label class="label">Kind</label>
-      <div
-        class="select"
-        title="The type of Registry this is. Determines which API or request format is used to access schemas"
-      >
+      <label title="The type of Registry this is. Determines which API or request format is used to access schemas">
+        Kind
         <select
           name="kind"
           onChange={(event) =>
@@ -69,13 +61,12 @@ const EditableRegistry: FunctionComponent<{
             </option>
           ))}
         </select>
-      </div>
+      </label>
       {Object.entries(registry.fields).map(
         ([field, { title, type, description, required, pattern }]) => (
-          <label class="label" key={field}>
+          <label key={field}>
             {title}
             <input
-              class="input"
               type={type}
               name={field}
               pattern={pattern}
@@ -91,44 +82,32 @@ const EditableRegistry: FunctionComponent<{
               value={fieldVals[field] || ""}
             />
           </label>
-        )
+        ),
       )}
-      <label
-        class="label"
-        title="Priority, lower is higher. Not used by the extension, which prefers the fastest registry configured"
-      >
+      <label title="Priority, lower is higher. Not used by the extension, which prefers the fastest registry configured">
         Priority
         <input
           type="number"
           name="priority"
           min={0}
-          class="input"
           onInput={(event) => setPriority(+event.currentTarget.value)}
           value={priority || 0}
         />
       </label>
-      <label
-        class="label"
-        title="Vendor prefixes, for preferring registries for particular schema lookups. If this is specified, only schemas with these prefixes will be fetched from teh registry"
-      >
+      <label title="Vendor prefixes, for preferring registries for particular schema lookups. If this is specified, only schemas with these prefixes will be fetched from teh registry">
         Vendor Prefixes
         <textarea
           name="vendorPrefixes"
-          class="textarea"
           size={Math.min(5, vendorPrefixes.length || 1)}
           onChange={(event) =>
             setVendorPrefixes(
-              event.currentTarget.value.split("\n").filter(Boolean)
+              event.currentTarget.value.split("\n").filter(Boolean),
             )
           }
           value={vendorPrefixes.join("\n")}
         />
       </label>
-      <label
-        class="label"
-        title="Current status of the registry"
-        for="registry-status"
-      >
+      <label title="Current status of the registry">
         Status: <output title={registry.opts.statusReason} />
         {`${registry.lastStatus || "UNCERTAIN"} (${schemaCount || 0} schemas)`}
       </label>

@@ -1,5 +1,6 @@
 import { h, FunctionComponent } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
+import { Validator } from "jsonschema";
 
 import {
   DisplayItem,
@@ -11,6 +12,10 @@ import {
 } from "../../ts/types";
 import { tryb64 } from "../../ts/util";
 import { ModalSetter } from "../Modals";
+
+import "./TestSuites.scss";
+
+const validator = new Validator();
 
 const substitute = (s: string, params?: Record<string, string>) =>
   s.replace(/(^|.)\{([^}])\}/g, (full, prefix, lookup): string => {
@@ -33,7 +38,7 @@ const substitute = (s: string, params?: Record<string, string>) =>
         case "?":
           if (!val)
             throw Error(
-              `Required config parameter "${key}" not set (${mod.slice(1)})`
+              `Required config parameter "${key}" not set (${mod.slice(1)})`,
             );
           break;
       }
@@ -43,7 +48,7 @@ const substitute = (s: string, params?: Record<string, string>) =>
   });
 
 export const unpackSDJ = (
-  sdjs: { schema: string; data: any }[]
+  sdjs: { schema: string; data: any }[],
 ): Record<string, Record<string, any[]>> => {
   const result: Record<string, Record<string, any[]>> = {};
 
@@ -71,7 +76,7 @@ export const unpackSDJ = (
 const getTarget = (
   target: string,
   event: IBeaconSummary,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): string | undefined => {
   const path = substitute(target, params).split(".");
 
@@ -113,13 +118,13 @@ const getTarget = (
         ) {
           if (
             /^iglu:com.snowplowanalytics.snowplow\/contexts\//.test(
-              extracted.schema
+              extracted.schema,
             )
           ) {
             result = unpackSDJ(extracted.data);
           } else if (
             /^iglu:com.snowplowanalytics.snowplow\/unstruct_event\//.test(
-              extracted.schema
+              extracted.schema,
             )
           ) {
             result = unpackSDJ([extracted.data]);
@@ -139,7 +144,7 @@ const getTarget = (
 const evalCondition = (
   condition: TestSuiteCondition,
   event: IBeaconSummary,
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): [boolean, string?] => {
   let target: string | undefined;
   try {
@@ -167,9 +172,25 @@ const evalCondition = (
       }
     case "exists":
       return [typeof target !== "undefined", target];
+    case "not_exists":
+      return [typeof target === "undefined", target];
     case "matches":
       const re = new RegExp(condition.value, "i");
       return [target != null ? re.test(target) : false, target];
+    case "validates":
+      const subject = JSON.parse(target || "null");
+
+      // Our metadata might fail validation if additionalProperties = false
+      if (typeof subject === "object" && subject) {
+        delete subject["$format"];
+        delete subject["$vendor"];
+        delete subject["$version"];
+        delete subject["$name"];
+      }
+
+      const validation = validator.validate(subject, condition.value);
+
+      return [validation.valid, target];
     case "one_of":
       return [
         Array.isArray(condition.value)
@@ -185,7 +206,7 @@ const evalCondition = (
 const evalTest = (
   test: TestSuiteCase,
   events: IBeaconSummary[],
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): TestSuiteResult => {
   const success: IBeaconSummary[] = [];
   const failure: IBeaconSummary[] = [];
@@ -245,7 +266,7 @@ const evalTest = (
 const runSuite = (
   spec: TestSuiteSpec,
   events: IBeaconSummary[],
-  params?: Record<string, string>
+  params?: Record<string, string>,
 ): TestSuiteResult => {
   const targeting = spec.targets || [];
   const targets = targeting.length
@@ -297,7 +318,7 @@ const ValidityOptions = {
 const ValidityBadge: FunctionComponent<{
   status: TestSuiteResult["status"];
 }> = ({ status }) => (
-  <span class="panel-icon validity" title={ValidityOptions["title"][status]}>
+  <span class="validity" title={ValidityOptions["title"][status]}>
     {ValidityOptions["emoji"][status]}
   </span>
 );
@@ -307,7 +328,7 @@ const TestResult: FunctionComponent<{
   setActive: (beacon: DisplayItem) => void;
 }> = ({ result, setActive }) =>
   "results" in result ? (
-    <details class="panel-block">
+    <details class="testgroup">
       <summary title={result.test.description}>
         {result.test.name}
         <ValidityBadge status={result.status} />
@@ -318,7 +339,7 @@ const TestResult: FunctionComponent<{
     </details>
   ) : (
     <a
-      class="panel-block"
+      class="testresult"
       title={result.test.description}
       onClick={() => setActive({ display: "testsuite", item: result })}
     >
@@ -345,7 +366,7 @@ export const TestSuites: FunctionComponent<{
         } catch (e) {
           console.error("error parsing stored testSuites");
         }
-      }
+      },
     );
   }, []);
 
@@ -357,18 +378,18 @@ export const TestSuites: FunctionComponent<{
           setActive={setActive}
         />
       )),
-    [events, suites]
+    [events, suites],
   );
 
   return (
-    <div class="panel testsuites">
+    <div class="testsuites">
       <p
-        class="panel-heading"
+        class="testsuites__title"
         title="Test Suites allow you to define assertions about events in the timeline."
       >
         Test Suites
         <button
-          class="button"
+          class="testsuites__edit"
           type="button"
           title="Edit Test Suites"
           onClick={() =>
@@ -377,7 +398,7 @@ export const TestSuites: FunctionComponent<{
               setSuites: (newSuites: TestSuiteSpec[]) => {
                 chrome.storage.local.set(
                   { testSuites: JSON.stringify(newSuites) },
-                  () => setSuites(newSuites)
+                  () => setSuites(newSuites),
                 );
               },
             })

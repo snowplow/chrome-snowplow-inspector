@@ -1,8 +1,15 @@
-import { newTracker, trackStructEvent } from "@snowplow/browser-tracker";
+import {
+  newTracker,
+  trackSelfDescribingEvent,
+  trackStructEvent,
+} from "@snowplow/browser-tracker";
 
 import { RegistrySpec } from "./iglu/Registries";
 
 const SNOWPLOW_ENDPOINT = "https://d.poplindata.com";
+
+const SCHEMA_COLLECTOR_TELEMETRY =
+  "iglu:com.snowplowanalytics.telemetry/collector_telemetry/jsonschema/1-0-0" as const;
 
 newTracker("sp", SNOWPLOW_ENDPOINT, {
   appId: "snowplow-chrome-extension",
@@ -18,7 +25,7 @@ const seenEndpoints: { [tracker: string]: string[] } = {};
 export const trackerAnalytics = (
   collector: string,
   pageUrl?: string,
-  appId?: string
+  appId?: string,
 ) => {
   if (!pageUrl) {
     return;
@@ -57,10 +64,11 @@ export const trackerAnalytics = (
 
 export const endpointAnalytics = (
   tracker: string,
+  appId: string,
   collector: string,
   collectorPath: string,
   method: string,
-  status: number
+  status: number,
 ) => {
   collector = collector.toLowerCase();
   const endpointKey = [tracker, collector, collectorPath, method].join(":");
@@ -81,15 +89,47 @@ export const endpointAnalytics = (
           property: method,
           value: status,
         });
+
+        trackSelfDescribingEvent({
+          event: {
+            schema: SCHEMA_COLLECTOR_TELEMETRY,
+            data: {
+              collectorHost: collector,
+              collectorPath: collectorPath,
+              appId: appId || tracker || undefined,
+              statusCode: status,
+              method,
+            },
+          },
+        });
       }
     });
   }
 };
 
+export const consoleAnalytics = (
+  action: string,
+  label?: string,
+  property?: string,
+  value?: number,
+) => {
+  chrome.storage.sync.get({ enableTracking: true }, (settings) => {
+    if (settings.enableTracking) {
+      trackStructEvent({
+        category: "Console Sync",
+        action,
+        label,
+        property,
+        value,
+      });
+    }
+  });
+};
+
 export const repoAnalytics = (
   kind: RegistrySpec["kind"],
   name: string,
-  uri?: URL
+  uri?: URL,
 ) => {
   chrome.storage.sync.get({ enableTracking: true }, (settings) => {
     if (settings.enableTracking) {
@@ -110,7 +150,7 @@ export const repoAnalytics = (
 };
 
 export const landingUrl =
-  "https://poplindata.com/?" +
+  "https://snowplow.io/?" +
   [
     "utm_source=debugger%20extension",
     "utm_medium=software",

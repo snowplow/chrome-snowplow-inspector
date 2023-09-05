@@ -23,10 +23,12 @@ export default (cb: (entries: Entry[]) => void) => {
             () => {
               const content = JSON.parse(fr.result as string) as Har;
               cb(
-                content.log.entries.filter((entry) => isSnowplow(entry.request))
+                content.log.entries.filter((entry) =>
+                  isSnowplow(entry.request),
+                ),
               );
             },
-            false
+            false,
           );
 
           fr.readAsText(file);

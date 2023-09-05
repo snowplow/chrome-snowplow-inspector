@@ -10,14 +10,14 @@ export default (requests: Entry[], events: IBeaconSummary[][]): File => {
           JSON.stringify(
             events.flatMap((summaries) =>
               summaries.map(({ payload }) =>
-                Object.fromEntries(payload.entries())
-              )
-            )
+                Object.fromEntries(payload.entries()),
+              ),
+            ),
           ),
         ],
-        { type: "application/json" }
+        { type: "application/json" },
       ),
     ],
-    "Snowplow Inspector Export.json"
+    "Snowplow Inspector Export.json",
   );
 };

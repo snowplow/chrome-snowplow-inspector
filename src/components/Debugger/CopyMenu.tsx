@@ -3,6 +3,8 @@ import { IBeaconSummary } from "../../ts/types";
 import { copyToClipboard, tryb64 } from "../../ts/util";
 import { unpackSDJ } from "./TestSuites";
 
+import "./CopyMenu.scss";
+
 const wrapPost = (data: object) => {
   return {
     schema: "iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-4",
@@ -26,7 +28,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
           "schema" in extracted &&
           "data" in extracted &&
           /^iglu:com.snowplowanalytics.snowplow\/unstruct_event\//.test(
-            extracted.schema
+            extracted.schema,
           )
         )
           Object.assign(event, {
@@ -41,7 +43,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
           "schema" in extracted &&
           "data" in extracted &&
           /^iglu:com.snowplowanalytics.snowplow\/contexts\//.test(
-            extracted.schema
+            extracted.schema,
           )
         )
           Object.assign(event, {
@@ -53,7 +55,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
     return JSON.stringify(
       [Object.assign({}, beacon, { payload: event })],
       null,
-      4
+      4,
     );
   },
   "URL - Get": ({ collector, payload }: IBeaconSummary) => {
@@ -86,10 +88,10 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
   "Snowplow CLI": ({ collector, payload }: IBeaconSummary) => {
     const aid = payload.get("aid");
     const ue = JSON.parse(
-      tryb64(payload.get("ue_pr") || payload.get("ue_px") || "{}")
+      tryb64(payload.get("ue_pr") || payload.get("ue_px") || "{}"),
     );
     const ctx = JSON.parse(
-      tryb64(payload.get("co") || payload.get("cx") || "{}")
+      tryb64(payload.get("co") || payload.get("cx") || "{}"),
     );
 
     const cmd = [
@@ -112,26 +114,22 @@ const checks: Record<string, (beacon: IBeaconSummary) => boolean> = {
 export const CopyMenu: FunctionComponent<{
   beacon: IBeaconSummary;
 }> = ({ beacon }) => (
-  <div class="dropdown button is-hoverable is-up is-dark">
-    <div class="dropdown-trigger">{"\u29c9"}</div>
-    <div class="dropdown-menu">
-      <div class="dropdown-content">
-        <div class="dropdown-item">{"Copy as\u2026"}</div>
-        {Object.entries(formatters).map(([format, fn]) => {
-          const eligible = !checks[format] || checks[format](beacon);
+  <select
+    class="copy-menu button"
+    onChange={(e) => {
+      const { currentTarget } = e;
+      const { value } = currentTarget;
 
-          if (eligible)
-            return (
-              <div
-                class="dropdown-item"
-                onClick={() => copyToClipboard(fn(beacon))}
-              >
-                {format}
-              </div>
-            );
-          return null;
-        })}
-      </div>
-    </div>
-  </div>
+      currentTarget.selectedIndex = 0;
+      copyToClipboard(formatters[value](beacon));
+    }}
+  >
+    <option selected disabled>
+      {"\u29c9"} Copy as...
+    </option>
+    {Object.keys(formatters).map((format) => {
+      const eligible = !checks[format] || checks[format](beacon);
+      return eligible ? <option>{format}</option> : null;
+    })}
+  </select>
 );

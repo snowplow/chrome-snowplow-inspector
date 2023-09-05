@@ -1,4 +1,5 @@
 node_modules/
 dist/
 poplin-chrome-extension.zip
+snowplow-chrome-extension.zip
 .parcel-cache/

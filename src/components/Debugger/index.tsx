@@ -1,13 +1,20 @@
-import { Entry, Request } from "har-format";
+import { Entry } from "har-format";
 import { h, FunctionComponent } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
-import { DisplayItem, IBeaconSummary, IDebugger } from "../../ts/types";
+import {
+  DisplayItem,
+  IBeaconSummary,
+  IDebugger,
+  PipelineInfo,
+} from "../../ts/types";
 import { isSnowplow } from "../../ts/util";
 
 import { Beacon } from "./Beacon";
-import { TestResults } from "./TestResults";
+import { TestReport } from "./TestReport";
 import { Timeline } from "./Timeline";
+
+import "./Debugger.scss";
 
 export const Debugger: FunctionComponent<IDebugger> = ({
   addRequests,
@@ -17,6 +24,15 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   setModal,
 }) => {
   const [active, setActive] = useState<DisplayItem>();
+  const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
+
+  useEffect(
+    () =>
+      chrome.storage.local.get({ pipelines: "[]" }, ({ pipelines }) => {
+        setPipelines(JSON.parse(pipelines));
+      }),
+    [],
+  );
 
   const isActive = useCallback(
     (beacon: IBeaconSummary) => {
@@ -24,7 +40,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         return active.item.id === beacon.id;
       return false;
     },
-    [active]
+    [active],
   );
 
   const handleNewRequests = useCallback(
@@ -38,25 +54,11 @@ export const Debugger: FunctionComponent<IDebugger> = ({
               !isSnowplow(req.request) ||
               req.request.method === "OPTIONS" ||
               req.response.statusText === "Service Worker Fallback Required"
-            )
-        )
+            ),
+        ),
       );
     },
-    [addRequests]
-  );
-
-  const [compactCore, setCompactCore] = useState(false);
-  useEffect(
-    () =>
-      chrome.storage.sync.get(
-        {
-          compactCoreMetadata: false,
-        },
-        ({ compactCoreMetadata }) => {
-          setCompactCore(compactCoreMetadata);
-        }
-      ),
-    []
+    [addRequests],
   );
 
   useEffect(() => {
@@ -69,9 +71,9 @@ export const Debugger: FunctionComponent<IDebugger> = ({
                 event.startedDateTime === entry.startedDateTime &&
                 event.time === entry.time &&
                 event.request.url === entry.request.url &&
-                event._request_id === entry._request_id
-            )
-        )
+                event._request_id === entry._request_id,
+            ),
+        ),
       );
     });
 
@@ -79,13 +81,13 @@ export const Debugger: FunctionComponent<IDebugger> = ({
 
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(
-        handleNewRequests
+        handleNewRequests,
       );
     };
   }, []);
 
   return (
-    <section class="columns section">
+    <main class="app app--debugger debugger">
       <Timeline
         setActive={setActive}
         isActive={isActive}
@@ -97,23 +99,21 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         clearRequests={clearRequests}
       />
       {!active || active.display === "beacon" ? (
-        <div id="beacon" class="column">
-          <div class="tile is-ancestor is-vertical inspector">
+        <div class="debugger__display debugger--beacon">
+          {active && active.item ? (
             <Beacon
-              activeBeacon={active && active.item}
+              activeBeacon={active.item}
               resolver={resolver}
-              compact={compactCore}
               setModal={setModal}
+              pipelines={pipelines}
             />
-          </div>
+          ) : null}
         </div>
       ) : (
-        <div id="testdetail" class="column">
-          <div class="tile is-ancestor is-vertical">
-            <TestResults activeSuite={active.item} setActive={setActive} />
-          </div>
+        <div class="debugger__display debugger--testcase">
+          <TestReport activeSuite={active.item} setActive={setActive} />
         </div>
       )}
-    </section>
+    </main>
   );
 };

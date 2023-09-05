@@ -47,7 +47,7 @@ const collectorPayloadSchema: { [fieldId: number]: string } = {
 
 export const decodeB64Thrift = (
   b64: string,
-  schema: { [fieldId: number]: string }
+  schema: { [fieldId: number]: string },
 ): object => {
   // Standard b64 decoding
   let bytes = atob(b64);
@@ -72,7 +72,7 @@ export const decodeB64Thrift = (
   // https://erikvanoosten.github.io/thrift-missing-specification/
   function getType(
     typeName: string | null,
-    remainingBytes: string
+    remainingBytes: string,
   ): [number, any] {
     let meta = 0;
     let size = 0;
@@ -186,7 +186,7 @@ export const decodeB64Thrift = (
 
 export const encodeB64Thrift = (
   obj: { [property: string]: any },
-  schema: { [fieldId: number]: string }
+  schema: { [fieldId: number]: string },
 ): string => {
   function intToBytes(value: number, size: number): string {
     let bytes = value.toString(16);
@@ -211,15 +211,15 @@ export const encodeB64Thrift = (
       case "list":
         thriftField += intToBytes(
           thriftTypes.indexOf(
-            jsTypes[Object.prototype.toString.call(value[0])]
+            jsTypes[Object.prototype.toString.call(value[0])],
           ),
-          1
+          1,
         );
         thriftField += intToBytes(value.length, 4);
         for (const i of value) {
           thriftField += toBytes(
             jsTypes[Object.prototype.toString.call(value[0])],
-            value[i]
+            value[i],
           );
         }
         break;

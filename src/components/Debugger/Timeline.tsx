@@ -18,6 +18,8 @@ import * as importers from "./importers";
 import * as exporters from "./exporters";
 import { TestSuites } from "./TestSuites";
 
+import "./Timeline.scss";
+
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
 const KNOWN_FAKE_PAGES = [
   "badbucket.invalid",
@@ -100,7 +102,7 @@ const validateEvent = (
   id: string,
   params: Map<string, string>,
   resolver: Resolver,
-  updateValidity: StateUpdater<number>
+  updateValidity: StateUpdater<number>,
 ) => {
   type SDJ = { schema: IgluUri; data: object | SDJ[] };
 
@@ -114,13 +116,13 @@ const validateEvent = (
 
   const validate = (
     schema: IgluSchema | null,
-    data: SDJ["data"]
+    data: SDJ["data"],
   ): Promise<BeaconValidity> =>
     schema
       ? resolver
           .resolve(schema)
           .then((res) =>
-            Promise.resolve(res.validate(data).valid ? "Valid" : "Invalid")
+            Promise.resolve(res.validate(data).valid ? "Valid" : "Invalid"),
           )
       : Promise.resolve("Invalid");
 
@@ -153,7 +155,9 @@ const validateEvent = (
         schema = IgluSchema.fromUri((sdj.data as SDJ).schema);
         if (schema)
           validations.push(
-            validate(schema, (sdj.data as SDJ).data).catch(() => "Unrecognised")
+            validate(schema, (sdj.data as SDJ).data).catch(
+              () => "Unrecognised",
+            ),
           );
         // this means data is not an SDJ. This is technically an invalid payload, but could just be old-style unstruct events.
         // the beacon view will show it as invalid, but to reduce UI noise, just pretend it's unrecognised because there is no
@@ -163,7 +167,7 @@ const validateEvent = (
         sdj.data.forEach((ctx: SDJ) => {
           schema = IgluSchema.fromUri(ctx.schema);
           validations.push(
-            validate(schema, ctx.data).catch(() => "Unrecognised")
+            validate(schema, ctx.data).catch(() => "Unrecognised"),
           );
         });
       } else {
@@ -198,7 +202,7 @@ const summariseBeacons = (
   index: number,
   resolver: Resolver,
   filter: RegExp | undefined,
-  updateValidity: StateUpdater<number>
+  updateValidity: StateUpdater<number>,
 ): IBeaconSummary[] => {
   const {
     id,
@@ -228,8 +232,8 @@ const summariseBeacons = (
             req.get("dtm") ||
             (req.get("_gid") ? req.get("_gid") + "000" : "").split(".").pop() ||
             "",
-          10
-        ) || +new Date()
+          10,
+        ) || +new Date(),
       ).toJSON(),
       validity: validateEvent(`#${id}-${i}`, req, resolver, updateValidity),
       collectorStatus: {
@@ -243,10 +247,11 @@ const summariseBeacons = (
       trackerAnalytics(collector, result.page, result.appId);
       endpointAnalytics(
         req.get("tna") || "",
+        req.get("aid") || "",
         collector,
         collectorPath,
         method,
-        entry.response.status
+        entry.response.status,
       );
     }
 
@@ -276,7 +281,7 @@ const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
 
 const extractRequests = (
   entry: Entry,
-  index: number
+  index: number,
 ): {
   id: string;
   collector: string;
@@ -301,19 +306,19 @@ const extractRequests = (
 
   const nuid = extractNetworkUserId(entry.response.cookies);
   const ua = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "user-agent"
+    (x) => x.name.toLowerCase() === "user-agent",
   );
   const lang = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "accept-language"
+    (x) => x.name.toLowerCase() === "accept-language",
   );
   const refr = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "referer"
+    (x) => x.name.toLowerCase() === "referer",
   );
   const cl = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "content-length"
+    (x) => x.name.toLowerCase() === "content-length",
   );
   const ct = entry.request.headers.find(
-    (x) => x.name.toLowerCase() === "content-type"
+    (x) => x.name.toLowerCase() === "content-type",
   );
 
   if (req.method === "POST") {
@@ -333,7 +338,7 @@ const extractRequests = (
           payloadSize: cl.value,
           contentType: ct ? ct.value : "",
           stm: "" + +new Date(),
-        })
+        }),
       );
 
       if (nuid && nuid.value) beacon.set("nuid", nuid.value);
@@ -375,7 +380,7 @@ const extractRequests = (
           });
 
           const validGa = ga.filter((b) =>
-            GA_REQUIRED_FIELDS.every((k) => b.has(k))
+            GA_REQUIRED_FIELDS.every((k) => b.has(k)),
           );
           beacons.push.apply(beacons, validGa);
         } catch (urlErr) {
@@ -391,7 +396,7 @@ const extractRequests = (
   } else {
     const beacon: Map<string, string> = new Map();
     new URL(req.url).searchParams.forEach((value, key) =>
-      beacon.set(key, value)
+      beacon.set(key, value),
     );
     if (nuid && !beacon.has("nuid")) {
       beacon.set("nuid", nuid.value);
@@ -411,7 +416,7 @@ const extractRequests = (
   }
 
   const serverAnonymous = !!req.headers.find(
-    (h) => /sp-anonymous/i.test(h.name) && h.value === "*"
+    (h) => /sp-anonymous/i.test(h.name) && h.value === "*",
   );
 
   return {
@@ -454,9 +459,9 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   const events = useMemo(
     () =>
       requests.map((batch, i) =>
-        summariseBeacons(batch, i, resolver, filter, updateValidity)
+        summariseBeacons(batch, i, resolver, filter, updateValidity),
       ),
-    [requests, resolver, filter, validity]
+    [requests, resolver, filter, validity],
   );
 
   const beacons = events.map((summaries) => {
@@ -465,15 +470,15 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       summary.pageref || (summary.page ? new URL(summary.page) : fallbackUrl),
       <a
         class={[
-          "panel-block",
-          isActive(summary) ? "is-active" : "",
+          "event",
+          isActive(summary) ? "event--active" : "",
           // Some race in Firefox where the response information isn't always populated
           summary.collectorStatus.code === 200 ||
           summary.collectorStatus.code === 0
             ? ""
-            : "not-ok",
-          colorOf(summary.collector + summary.appId),
-          summary.validity === "Invalid" ? "is-invalid" : "",
+            : "event--uncollected",
+          `event--destination-${colorOf(summary.collector + summary.appId)}`,
+          summary.validity === "Invalid" ? "event--invalid" : "",
         ].join(" ")}
         title={[
           `Time: ${summary.time}`,
@@ -484,11 +489,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         ].join("\n")}
         onClick={setActive.bind(null, { display: "beacon", item: summary })}
       >
-        <span class="panel-icon identifier" />
         {summary.eventName}
-        <span class="panel-icon validity">
-          {summary.validity === "Invalid" ? "\u26d4\ufe0f" : ""}
-        </span>
       </a>,
     ]);
   });
@@ -510,7 +511,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         }
         return acc;
       }, acc),
-    [] as [string, VNode[]][]
+    [] as [string, VNode[]][],
   );
 
   useEffect(() => {
@@ -534,9 +535,9 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         addRequests,
         setModal,
         { ngrokStreaming, setNgrokStreaming },
-        { streamLock, setStreamLock }
+        { streamLock, setStreamLock },
       ),
-    [addRequests, setModal, ngrokStreaming, streamLock]
+    [addRequests, setModal, ngrokStreaming, streamLock],
   );
 
   useEffect(() => importHandler("ngrok"), [importHandler, ngrokStreaming]);
@@ -554,7 +555,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           importHandler(value as importers.ImporterFormat);
         }
       },
-      [importHandler]
+      [importHandler],
     );
 
   const exportButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
@@ -567,75 +568,70 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         exporters.exportToFormat(
           value as exporters.ExporterFormat,
           requests,
-          events
+          events,
         );
       },
-      [requests, events]
+      [requests, events],
     );
 
   return (
-    <div class="column is-narrow timeline">
-      <div class="timeline__events">
-        <div class="panel filterPanel">
-          <div>
-            <button
-              class="button is-small"
-              type="button"
-              onClick={clearRequests}
-              disabled={!beacons.length}
-            >
-              Clear Events
-            </button>
-            <select class="button is-small" onChange={importButtonHandler}>
-              <option selected disabled>
-                Import
+    <aside class="timeline">
+      <div class="timeline__controls">
+        <div>
+          <button
+            type="button"
+            onClick={clearRequests}
+            disabled={!beacons.length}
+          >
+            Clear Events
+          </button>
+          <select class="button" onChange={importButtonHandler}>
+            <option selected disabled>
+              Import
+            </option>
+            {Object.entries(importers.formats).map(([key, label]) => (
+              <option value={key}>
+                {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
               </option>
-              {Object.entries(importers.formats).map(([key, label]) => (
-                <option value={key}>
-                  {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
-                </option>
-              ))}
-            </select>
-            <select
-              class="button is-small"
-              disabled={!beacons.length}
-              onChange={exportButtonHandler}
-            >
-              <option selected disabled>
-                Export
-              </option>
-              {Object.entries(exporters.formats).map(([key, label]) => (
-                <option value={key}>{label}</option>
-              ))}
-            </select>
-          </div>
-          <input
-            id="filter"
-            class={[
-              "input",
-              filter ? "valid" : filterStr ? "invalid" : "valid",
-            ].join(" ")}
-            type="text"
-            placeholder="Filter"
-            onKeyUp={(e) => {
-              if (e.currentTarget instanceof HTMLInputElement) {
-                const val = e.currentTarget.value;
-                setFilterStr(val);
-              }
-            }}
-            value={filterStr}
-          />
+            ))}
+          </select>
+          <select
+            class="button"
+            disabled={!beacons.length}
+            onChange={exportButtonHandler}
+          >
+            <option selected disabled>
+              Export
+            </option>
+            {Object.entries(exporters.formats).map(([key, label]) => (
+              <option value={key}>{label}</option>
+            ))}
+          </select>
         </div>
-        {byPage.map(([pageName, beacons]) => (
-          <div class="panel">
-            <p class="panel-heading" title="pageName">
-              {pageName}
-            </p>
-            {beacons}
-          </div>
-        ))}
-        <TestSuites events={events} setActive={setActive} setModal={setModal} />
+        <input
+          class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(" ")}
+          type="text"
+          placeholder="Start typing to filter events&hellip;"
+          onKeyUp={(e) => {
+            if (e.currentTarget instanceof HTMLInputElement) {
+              const val = e.currentTarget.value;
+              setFilterStr(val);
+            }
+          }}
+          value={filterStr}
+        />
       </div>
-    </div>
+      <div class="timeline__events">
+        {byPage.map(([pageName, beacons]) => (
+          <article class="event-group">
+            <h1 class="event-group__heading" title="Group Name">
+              {pageName}
+            </h1>
+            {beacons}
+          </article>
+        ))}
+      </div>
+      <TestSuites events={events} setActive={setActive} setModal={setModal} />
+    </aside>
   );
 };

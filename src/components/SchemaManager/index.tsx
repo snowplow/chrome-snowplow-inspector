@@ -7,6 +7,8 @@ import { ModalSetter } from "../../components/Modals";
 import { Directory } from "./Directory";
 import { RegistryList } from "./RegistryList";
 
+import "./SchemaManager.scss";
+
 type Filter = {
   search?: RegExp;
   selections: Registry[];
@@ -29,25 +31,22 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
   const filterRegistries = useCallback(
     (selections: Registry[]) =>
       setFilters((filters) => ({ ...filters, selections })),
-    []
+    [],
   );
 
   const clearSearch = useCallback(
     () => setFilters((filters) => ({ ...filters, search: undefined })),
-    []
+    [],
   );
 
   const [collapsed, setCollapsed] = useState(true);
-
-  const [watermark, setWatermark] = useState(Date.now());
 
   const smRef = useRef<HTMLElement>(null);
 
   const filterBar = useMemo(
     () => (
-      <div class="field is-grouped filterPanel">
+      <div class="directory__filter">
         <input
-          class="input"
           type="search"
           placeholder="Filter Pattern"
           title="Regular expression to search schemas for"
@@ -66,7 +65,6 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
           }}
         />
         <button
-          class="button"
           onClick={() => {
             if (smRef.current) {
               const details = smRef.current.getElementsByTagName("details");
@@ -79,17 +77,12 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
         </button>
       </div>
     ),
-    [clearSearch, collapsed, smRef]
+    [clearSearch, collapsed, smRef],
   );
 
   return (
-    <section class="schema-manager columns section" ref={smRef}>
-      <Directory
-        setCollapsed={setCollapsed}
-        resolver={resolver}
-        watermark={watermark}
-        {...filters}
-      >
+    <main class="app app--schema_manager schema_manager" ref={smRef}>
+      <Directory setCollapsed={setCollapsed} resolver={resolver} {...filters}>
         {filterBar}
       </Directory>
       <RegistryList
@@ -97,9 +90,8 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
         clearSearch={clearSearch}
         resolver={resolver}
         setModal={setModal}
-        setWatermark={setWatermark}
         selectedRegistries={filters.selections}
       />
-    </section>
+    </main>
   );
 };

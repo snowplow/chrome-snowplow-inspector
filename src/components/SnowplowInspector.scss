@@ -1,0 +1,178 @@
+@charset "utf-8";
+
+@import "npm:@fontsource/rubik/latin-400.css";
+@import "npm:@fontsource/roboto/latin-400.css";
+
+* {
+  box-sizing: inherit;
+  font-family: inherit;
+}
+
+:root {
+  display: flex;
+  box-sizing: border-box;
+  height: 100%;
+  font-family: "Roboto", sans-serif;
+  color: var(--color-text);
+
+  --color-text: rgb(16, 24, 40);
+  --color-text-light: rgb(102, 112, 133);
+  --color-text-contrast: white;
+  --color-background: rgb(242, 244, 247);
+  --color-foreground: white;
+  --color-highlight: rgb(212, 199, 235);
+  --color-interactive: rgb(212, 199, 235);
+  --color-highlight-layered: rgb(212, 199, 235);
+  --color-contrast: #6738b8;
+
+  &.themedark {
+    --color-text: white;
+    --color-text-light: #d0d5dd;
+    --color-text-contrast: white;
+    --color-background: #1d2939;
+    --color-foreground: #344054;
+    --color-highlight: #475467;
+    --color-interactive: #667085;
+    --color-highlight-layered: #101828b3;
+    --color-contrast: #101828;
+  }
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-self: stretch;
+  background-color: var(--color-background);
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+button,
+select.button,
+a.button,
+input.button,
+input[type="file"].button:before {
+  appearance: none;
+  cursor: pointer;
+  min-height: 2rem;
+  box-sizing: border-box;
+  padding: 0 1em;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  outline: 0;
+  color: var(--color-text);
+  background-color: var(--color-foreground);
+  line-height: normal;
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.875em;
+}
+
+button:enabled:hover,
+select.button:enabled:hover,
+a.button:hover,
+input.button:enabled:hover,
+input[type="file"].button:hover::before {
+  background-color: var(--color-highlight);
+}
+
+button:enabled:active,
+select.button:enabled:active,
+a.button:enabled:active,
+input.button:enabled:active,
+input[type="file"].button:enabled:active:before {
+  outline: var(--color-interactive) solid 0.25rem;
+}
+
+button:focus,
+select.button:focus,
+a.button:focus,
+input.button:focus,
+input[type="file"].button:focus:before {
+  text-decoration: underline;
+}
+
+button:disabled,
+select.button:disabled,
+input.button:disabled,
+input[type="file"].button:disabled:before {
+  color: var(--color-interactive);
+  cursor: unset;
+}
+
+a.button {
+  display: flex;
+  align-items: center;
+}
+
+input[type="file"].button:before {
+  content: attr(data-label);
+  visibility: visible;
+  font-size: 1em;
+  width: fit-content;
+  padding-top: 0.5rem;
+}
+
+input[type="file"].button {
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+  padding: 0;
+  border: 0;
+}
+
+textarea {
+  background-color: var(--color-background);
+  width: 100%;
+  display: block;
+  color: var(--color-text);
+  box-sizing: border-box;
+  min-height: 15em;
+}
+
+select.button > option {
+  text-align: left;
+}
+
+select:active option[disabled] {
+  display: none;
+}
+
+details {
+  > summary {
+    list-style: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: "";
+      flex: 1;
+      order: 1;
+    }
+  }
+
+  & > summary::after {
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' stroke-width='2' stroke='white' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M15 6l-6 6l6 6' /%3E%3C/svg%3E%0A");
+    order: 1;
+    height: 1.5em;
+  }
+
+  &[open] > summary::after {
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' stroke-width='2' stroke='white' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M6 9l6 6l6 -6' /%3E%3C/svg%3E%0A");
+  }
+}
+
+.app {
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex: 1;
+}
+
+a {
+  color: var(--color-text);
+}

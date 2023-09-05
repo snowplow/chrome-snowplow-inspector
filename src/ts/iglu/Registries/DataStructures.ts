@@ -91,7 +91,7 @@ export class DataStructuresRegistry extends Registry {
     super(spec);
 
     this.dsApiEndpoint = new URL(
-      spec["dsApiEndpoint"] || INSIGHTS_API_ENDPOINT
+      spec["dsApiEndpoint"] || INSIGHTS_API_ENDPOINT,
     );
 
     this.organizationId = spec["organizationId"];
@@ -116,11 +116,11 @@ export class DataStructuresRegistry extends Registry {
         new URL(
           apiPath.replace(
             "/organizations/",
-            `/organizations/${this.organizationId}/`
+            `/organizations/${this.organizationId}/`,
           ),
-          this.dsApiEndpoint
+          this.dsApiEndpoint,
         ).href,
-        opts
+        opts,
       ).then((resp) => {
         clearTimeout(id);
         return resp.ok ? resp : Promise.reject("HTTP_ERROR");
@@ -148,22 +148,22 @@ export class DataStructuresRegistry extends Registry {
     };
 
     return (this.authLock = this.requestPermissions(
-      `${this.dsApiEndpoint.origin}/*`
+      `${this.dsApiEndpoint.origin}/*`,
     )
       .then(() =>
         fetch(
           new URL(
             `api/msc/v1/organizations/${this.organizationId}/credentials/v2/token`,
-            this.dsApiEndpoint
+            this.dsApiEndpoint,
           ).href,
-          opts
-        )
+          opts,
+        ),
       )
       .then((resp) => (resp.ok ? resp.json() : Promise.reject("AUTH_ERROR")))
       .then((resp: InsightsAuthResponse) => {
         this.opts.accessToken = this.accessToken = `Bearer ${resp.accessToken}`;
         this.opts.accessExpiry = this.accessExpiry = new Date(
-          Date.now() + 3600000
+          Date.now() + 3600000,
         );
         this.updated = true;
         this.authLock = undefined;
@@ -217,7 +217,7 @@ export class DataStructuresRegistry extends Registry {
       const patchEnv = this.pickPatch(md);
 
       const p = this.fetch(
-        `api/msc/v1/organizations/data-structures/v1/${md.hash}/versions/${schema.version}${patchEnv}`
+        `api/msc/v1/organizations/data-structures/v1/${md.hash}/versions/${schema.version}${patchEnv}`,
       )
         .then((resp) => resp.json())
         .then((data) => schema.resolve(data, this))
@@ -234,7 +234,7 @@ export class DataStructuresRegistry extends Registry {
       return this.walk().then(() =>
         this.metadata.has(schema.uri())
           ? this.resolve(schema)
-          : Promise.reject()
+          : Promise.reject(),
       );
     } else return Promise.reject();
   }
@@ -245,7 +245,7 @@ export class DataStructuresRegistry extends Registry {
     return Promise.race([
       this.requestPermissions(`${this.dsApiEndpoint.origin}/*`),
       new Promise((_, f) =>
-        setTimeout(f, REQUEST_TIMEOUT_MS, "Permission timeout")
+        setTimeout(f, REQUEST_TIMEOUT_MS, "Permission timeout"),
       ),
     ])
       .then(() => this.auth())

@@ -1,4 +1,5 @@
 import { BadRows } from "./BadRows";
+import { ConsoleSync } from "./ConsoleSync";
 import { DeleteRegistries } from "./DeleteRegistries";
 import { EditRegistries } from "./EditRegistries";
 import { EditSchemas } from "./EditSchemas";
@@ -6,8 +7,11 @@ import { EditTestSuites } from "./EditTestSuites";
 import { ImportRegistries } from "./ImportRegistries";
 import { LiveStream } from "./LiveStream";
 
+import "./Modals.scss";
+
 export const modals = {
   badRows: BadRows,
+  consoleSync: ConsoleSync,
   deleteRegistries: DeleteRegistries,
   editRegistries: EditRegistries,
   editSchemas: EditSchemas,
@@ -26,5 +30,5 @@ export interface ModalOptions {
 
 export type ModalSetter = (
   modal?: Modal,
-  opts?: Omit<ModalOptions, "setModal">
+  opts?: Omit<ModalOptions, "setModal">,
 ) => void;

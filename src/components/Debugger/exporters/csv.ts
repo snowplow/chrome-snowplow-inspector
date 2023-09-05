@@ -32,14 +32,14 @@ export default (requests: Entry[], events: IBeaconSummary[][]): File => {
                       return val;
                     }
                   })
-                  .join(",")
-              )
+                  .join(","),
+              ),
             )
             .join("\r\n"),
         ],
-        { type: "text/csv" }
+        { type: "text/csv" },
       ),
     ],
-    "Snowplow Inspector Export.csv"
+    "Snowplow Inspector Export.csv",
   );
 };
