@@ -45,6 +45,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
   const [enabledOrgs, setEnabledOrgs] = useState<Record<string, boolean>>({});
 
   const [error, setError] = useState<unknown>();
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [status, setStatus] = useState("idle");
 
   useEffect(() => consoleAnalytics("Sync Display"), []);
@@ -155,6 +156,29 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                                   }),
                                 },
                               )
+                                .catch((e) => {
+                                  console.warn(
+                                    "failure creating iglue credentials",
+                                    e,
+                                  );
+                                  consoleAnalytics(
+                                    "Iglu Credential Create Failure",
+                                    env,
+                                    "" + e,
+                                  );
+
+                                  setWarnings((warnings) => [
+                                    ...warnings,
+                                    `Unable to create Iglu Credentials for ${org.name}. Contact an admin to get credentials and edit the registry manually.`,
+                                  ]);
+
+                                  return {
+                                    key: {
+                                      value:
+                                        "00000000-0000-0000-0000-000000000000",
+                                    },
+                                  };
+                                })
                                 .then(
                                   (keyDetails: {
                                     name: string;
@@ -164,15 +188,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                                     uri: endpoint,
                                     apiKey: keyDetails.key.value,
                                   }),
-                                )
-                                .catch((e) => {
-                                  consoleAnalytics(
-                                    "Iglu Credential Create Failure",
-                                    env,
-                                    "" + e,
-                                  );
-                                  throw e;
-                                }),
+                                ),
                             ];
                           } else {
                             consoleAnalytics("Iglu Credential Exists", env);
@@ -326,7 +342,6 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
         Promise.all(tasks)
           .then(() => {
             setStatus("done");
-            setModal();
           })
           .catch((reason) => {
             setStatus("error");
@@ -425,6 +440,16 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
         </ul>
       </section>
       <footer>
+        {warnings.length ? (
+          <>
+            <p>Some errors occurred during the synchronization:</p>
+            <ul>
+              {warnings.map((msg) => (
+                <li>{msg}</li>
+              ))}
+            </ul>
+          </>
+        ) : null}
         {status === "idle" ? (
           <button>Synchronize</button>
         ) : status === "working" ? (
