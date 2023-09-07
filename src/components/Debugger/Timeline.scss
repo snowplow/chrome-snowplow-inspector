@@ -24,10 +24,20 @@
       gap: 0.25rem;
       justify-content: space-between;
       white-space: nowrap;
+      flex-wrap: wrap;
+
+      select,
+      button {
+        flex: 1;
+      }
 
       select {
-        width: 0;
-        flex-basis: 100%;
+        flex-basis: auto;
+
+        option {
+          margin: 0 auto;
+          text-align: center;
+        }
       }
     }
 
