@@ -474,11 +474,16 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           isActive(summary) ? "event--active" : "",
           // Some race in Firefox where the response information isn't always populated
           summary.collectorStatus.code === 200 ||
-          summary.collectorStatus.code === 0
+          (summary.collectorStatus.code === 0 &&
+            summary.collectorStatus.text !== "net::ERR_BLOCKED_BY_CLIENT")
             ? ""
             : "event--uncollected",
           `event--destination-${colorOf(summary.collector + summary.appId)}`,
-          summary.validity === "Invalid" ? "event--invalid" : "",
+          summary.validity === "Invalid"
+            ? "event--invalid"
+            : summary.validity === "Valid"
+            ? "event--valid"
+            : "event--unrecognised",
         ].join(" ")}
         title={[
           `Time: ${summary.time}`,

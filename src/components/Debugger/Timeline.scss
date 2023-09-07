@@ -91,6 +91,10 @@
     padding: 0.5rem 1rem;
     cursor: pointer;
 
+    &.event--uncollected {
+      color: red;
+    }
+
     &:hover,
     &:active,
     &.event--active {
