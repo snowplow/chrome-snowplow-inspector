@@ -6,8 +6,8 @@
     overflow-y: auto;
     position: sticky;
     top: 1.5rem;
-    flex: 16;
     margin: 1.5rem 0 1.5rem 1.5rem;
+    resize: horizontal;
   }
 
   &__display {
