@@ -111,25 +111,25 @@
     }
 
     &--destination-blue::before {
-      background-color: blue;
+      background-color: #30b8f6;
     }
     &--destination-red::before {
-      background-color: red;
+      background-color: #661712;
     }
     &--destination-dark::before {
-      background-color: brown;
+      background-color: #98a2b3;
     }
     &--destination-purple::before {
-      background-color: purple;
+      background-color: #412476;
     }
     &--destination-black::before {
       background-color: black;
     }
     &--destination-turquoise::before {
-      background-color: turquoise;
+      background-color: #0b7f86;
     }
     &--destination-yellow::before {
-      background-color: yellow;
+      background-color: #ffd760;
     }
     &--destination-light::before {
       background-color: var(--color-highlight);
