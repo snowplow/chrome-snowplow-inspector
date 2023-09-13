@@ -601,9 +601,15 @@ const parseBadRowJson = (
   result["schema"] = schema;
   result["path"] = "bad_rows";
 
-  if (Array.isArray(data["parameters"]) && data["parameters"].length) {
+  if (typeof result["parameters"] === "string") {
+    try {
+      result["parameters"] = JSON.parse(result["parameters"]);
+    } catch {}
+  }
+
+  if (Array.isArray(result["parameters"]) && result["parameters"].length) {
     const qs = new URLSearchParams(
-      data["parameters"].map(({ name, value }) => [name, value]),
+      result["parameters"].map(({ name, value }) => [name, value]),
     );
     result["querystring"] = qs.toString();
   }
