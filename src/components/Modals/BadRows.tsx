@@ -10,6 +10,36 @@ export interface BadRowsOptions extends ModalOptions {
   addRequests: (reqs: Entry[]) => void;
 }
 
+const mergeJsonLines = (lines: string[]) => {
+  const jsonl: string[] = [];
+
+  let buffer: string | null = null;
+  for (let line of lines) {
+    line = line.trim();
+
+    if (!line) continue;
+
+    if (buffer === null && line.startsWith("{")) {
+      buffer = "";
+    }
+
+    if (buffer !== null) {
+      buffer += line;
+      try {
+        JSON.parse(buffer);
+        jsonl.push(buffer);
+        buffer = null;
+      } catch {}
+    } else {
+      jsonl.push(line);
+    }
+  }
+
+  if (buffer) jsonl.push(buffer);
+
+  return jsonl;
+};
+
 export const BadRows: FunctionComponent<BadRowsOptions> = ({
   addRequests,
   setModal,
@@ -24,14 +54,16 @@ export const BadRows: FunctionComponent<BadRowsOptions> = ({
       if (transfer.files.length) {
         Promise.all(
           Array.from(transfer.files).map((file) =>
-            file.text().then((text) => text.split("\n")),
+            file.text().then((text) => mergeJsonLines(text.split("\n"))),
           ),
         ).then((inputs) =>
           setBadRows((badRows) => badRows.concat(inputs.flat())),
         );
       } else {
         setBadRows((badRows) =>
-          badRows.concat(transfer.getData("text").trim().split("\n")),
+          badRows.concat(
+            mergeJsonLines(transfer.getData("text").trim().split("\n")),
+          ),
         );
       }
     }
