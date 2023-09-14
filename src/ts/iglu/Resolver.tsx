@@ -1,5 +1,10 @@
-import { buildRegistry } from ".";
-import { Registry } from "./Registries/Registry";
+import {
+  Registry,
+  DataStructuresRegistry,
+  IgluRegistry,
+  LocalRegistry,
+  StaticRegistry,
+} from "./Registries";
 import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
 import { repoAnalytics } from "../analytics";
 import { ExtensionOptions, RegistrySpec } from "../types";
@@ -13,6 +18,20 @@ const DEFAULT_REGISTRIES: RegistrySpec[] = [
     priority: 0,
   },
 ];
+
+export const buildRegistry = (spec: RegistrySpec): Registry => {
+  switch (spec.kind) {
+    case "ds":
+      return new DataStructuresRegistry(spec);
+    case "iglu":
+      return new IgluRegistry(spec);
+    case "local":
+      return new LocalRegistry(spec);
+    case "static":
+      return new StaticRegistry(spec);
+  }
+  throw new Error(`Unsupported Registry: ${spec}`);
+};
 
 export class Resolver extends Registry {
   readonly registries: Registry[];
