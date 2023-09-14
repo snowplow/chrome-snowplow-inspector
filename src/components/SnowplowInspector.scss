@@ -1,5 +1,6 @@
 @import "~@fontsource/rubik/latin-400";
 @import "~@fontsource/roboto/latin-400";
+@import "~@fontsource/roboto/latin-500";
 
 * {
   box-sizing: inherit;
@@ -67,6 +68,8 @@ input[type="file"].button:before {
   text-decoration: none;
   text-align: center;
   font-size: 0.875em;
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
 }
 
 button:enabled:hover,
