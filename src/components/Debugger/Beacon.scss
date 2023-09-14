@@ -21,18 +21,15 @@
     box-sizing: border-box;
     color: var(--color-text-light);
 
-    tr {
-      display: flex;
-    }
-
     th {
-      flex: 0 0 15%;
       text-align: left;
       font-family: "Roboto", sans-serif;
       font-weight: 600;
       font-size: 1rem;
       word-break: normal;
       align-self: center;
+      white-space: nowrap;
+      width: 20%;
     }
 
     td {
@@ -60,7 +57,7 @@
 
   .array {
     > tr > th {
-      flex-basis: auto;
+      width: 1em;
     }
   }
 
