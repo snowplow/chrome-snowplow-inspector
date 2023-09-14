@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  padding: 10px;
+}
+
+label,
+textarea {
+  display: block;
+  width: 100%;
+}
+
+textarea {
+  min-height: 18em;
+}

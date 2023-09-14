@@ -3,7 +3,7 @@
  */
 
 // https://nodejs.org/api/url.html#urlresolvefrom-to
-export const resolve = (from: string, to: string) => {
+export const resolve = (from, to) => {
   if (!to) return from;
   const resolved = new URL(to, new URL(from, "resolve://"));
 
@@ -15,4 +15,4 @@ export const resolve = (from: string, to: string) => {
   return resolved.toString();
 };
 
-export const parse = (uri: string) => new URL(uri);
+export const parse = (uri) => new URL(uri);
