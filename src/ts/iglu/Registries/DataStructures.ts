@@ -1,7 +1,6 @@
-import { IgluSchema } from "../";
 import { Registry } from "./Registry";
 import { RegistrySpec } from "../../types";
-import { IgluUri, ResolvedIgluSchema } from "../IgluSchema";
+import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 
 const INSIGHTS_API_ENDPOINT = "https://console.snowplowanalytics.com/";
 

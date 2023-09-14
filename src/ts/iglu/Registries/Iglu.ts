@@ -1,4 +1,4 @@
-import { Registry } from ".";
+import { Registry } from "./Registry";
 import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 import { RegistrySpec, RegistryStatus } from "../../types";
 
