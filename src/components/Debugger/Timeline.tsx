@@ -549,8 +549,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   const importButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
     useCallback(
-      (e) => {
-        const { currentTarget } = e;
+      ({ currentTarget }) => {
         const { value } = currentTarget;
 
         currentTarget.selectedIndex = 0;
@@ -565,8 +564,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   const exportButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
     useCallback(
-      (e) => {
-        const { currentTarget } = e;
+      ({ currentTarget }) => {
         const { value } = currentTarget;
 
         currentTarget.selectedIndex = 0;
@@ -591,7 +589,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             Clear Events
           </button>
           <select class="button" onChange={importButtonHandler}>
-            <option selected disabled>
+            <option selected hidden>
               Import
             </option>
             {Object.entries(importers.formats).map(([key, label]) => (
@@ -605,7 +603,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             disabled={!beacons.length}
             onChange={exportButtonHandler}
           >
-            <option selected disabled>
+            <option selected hidden>
               Export
             </option>
             {Object.entries(exporters.formats).map(([key, label]) => (

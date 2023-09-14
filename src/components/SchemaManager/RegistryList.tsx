@@ -70,7 +70,7 @@ export const RegistryList: FunctionComponent<{
           target.selectedIndex = 0;
         }}
       >
-        <option selected disabled>
+        <option selected hidden>
           Registries...
         </option>
         <option>Add</option>

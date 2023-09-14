@@ -124,7 +124,7 @@ export const CopyMenu: FunctionComponent<{
       copyToClipboard(formatters[value](beacon));
     }}
   >
-    <option selected disabled>
+    <option selected hidden>
       {"\u29c9"} Copy as...
     </option>
     {Object.keys(formatters).map((format) => {
