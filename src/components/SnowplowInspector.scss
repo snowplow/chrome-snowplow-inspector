@@ -1,7 +1,5 @@
-@charset "utf-8";
-
-@import "npm:@fontsource/rubik/latin-400.css";
-@import "npm:@fontsource/roboto/latin-400.css";
+@import "~@fontsource/rubik/latin-400";
+@import "~@fontsource/roboto/latin-400";
 
 * {
   box-sizing: inherit;
