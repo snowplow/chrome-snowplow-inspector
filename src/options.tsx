@@ -5,12 +5,14 @@ import "./options.scss";
 
 type StoredOptions = {
   enableTracking: boolean;
+  hideTestSuites: boolean;
   tunnelAddress: string;
 };
 
 const Options = () => {
   const [options, setOptions] = useState<StoredOptions>({
     enableTracking: true,
+    hideTestSuites: false,
     tunnelAddress: "http://localhost:4040/",
   });
   const [status, setStatus] = useState("");
@@ -51,6 +53,15 @@ const Options = () => {
           checked={options.enableTracking}
         />
         Send anonymous usage information
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          name="hideTestSuites"
+          checked={options.hideTestSuites}
+        />
+        Hide the Test Suites panel
       </label>
 
       <label>
