@@ -111,6 +111,10 @@
   .iglu__payload {
     color: var(--color-text);
 
+    th {
+      color: var(--color-text-light);
+    }
+
     &--Errors {
       color: var(--color-text-contrast);
     }
