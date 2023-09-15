@@ -453,6 +453,13 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   const fallbackUrl = useMemo(() => getPageUrl(requests), [requests]);
 
   const [first, setFirst] = useState<IBeaconSummary>();
+  const [hideSuites, setHideSuites] = useState(false);
+
+  useEffect(() => {
+    chrome.storage.sync.get({ hideTestSuites: false }, ({ hideTestSuites }) =>
+      setHideSuites(hideTestSuites),
+    );
+  }, []);
 
   const [validity, updateValidity] = useState(0);
 
@@ -634,7 +641,9 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           </article>
         ))}
       </div>
-      <TestSuites events={events} setActive={setActive} setModal={setModal} />
+      {hideSuites ? null : (
+        <TestSuites events={events} setActive={setActive} setModal={setModal} />
+      )}
     </aside>
   );
 };
