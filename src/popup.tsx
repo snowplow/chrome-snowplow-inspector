@@ -2,6 +2,9 @@ import { render, h, Fragment } from "preact";
 
 import "./popup.scss";
 
+const REPOSITORY_URL =
+  "https://github.com/poplindata/chrome-snowplow-inspector";
+
 const Popup = () => (
   <>
     <div class="banner">
@@ -35,9 +38,16 @@ const Popup = () => (
       </p>
       <p>
         <a
-          href="https://github.com/poplindata/chrome-snowplow-inspector/issues"
+          href={`${REPOSITORY_URL}/releases/tag/v${
+            chrome.runtime.getManifest().version
+          }`}
           target="_blank"
         >
+          What's new? Check out the latest Release Notes
+        </a>
+      </p>
+      <p>
+        <a href={`${REPOSITORY_URL}/issues`} target="_blank">
           Report problems or request features for the extension
         </a>
       </p>
