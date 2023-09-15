@@ -28,7 +28,8 @@ const Options = () => {
     return () => clearTimeout(tid);
   }, [status]);
 
-  const handler = () => {
+  const handler = (e: Event) => {
+    e.preventDefault();
     chrome.storage.sync.set(options, () => {
       setStatus("Preferences Saved");
     });
@@ -40,7 +41,7 @@ const Options = () => {
         if (target instanceof HTMLInputElement) {
           setOptions((options) => ({
             ...options,
-            [target.name]: target.value,
+            [target.name]: target.checked ?? target.value,
           }));
         }
       }}
