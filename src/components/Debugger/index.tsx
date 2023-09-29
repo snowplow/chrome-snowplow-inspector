@@ -51,6 +51,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         batch.filter(
           (req) =>
             !(
+              req.serverIPAddress === "" ||
               !isSnowplow(req.request) ||
               req.request.method === "OPTIONS" ||
               req.response.statusText === "Service Worker Fallback Required"
