@@ -125,7 +125,7 @@ export const CopyMenu: FunctionComponent<{
     }}
   >
     <option selected hidden>
-      {"\u29c9"} Copy as...
+      {"\u29c9\ufe0f"} Copy as...
     </option>
     {Object.keys(formatters).map((format) => {
       const eligible = !checks[format] || checks[format](beacon);

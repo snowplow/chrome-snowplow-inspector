@@ -306,7 +306,7 @@ const ValidityOptions = {
   emoji: {
     fail: "\u26d4\ufe0f",
     incomplete: "\ud83d\udd0d\ufe0f",
-    pass: "\u2705",
+    pass: "\u2705\ufe0f",
   },
   title: {
     fail: "Test Failed",
@@ -404,7 +404,7 @@ export const TestSuites: FunctionComponent<{
             })
           }
         >
-          {"\ud83d\udd89"}
+          {"\ud83d\udd89\ufe0f"}
         </button>
       </p>
       {results}
