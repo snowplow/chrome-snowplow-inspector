@@ -79,10 +79,10 @@ To stop streaming these events select 'Import' then 'Stop Ngrok Tunnel'.
 
 == Develop
 === Build
-Run `npm install` to install required dependencies, then `npm run build` to build the extension in the `dist/` directory.
+Run `npm install` to install required dependencies and build the extension in the `dist/` directory.
 
 Instructions to install a local development version of the extension to test are over at the link:https://developer.chrome.com/extensions/getstarted#unpacked[extension development documentation].
 
 === Hack
-You can also use `npm start` to start parcel in watch mode and symlink the resources to make editing easier; source changes should then be reflected immediately in `dist/`.
-Some changes will automatically be reflected straight away, more intense changes will need to reload the extension in your browser to update correctly.
+You can also use `npm start` to start rollup in watch mode to make editing easier; source changes should then be reflected in `dist/`.
+Some changes will automatically be reflected straight away, more intense changes will need to reopen DevTools to update correctly.

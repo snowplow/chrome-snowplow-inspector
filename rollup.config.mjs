@@ -17,6 +17,7 @@ export default Object.entries({
   "src/options.tsx": "options.html",
   "src/popup.tsx": "popup.html",
 }).map(([input, fileName], i) => ({
+  strictDeprecations: true,
   input,
   output: {
     dir: "dist",

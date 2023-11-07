@@ -5,12 +5,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "fmt": "prettier -w src",
-    "clean": "rm -r dist || true",
-    "start": "npm run clean && mkdir -p dist && rollup -c -w",
-    "build": "npm run clean && mkdir -p dist && rollup -c",
-    "xpi": "npm run build && npx web-ext build --overwrite-dest -s dist/ -a .",
-    "xpi-signed": "npm run build && npx web-ext sign -s dist/ -a .",
-    "zip": "npm run build && zip -r snowplow-chrome-extension.zip dist/"
+    "clean": "rm -r dist snowplow-chrome-extension.zip || true",
+    "prestart": "npm run clean",
+    "start": "rollup -c -w",
+    "preprepare": "npm run clean",
+    "prepare": "rollup -c",
+    "prexpi": "npm install",
+    "xpi": "npx web-ext build --overwrite-dest -s dist/ -a .",
+    "prexpi-signed": "npm run install",
+    "xpi-signed": "npx web-ext sign -s dist/ -a .",
+    "prezip": "npm install",
+    "zip": "zip -r snowplow-chrome-extension.zip dist/"
   },
   "repository": {
     "type": "git",
@@ -43,7 +48,7 @@
     "@types/har-format": "1.*",
     "@types/node": "*",
     "prettier": "^3.0.2",
-    "rollup": "^3.29.1",
+    "rollup": "^3.29.4",
     "sass": "^1.23.7",
     "tslib": "*",
     "typescript": "^5.0.0"
