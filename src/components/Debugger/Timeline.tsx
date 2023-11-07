@@ -164,11 +164,15 @@ const validateEvent = (
         // identifiable schema. This is a legacy behaviour so we'll make an exception here.
         else validations.push(Promise.resolve("Unrecognised"));
       } else if (Array.isArray(sdj.data)) {
-        sdj.data.forEach((ctx: SDJ) => {
-          schema = IgluSchema.fromUri(ctx.schema);
-          validations.push(
-            validate(schema, ctx.data).catch(() => "Unrecognised"),
-          );
+        sdj.data.forEach((ctx: SDJ | null) => {
+          if (!ctx) {
+            validations.push(Promise.resolve("Invalid"));
+          } else {
+            schema = IgluSchema.fromUri(ctx.schema);
+            validations.push(
+              validate(schema, ctx.data).catch(() => "Unrecognised"),
+            );
+          }
         });
       } else {
         console.error("Expected Contexts SDJ to contain Array data");
