@@ -404,7 +404,7 @@ export const TestSuites: FunctionComponent<{
             })
           }
         >
-          {"\ud83d\udd89\ufe0f"}
+          {"\u2699\ufe0e"}
         </button>
       </p>
       {results}
