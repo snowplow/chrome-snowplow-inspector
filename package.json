@@ -12,7 +12,7 @@
     "prepare": "rollup -c",
     "prexpi": "npm install",
     "xpi": "npx web-ext build --overwrite-dest -s dist/ -a .",
-    "prexpi-signed": "npm run install",
+    "prexpi-signed": "npm install",
     "xpi-signed": "npx web-ext sign -s dist/ -a .",
     "prezip": "npm install",
     "zip": "zip -r snowplow-chrome-extension.zip dist/"
