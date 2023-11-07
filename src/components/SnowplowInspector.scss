@@ -11,7 +11,6 @@
   display: flex;
   box-sizing: border-box;
   height: 100%;
-  font-family: "Roboto", sans-serif;
   font-size: 0.875em;
   color: var(--color-text);
 
@@ -44,6 +43,7 @@ body {
   flex: 1;
   align-self: stretch;
   background-color: var(--color-background);
+  font-family: "Roboto", sans-serif;
   margin: 0;
   font-size: 1rem;
   line-height: 1.5;
@@ -68,8 +68,7 @@ input[type="file"].button:before {
   text-decoration: none;
   text-align: center;
   font-size: 0.875em;
-  font-family: "Roboto", sans-serif, "Twemoji Mozilla", "Apple Color Emoji",
-    "Segoe UI Emoji", "Noto Color Emoji", "EmojiOne Color";
+  font-family: "Roboto", sans-serif;
   font-weight: 500;
 }
 
