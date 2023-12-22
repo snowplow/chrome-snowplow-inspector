@@ -137,8 +137,8 @@ const getTarget = (
   return typeof result === "undefined"
     ? result
     : typeof result === "string"
-    ? result
-    : JSON.stringify(result);
+      ? result
+      : JSON.stringify(result);
 };
 
 const evalCondition = (

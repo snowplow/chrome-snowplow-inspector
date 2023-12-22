@@ -38,8 +38,8 @@ export const SnowplowInspector: FunctionComponent = () => {
         a.startedDateTime === b.startedDateTime
           ? 0
           : a.startedDateTime < b.startedDateTime
-          ? -1
-          : 1,
+            ? -1
+            : 1,
       );
 
       return merged;

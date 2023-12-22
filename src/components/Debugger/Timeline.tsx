@@ -493,8 +493,8 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           summary.validity === "Invalid"
             ? "event--invalid"
             : summary.validity === "Valid"
-            ? "event--valid"
-            : "event--unrecognised",
+              ? "event--valid"
+              : "event--unrecognised",
         ].join(" ")}
         title={[
           `Time: ${summary.time}`,

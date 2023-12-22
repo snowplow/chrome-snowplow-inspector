@@ -64,8 +64,8 @@ export class StaticRegistry extends Registry {
         return resp.ok
           ? resp
           : resp.status === 404
-          ? Promise.reject("NOT_FOUND")
-          : Promise.reject("HTTP_ERROR");
+            ? Promise.reject("NOT_FOUND")
+            : Promise.reject("HTTP_ERROR");
       });
   }
 

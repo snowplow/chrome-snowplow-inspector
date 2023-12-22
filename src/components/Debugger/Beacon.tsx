@@ -504,10 +504,10 @@ export const Beacon: FunctionComponent<IBeacon> = ({
                     a.enabled > b.enabled
                       ? -1
                       : a.enabled < b.enabled
-                      ? 1
-                      : a.filename < b.filename
-                      ? -1
-                      : 1,
+                        ? 1
+                        : a.filename < b.filename
+                          ? -1
+                          : 1,
                   )
                   .map((enr) => (
                     <BeaconValue
