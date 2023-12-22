@@ -35,6 +35,21 @@ export type OAuthIdentity = {
   picture: string;
 };
 
+export type OAuthAccess = {
+  exp: number;
+  "https://snowplowanalytics.com/roles": {
+    user: {
+      id: string;
+      name: string;
+      organization: {
+        id: string;
+        name: string;
+      };
+    };
+    groups: string[];
+  };
+};
+
 export interface IDebugger {
   addRequests: (requests: Entry[]) => void;
   clearRequests: () => void;

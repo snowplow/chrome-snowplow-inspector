@@ -4,11 +4,12 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 import { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
 
-import { uuidv4, tryb64 } from "../../ts/util";
 import { buildRegistry, Resolver } from "../../ts/iglu";
 import { consoleAnalytics } from "../../ts/analytics";
+import { doOAuthFlow } from "../../ts/oauth";
 import { request as requestPermissions } from "../../ts/permissions";
 import type {
+  OAuthAccess,
   OAuthIdentity,
   PipelineInfo,
   TestSuiteSpec,
@@ -20,29 +21,14 @@ const prodExtIds = [
   "maplkdomeamdlngconidoefjpogkmljm",
 ];
 
-const PROD_OAUTH_FLOW = "https://id.snowplowanalytics.com/";
 const PROD_CONSOLE_API = "https://console.snowplowanalytics.com/api/msc/v1/";
-const PROD_OAUTH_CLIENTID = "ljiYxb2Cs1gyN0wTWvfByrt1jdRaqxyM";
 
-const NONPROD_OAUTH_FLOW = "https://next.id.snowplowanalytics.com/";
 const NONPROD_CONSOLE_API =
   "https://next.console.snowplowanalytics.com/api/msc/v1/";
-const NONPROD_OAUTH_CLIENTID = "xLciUpURW0s0SV5wF2kZ7WLQWkaa9fS9";
 
-const CONSOLE_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api/";
-const CONSOLE_OAUTH_SCOPES = "openid profile";
-
-const OAUTH_FLOW = prodExtIds.includes(chrome.runtime.id)
-  ? PROD_OAUTH_FLOW
-  : NONPROD_OAUTH_FLOW;
-
-const CONSOLE_API = prodExtIds.includes(chrome.runtime.id)
+export const CONSOLE_API = prodExtIds.includes(chrome.runtime.id)
   ? PROD_CONSOLE_API
   : NONPROD_CONSOLE_API;
-
-const CONSOLE_OAUTH_CLIENTID = prodExtIds.includes(chrome.runtime.id)
-  ? PROD_OAUTH_CLIENTID
-  : NONPROD_OAUTH_CLIENTID;
 
 type Organization = {
   id: string;
@@ -52,6 +38,27 @@ type Organization = {
   tags: string[];
   essoDomain?: string;
   features: null | unknown;
+};
+
+type UserPermissions = {
+  organizationId: string;
+  permissions: {
+    organizationId: string;
+    capabilities: {
+      resourceType:
+        | "*"
+        | "API-KEYS"
+        | "DATA-MODELS"
+        | "DATA-STRUCTURES"
+        | "ENVIRONMENTS"
+        | "USERS";
+      action: "*" | "CREATE" | "EDIT" | "LIST" | "PUBLISH" | "VIEW";
+      filters: {
+        attributes: string;
+        value: string;
+      }[];
+    }[];
+  }[];
 };
 
 export interface ConsoleSyncOptions extends ModalOptions {
@@ -64,8 +71,30 @@ const apiFetch = (path: string, opts?: Parameters<typeof fetch>[1]) =>
     r.ok ? r.json() : Promise.reject(r.statusText),
   );
 
-const b64url = (s: string) =>
-  btoa(s).replace(/[\+\/=]/g, (c) => ({ "+": "-", "/": "_", "=": "" })[c]!);
+const permissionStrategy = (
+  { permissions }: UserPermissions,
+  orgId: string,
+): "create-key" | "store" | "none" => {
+  const caps = permissions.flatMap(({ organizationId, capabilities }) =>
+    organizationId === orgId ? capabilities : [],
+  );
+
+  const hasSensitive = caps.some(
+    ({ action, resourceType }) =>
+      ["*", "CREATE", "EDIT", "PUBLISH"].includes(action) &&
+      ["*", "ENVIRONMENTS", "USERS", "API-KEYS", "DATA-MODELS"].includes(
+        resourceType,
+      ),
+  );
+
+  const canLower = caps.some(
+    ({ action, resourceType }) =>
+      ["*", "CREATE"].includes(action) &&
+      ["*", "API-KEYS"].includes(resourceType),
+  );
+
+  return hasSensitive ? (canLower ? "create-key" : "none") : "store";
+};
 
 export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
   setModal,
@@ -83,6 +112,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
     {},
   );
   const [id, setId] = useState<OAuthIdentity>();
+  const [at, setAT] = useState<OAuthAccess>();
 
   const [warnings, setWarnings] = useState<string[]>([]);
   const [status, setStatus] = useState<
@@ -99,113 +129,43 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
   const startFlow = useCallback(() => {
     consoleAnalytics("Auth Flow Start");
     setStatus("authenticating");
-    const flowUrl = new URL("authorize", OAUTH_FLOW);
 
-    const state = uuidv4();
-    const nonce = b64url(
-      String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))),
-    );
+    doOAuthFlow(true)
+      .then(({ access, identity, authentication }) => {
+        consoleAnalytics("Auth Flow Response");
+        setIdentity(identity);
+        consoleAnalytics("Auth Flow Complete");
 
-    // OAuth Implicit Flow
-    // https://auth0.com/docs/api/authentication#implicit-flow
-    Object.entries({
-      response_type: "id_token token",
-      client_id: CONSOLE_OAUTH_CLIENTID,
-      redirect_uri: chrome.identity.getRedirectURL(),
-      scope: CONSOLE_OAUTH_SCOPES,
-      audience: CONSOLE_OAUTH_AUDIENCE,
-      nonce,
-      state,
-    }).forEach(([key, val]) => flowUrl.searchParams.set(key, val));
-
-    chrome.identity.launchWebAuthFlow(
-      { interactive: true, url: flowUrl.toString() },
-      (responseUrl) => {
-        if (responseUrl) {
-          consoleAnalytics("Auth Flow Response");
-          const response = new URL(responseUrl);
-          const fragParams = new URLSearchParams(response.hash.slice(1));
-          const access_token = fragParams.get("access_token");
-          const id_token = fragParams.get("id_token");
-          const token_type = fragParams.get("token_type");
-          const respState = fragParams.get("state");
-
-          if (
-            respState !== state ||
-            token_type !== "Bearer" ||
-            !access_token ||
-            !id_token
-          ) {
+        apiFetch("organizations", authentication)
+          .then((organizations) => {
+            consoleAnalytics(
+              "Organization Discovery",
+              undefined,
+              undefined,
+              organizations.length,
+            );
+            setOrganizations(organizations);
+            setAuthentication(authentication);
+            setAT(access);
+            setId(identity);
+            setWarnings([]);
+            setStatus("authenticated");
+          })
+          .catch((e) => {
+            consoleAnalytics("Organization Discovery Failure");
             setStatus("error");
             setWarnings((warnings) => [
               ...warnings,
-              "OAuth protocol failure failure during authentication",
+              "Unable to find any associated Organizations",
             ]);
-            consoleAnalytics("Auth Flow Invalid");
-            return console.error(
-              "auth failed",
-              access_token,
-              id_token,
-              token_type,
-            );
-          }
-          const [header, encIdentity, sig] = id_token.split(".");
-
-          const decIdentity = tryb64(encIdentity);
-          if (decIdentity === encIdentity) {
-            setStatus("error");
-            setWarnings((warnings) => [
-              ...warnings,
-              "Unable to process OAuth user identity",
-            ]);
-            consoleAnalytics("Auth Flow Identity Error");
-            return console.error(
-              "could not decode identity token",
-              encIdentity,
-            );
-          }
-
-          const identity: OAuthIdentity = JSON.parse(decIdentity);
-          setIdentity(identity);
-          consoleAnalytics("Auth Flow Complete");
-
-          const authentication = {
-            headers: { Authorization: `Bearer ${access_token}` },
-          };
-
-          apiFetch("organizations", authentication)
-            .then((organizations) => {
-              consoleAnalytics(
-                "Organization Discovery",
-                undefined,
-                undefined,
-                organizations.length,
-              );
-              setOrganizations(organizations);
-              setAuthentication(authentication);
-              setId(identity);
-              setWarnings([]);
-              setStatus("authenticated");
-            })
-            .catch((e) => {
-              consoleAnalytics("Organization Discovery Failure");
-              setStatus("error");
-              setWarnings((warnings) => [
-                ...warnings,
-                "Unable to find any associated Organizations",
-              ]);
-              console.error(e);
-            });
-        } else {
-          consoleAnalytics("Auth Flow Failure");
-          setWarnings((warnings) => [
-            ...warnings,
-            "No OAuth redirect detected",
-          ]);
-          setStatus("unauthenticated");
-        }
-      },
-    );
+            console.error(e);
+          });
+      })
+      .catch((e: Error) => {
+        consoleAnalytics("Auth Flow Error");
+        setStatus("error");
+        setWarnings((warnings) => [...warnings, e.message]);
+      });
   }, []);
 
   const startSync = useCallback(
@@ -224,21 +184,21 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
         }),
       );
 
+      const targetOrgs = organizations.filter(
+        ({ id }) => enabledOrgs[id] ?? true,
+      );
+
       if (doScenarios)
         tasks.push(
           Promise.all(
-            organizations.flatMap((org) => {
-              if (enabledOrgs[org.id] ?? true) {
-                return [
-                  apiFetch(
-                    `organizations/${org.id}/tracking-scenarios/v1`,
-                    authentication,
-                  ).then((results) =>
-                    specFromTrackingScenarios(org.name, results.data),
-                  ),
-                ];
-              } else return [];
-            }),
+            targetOrgs.flatMap((org) => [
+              apiFetch(
+                `organizations/${org.id}/tracking-scenarios/v1`,
+                authentication,
+              ).then((results) =>
+                specFromTrackingScenarios(org.name, results.data),
+              ),
+            ]),
           )
             .then((transformed) => {
               chrome.storage.local.get(
@@ -269,21 +229,29 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
             .catch((e) => consoleAnalytics("Scenario Import Failure", "" + e)),
         );
 
-      if (doIgluDev || doIgluProd)
+      if (at && (doIgluDev || doIgluProd))
         tasks.push(
           Promise.all(
-            organizations.map((org) =>
-              apiFetch(
-                `organizations/${org.id}/resources/v1/iglus`,
-                authentication,
-              ).then(
-                (
-                  iglus: Record<
+            targetOrgs.map((org) =>
+              Promise.all([
+                apiFetch(
+                  `organizations/${org.id}/users/${at["https://snowplowanalytics.com/roles"].user.id}`,
+                  authentication,
+                ),
+                apiFetch(
+                  `organizations/${org.id}/resources/v1/iglus`,
+                  authentication,
+                ),
+              ]).then(
+                ([user, iglus]: [
+                  UserPermissions,
+                  Record<
                     "prod" | "dev",
                     { endpoint: string; keys: { name: string }[] }
                   >,
-                ) => {
+                ]) => {
                   const keyName = `Snowplow Inspector - ${id!.name}`;
+                  const permStrat = permissionStrategy(user, org.id);
 
                   return Promise.all(
                     Object.entries(iglus).flatMap(
@@ -291,61 +259,83 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                         if (env === "dev" && !doIgluDev) return [];
                         if (env === "prod" && !doIgluProd) return [];
 
-                        const existing = keys.find(
-                          ({ name }) => name === keyName,
-                        );
-
-                        if (!existing) {
-                          consoleAnalytics("Iglu Credential Create", env);
-                          return [
-                            apiFetch(
-                              `organizations/${org.id}/resources/v1/iglus/${env}/keys`,
-                              {
-                                ...authentication,
-                                method: "post",
-                                body: JSON.stringify({
-                                  name: keyName,
-                                  keyType: "ReadOnly",
-                                }),
-                              },
-                            )
-                              .catch((e) => {
-                                console.warn(
-                                  "failure creating iglue credentials",
-                                  e,
-                                );
-                                consoleAnalytics(
-                                  "Iglu Credential Create Failure",
-                                  env,
-                                  "" + e,
-                                );
-
-                                setWarnings((warnings) => [
-                                  ...warnings,
-                                  `Unable to create Iglu Credentials for ${org.name}. Contact an admin to get credentials and edit the registry manually.`,
-                                ]);
-
-                                return {
-                                  key: {
-                                    value:
-                                      "00000000-0000-0000-0000-000000000000",
-                                  },
-                                };
-                              })
-                              .then(
-                                (keyDetails: {
-                                  name: string;
-                                  key: { value: string };
-                                }) => ({
-                                  name: `${org.name} (${env})`,
-                                  uri: endpoint,
-                                  apiKey: keyDetails.key.value,
+                        switch (permStrat) {
+                          case "none":
+                            setWarnings((warnings) => [
+                              ...warnings,
+                              `Unable to obtain safe credentials for ${org.name}. Your permissions are too powerful to store safely, but not high enough to create a less powerful API key.`,
+                            ]);
+                            return [];
+                          case "store":
+                            return [
+                              Promise.resolve(
+                                buildRegistry({
+                                  kind: "ds",
+                                  name: `${org.name} (Console)`,
+                                  organizationId: org.id,
+                                  useOAuth: true,
                                 }),
                               ),
-                          ];
-                        } else {
-                          consoleAnalytics("Iglu Credential Exists", env);
-                          return [];
+                            ];
+                          case "create-key":
+                            const existing = keys.find(
+                              ({ name }) => name === keyName,
+                            );
+
+                            if (existing) {
+                              consoleAnalytics("Iglu Credential Exists", env);
+                              return [];
+                            }
+
+                            consoleAnalytics("Iglu Credential Create", env);
+                            return [
+                              apiFetch(
+                                `organizations/${org.id}/resources/v1/iglus/${env}/keys`,
+                                {
+                                  ...authentication,
+                                  method: "post",
+                                  body: JSON.stringify({
+                                    name: keyName,
+                                    keyType: "ReadOnly",
+                                  }),
+                                },
+                              )
+                                .catch((e) => {
+                                  console.warn(
+                                    "failure creating iglu credentials",
+                                    e,
+                                  );
+                                  consoleAnalytics(
+                                    "Iglu Credential Create Failure",
+                                    env,
+                                    "" + e,
+                                  );
+
+                                  setWarnings((warnings) => [
+                                    ...warnings,
+                                    `Unable to create Iglu Credentials for ${org.name}. Contact an admin to get credentials and edit the registry manually.`,
+                                  ]);
+
+                                  return {
+                                    key: {
+                                      value:
+                                        "00000000-0000-0000-0000-000000000000",
+                                    },
+                                  };
+                                })
+                                .then(
+                                  (keyDetails: {
+                                    name: string;
+                                    key: { value: string };
+                                  }) =>
+                                    buildRegistry({
+                                      kind: "iglu",
+                                      name: `${org.name} (${env})`,
+                                      uri: endpoint,
+                                      apiKey: keyDetails.key.value,
+                                    }),
+                                ),
+                            ];
                         }
                       },
                     ),
@@ -355,10 +345,13 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
             ),
           )
             .then((specs) => {
-              requestPermissions(...specs.flat().map(({ uri }) => uri));
-              return specs
-                .flat()
-                .map((spec) => buildRegistry({ kind: "iglu", ...spec }));
+              const flat = specs.flat();
+              requestPermissions(
+                ...flat
+                  .filter((r) => "uri" in r.spec)
+                  .map(({ spec: { uri } }) => uri),
+              );
+              return flat;
             })
             .then((newRegs) => {
               resolver.import(false, ...newRegs);
@@ -369,99 +362,95 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
       if (doEnrichments)
         tasks.push(
           Promise.all(
-            organizations.flatMap((org) => {
-              if (enabledOrgs[org.id] ?? true) {
-                return [
-                  apiFetch(
-                    `organizations/${org.id}/resources/v1`,
-                    authentication,
-                  ).then(
-                    (resources: {
-                      minis: {
-                        id: string;
-                        cleanEndpoint?: string;
-                        cloudProvider: string;
-                      }[];
-                      pipelines: {
-                        id: string;
-                        name: string;
-                        cloudProvider: string;
-                      }[];
-                    }) =>
-                      Promise.all(
-                        Object.entries(resources)
-                          .flatMap(([resource, list]) =>
-                            list.map((li) => ({ ...li, resource })),
-                          )
-                          .map((resource) =>
-                            Promise.all([
-                              apiFetch(
-                                `organizations/${org.id}/resources/v1/${resource.resource}/${resource.id}/configuration/enrichments`,
+            targetOrgs.flatMap((org) => [
+              apiFetch(
+                `organizations/${org.id}/resources/v1`,
+                authentication,
+              ).then(
+                (resources: {
+                  minis: {
+                    id: string;
+                    cleanEndpoint?: string;
+                    cloudProvider: string;
+                  }[];
+                  pipelines: {
+                    id: string;
+                    name: string;
+                    cloudProvider: string;
+                  }[];
+                }) =>
+                  Promise.all(
+                    Object.entries(resources)
+                      .flatMap(([resource, list]) =>
+                        list.map((li) => ({ ...li, resource })),
+                      )
+                      .map((resource) =>
+                        Promise.all([
+                          apiFetch(
+                            `organizations/${org.id}/resources/v1/${resource.resource}/${resource.id}/configuration/enrichments`,
+                            authentication,
+                          ).then(
+                            (
+                              enrichments: {
+                                id: string;
+                                filename: string;
+                                lastUpdate: string;
+                                enabled: boolean;
+                                content: unknown;
+                              }[],
+                            ) => ({
+                              ...resource,
+                              organization: org.id,
+                              organizationName: org.name,
+                              domain: org.domain,
+                              enrichments,
+                            }),
+                          ),
+                          "cleanEndpoint" in resource
+                            ? Promise.resolve([resource.cleanEndpoint!])
+                            : apiFetch(
+                                `organizations/${org.id}/resources/v1/${resource.resource}/${resource.id}/configuration/collector`,
                                 authentication,
                               ).then(
-                                (
-                                  enrichments: {
-                                    id: string;
-                                    filename: string;
-                                    lastUpdate: string;
-                                    enabled: boolean;
-                                    content: unknown;
-                                  }[],
-                                ) => ({
-                                  ...resource,
-                                  organization: org.id,
-                                  organizationName: org.name,
-                                  domain: org.domain,
-                                  enrichments,
-                                }),
+                                ({
+                                  domains,
+                                }: {
+                                  domains: {
+                                    fallback?: string;
+                                    cookieDomains?: string[];
+                                    dnsDomains?: string[];
+                                    collectorCname?: string[];
+                                  };
+                                }) => {
+                                  const found: string[] = [];
+                                  if (domains.fallback)
+                                    found.push(domains.fallback);
+                                  if (
+                                    domains.cookieDomains &&
+                                    domains.cookieDomains.length
+                                  )
+                                    found.push(...domains.cookieDomains);
+                                  if (
+                                    domains.dnsDomains &&
+                                    domains.dnsDomains.length
+                                  )
+                                    found.push(...domains.dnsDomains);
+                                  if (
+                                    domains.collectorCname &&
+                                    domains.collectorCname.length
+                                  )
+                                    found.push(...domains.collectorCname);
+                                  return found;
+                                },
                               ),
-                              "cleanEndpoint" in resource
-                                ? Promise.resolve([resource.cleanEndpoint!])
-                                : apiFetch(
-                                    `organizations/${org.id}/resources/v1/${resource.resource}/${resource.id}/configuration/collector`,
-                                    authentication,
-                                  ).then(
-                                    ({
-                                      domains,
-                                    }: {
-                                      domains: {
-                                        fallback?: string;
-                                        cookieDomains?: string[];
-                                        dnsDomains?: string[];
-                                        collectorCname?: string[];
-                                      };
-                                    }) => {
-                                      const found: string[] = [];
-                                      if (domains.fallback)
-                                        found.push(domains.fallback);
-                                      if (
-                                        domains.cookieDomains &&
-                                        domains.cookieDomains.length
-                                      )
-                                        found.push(...domains.cookieDomains);
-                                      if (
-                                        domains.dnsDomains &&
-                                        domains.dnsDomains.length
-                                      )
-                                        found.push(...domains.dnsDomains);
-                                      if (
-                                        domains.collectorCname &&
-                                        domains.collectorCname.length
-                                      )
-                                        found.push(...domains.collectorCname);
-                                      return found;
-                                    },
-                                  ),
-                            ]).then(([enrich, domains]) => ({
-                              ...enrich,
-                              domains,
-                            })),
-                          ),
+                        ]).then(([enrich, domains]) => ({
+                          ...enrich,
+                          domains,
+                        })),
                       ),
                   ),
-                ];
-              } else return [];
-            }),
+              ),
+            ]),
           ).then((orgResources) => {
             chrome.storage.local.get(
               {
@@ -501,7 +490,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
           setStatus("error");
         });
     },
-    [authentication],
+    [authentication, doEnrichments, doIgluDev, doIgluProd, doScenarios],
   );
 
   return (
