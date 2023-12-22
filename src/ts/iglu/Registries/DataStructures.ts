@@ -1,6 +1,7 @@
 import { Registry } from "./Registry";
 import { RegistrySpec } from "../../types";
 import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
+import { doOAuthFlow } from "../../oauth";
 
 const INSIGHTS_API_ENDPOINT = "https://console.snowplowanalytics.com/";
 
@@ -56,6 +57,12 @@ export class DataStructuresRegistry extends Registry {
       pattern: "^[a-fA-F0-9\\-]{36}$",
       required: true,
     },
+    useOAuth: {
+      title: "Use OAuth",
+      type: "checkbox",
+      description: "Attempt a login with OAuth instead of API Key",
+      required: false,
+    },
     dsApiEndpoint: {
       title: "API Endpoint",
       type: "url",
@@ -82,6 +89,7 @@ export class DataStructuresRegistry extends Registry {
   private readonly cache: Map<IgluUri, Promise<ResolvedIgluSchema>> = new Map();
   private accessToken?: string;
   private accessExpiry?: Date;
+  private useOAuth?: boolean;
 
   private readonly metadata: Map<IgluUri, DataStructuresMetaData> = new Map();
   private authLock?: Promise<RequestInit["headers"]>;
@@ -98,6 +106,7 @@ export class DataStructuresRegistry extends Registry {
 
     this.accessToken = spec["accessToken"];
     this.accessExpiry = spec["accessExpiry"];
+    this.useOAuth = spec["useOAuth"];
   }
 
   private fetch(apiPath: string): ReturnType<typeof fetch> {
@@ -130,6 +139,22 @@ export class DataStructuresRegistry extends Registry {
   private auth(): Promise<RequestInit["headers"]> {
     if (this.authLock) return this.authLock;
 
+    return (this.authLock =
+      this.useOAuth ?? false ? this.oauthAuth() : this.apiAuth())
+      .then((auth) => {
+        this.updated = true;
+        this.authLock = undefined;
+        return auth;
+      })
+      .catch((reason) => {
+        this.opts["statusReason"] = reason;
+        this.lastStatus = "UNHEALTHY";
+        this.authLock = undefined;
+        return Promise.reject();
+      });
+  }
+
+  private apiAuth() {
     const now = new Date();
     if (this.accessToken && this.accessExpiry && now < this.accessExpiry) {
       return Promise.resolve({ Authorization: this.accessToken });
@@ -146,9 +171,7 @@ export class DataStructuresRegistry extends Registry {
       },
     };
 
-    return (this.authLock = this.requestPermissions(
-      `${this.dsApiEndpoint.origin}/*`,
-    )
+    return this.requestPermissions(`${this.dsApiEndpoint.origin}/*`)
       .then(() =>
         fetch(
           new URL(
@@ -164,16 +187,37 @@ export class DataStructuresRegistry extends Registry {
         this.opts.accessExpiry = this.accessExpiry = new Date(
           Date.now() + 3600000,
         );
-        this.updated = true;
-        this.authLock = undefined;
         return { Authorization: this.accessToken };
-      })
-      .catch((reason) => {
-        this.opts["statusReason"] = reason;
-        this.lastStatus = "UNHEALTHY";
-        this.authLock = undefined;
-        return Promise.reject();
-      }));
+      });
+  }
+
+  private oauthAuth() {
+    const now = new Date();
+    if (this.accessToken && this.accessExpiry && now < this.accessExpiry) {
+      return Promise.resolve({ Authorization: this.accessToken });
+    }
+
+    return doOAuthFlow(false).then(({ access, authentication }) => {
+      if (authentication.headers) {
+        const { headers } = authentication;
+        let at: string;
+        if (Array.isArray(headers)) {
+          const auth = headers.find(
+            ([k, v]) => k.toLowerCase() === "authorization",
+          );
+          at = auth ? auth[1] : "";
+        } else if (headers instanceof Headers) {
+          at = headers.get("Authorization")!;
+        } else {
+          at = headers["Authorization"];
+        }
+        this.opts.accessToken = this.accessToken = at;
+        this.opts.accessExpiry = this.accessExpiry = new Date(
+          access.exp * 1000,
+        );
+        return authentication.headers;
+      }
+    });
   }
 
   private pickPatch(metadata: DataStructuresMetaData) {
