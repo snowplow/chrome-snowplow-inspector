@@ -3,7 +3,7 @@
 
   "name": "Snowplow Inspector",
   "description": "Add a new tab in Developer Tools to show Snowplow Analytics beacon information.",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "browser_specific_settings": {
     "gecko": {
       "id": "{4166b542-f87d-4dbc-a6b1-34cb31a5b04e}"
