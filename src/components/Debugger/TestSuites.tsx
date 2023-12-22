@@ -228,8 +228,10 @@ const evalTest = (
         idx = results.findIndex(([ok]) => ok === (test.combinator === "not"));
         if (idx === -1) {
           success.push(event);
-          [ok, got] = results[results.length - 1];
-          passCauses.push([test.conditions[test.conditions.length - 1], got]);
+          if (results.length) {
+            [ok, got] = results[results.length - 1];
+            passCauses.push([test.conditions[test.conditions.length - 1], got]);
+          }
         } else {
           failure.push(event);
           [ok, got] = results[idx];
