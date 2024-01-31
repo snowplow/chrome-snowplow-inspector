@@ -19,14 +19,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/poplindata/chrome-snowplow-inspector.git"
+    "url": "git+https://github.com/snowplow/chrome-snowplow-inspector.git"
   },
   "author": "Poplin Data",
   "license": "SEE LICENSE IN LICENSE.md",
   "bugs": {
-    "url": "https://github.com/poplindata/chrome-snowplow-inspector/issues"
+    "url": "https://github.com/snowplow/chrome-snowplow-inspector/issues"
   },
-  "homepage": "https://github.com/poplindata/chrome-snowplow-inspector#readme",
+  "homepage": "https://github.com/snowplow/chrome-snowplow-inspector#readme",
   "dependencies": {
     "@fontsource/roboto": "^5.0.0",
     "@fontsource/rubik": "^5.0.0",
