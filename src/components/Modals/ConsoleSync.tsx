@@ -193,7 +193,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
           Promise.all(
             targetOrgs.flatMap((org) => [
               apiFetch(
-                `organizations/${org.id}/tracking-scenarios/v1`,
+                `organizations/${org.id}/tracking-scenarios/v2`,
                 authentication,
               ).then((results) =>
                 specFromTrackingScenarios(org.name, results.data),
