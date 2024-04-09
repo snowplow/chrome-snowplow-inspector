@@ -53,6 +53,16 @@ const isSnowplow = (request: Request): boolean => {
   return false;
 };
 
+type ScenarioTrigger = {
+  description: string
+  appIds?: string[],
+  url?: string,
+  variantUrls?: {
+    original: string,
+    thumbnail: string,
+  },
+}
+
 type TrackingScenario = {
   id: string;
   message: string;
@@ -65,7 +75,7 @@ type TrackingScenario = {
   dataProductId?: string;
   description?: string;
   appIds?: string[];
-  triggers?: string[];
+  triggers?: ScenarioTrigger[];
   event?: {
     source: string;
     schema?: Schema;
@@ -89,7 +99,7 @@ const specFromTrackingScenario = (
 ): TestSuiteSpec => {
   const triggers = scenario.triggers || [];
   const triggerText = triggers.length
-    ? "Should trigger when:\n- " + triggers.join("\n- ")
+    ? "Should trigger when:\n- " + triggers.map(trigger => trigger.description).join("\n- ")
     : "";
 
   let uncheckableWarning = "";
