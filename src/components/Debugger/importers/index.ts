@@ -1,5 +1,5 @@
 import { Entry } from "har-format";
-import { StateUpdater } from "preact/hooks";
+import { Dispatch, StateUpdater } from "preact/hooks";
 import { ModalSetter } from "../../Modals";
 
 import importHAR from "./har";
@@ -21,11 +21,14 @@ export const importFromFormat = (
   {
     ngrokStreaming,
     setNgrokStreaming,
-  }: { ngrokStreaming: boolean; setNgrokStreaming: StateUpdater<boolean> },
+  }: {
+    ngrokStreaming: boolean;
+    setNgrokStreaming: Dispatch<StateUpdater<boolean>>;
+  },
   {
     streamLock,
     setStreamLock,
-  }: { streamLock: number; setStreamLock: StateUpdater<number> },
+  }: { streamLock: number; setStreamLock: Dispatch<StateUpdater<number>> },
 ) => {
   switch (format) {
     case "bad":

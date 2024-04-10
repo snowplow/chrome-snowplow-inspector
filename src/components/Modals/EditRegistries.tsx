@@ -1,5 +1,5 @@
 import { h, FunctionComponent } from "preact";
-import { StateUpdater, useEffect, useState } from "preact/hooks";
+import { Dispatch, StateUpdater, useEffect, useState } from "preact/hooks";
 
 import { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
@@ -14,7 +14,7 @@ export interface EditRegistriesOptions extends ModalOptions {
 
 const checkRegistries = (
   existing: Registry[],
-  setCounts: StateUpdater<number[]>,
+  setCounts: Dispatch<StateUpdater<number[]>>,
 ) =>
   Promise.all(
     existing.map((r, i) =>

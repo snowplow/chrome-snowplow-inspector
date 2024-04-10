@@ -1,6 +1,12 @@
 import { default as canonicalize } from "canonicalize";
 import { h, FunctionComponent } from "preact";
-import { StateUpdater, useEffect, useMemo, useState } from "preact/hooks";
+import {
+  Dispatch,
+  StateUpdater,
+  useEffect,
+  useMemo,
+  useState,
+} from "preact/hooks";
 
 import {
   Registry,
@@ -31,12 +37,12 @@ type DirectoryAttrs = {
   resolver: Resolver;
   search?: RegExp;
   selections: Registry[];
-  setCollapsed: StateUpdater<boolean>;
+  setCollapsed: Dispatch<StateUpdater<boolean>>;
 };
 
 const refreshSchemas = (
   resolver: Resolver,
-  setCatalog: StateUpdater<(IgluSchema | ResolvedIgluSchema)[]>,
+  setCatalog: Dispatch<StateUpdater<(IgluSchema | ResolvedIgluSchema)[]>>,
   signal: AbortSignal,
 ) => {
   const seenRegs = new Map<IgluUri, Registry[]>();

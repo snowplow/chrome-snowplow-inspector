@@ -1,5 +1,5 @@
 import { Entry } from "har-format";
-import { StateUpdater } from "preact/hooks";
+import { Dispatch, StateUpdater } from "preact/hooks";
 
 import { immediatelyRequest } from "../../../ts/permissions";
 import { parseNgrokRequests } from "../../../ts/util";
@@ -9,7 +9,7 @@ const ngrokStreamInterval: number = 1500;
 export default (
   cb: (entries: Entry[]) => void,
   ngrokStreaming: boolean,
-  setNgrokStreaming: StateUpdater<boolean>,
+  setNgrokStreaming: Dispatch<StateUpdater<boolean>>,
 ) => {
   let ngrokStreamLock = -1;
 
