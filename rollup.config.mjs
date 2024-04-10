@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import { basename } from "path";
+import { basename, resolve as resolvePath } from "path";
 
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
@@ -45,7 +45,7 @@ export default Object.entries({
     commonjs(),
     alias({
       entries: {
-        url: "./src/uri.js",
+        url: resolvePath("./src/uri.js"),
         buffer: "",
       },
     }),
