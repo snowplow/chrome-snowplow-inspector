@@ -2,8 +2,7 @@ import { render, h, Fragment } from "preact";
 
 import "./popup.scss";
 
-const REPOSITORY_URL =
-  "https://github.com/snowplow/chrome-snowplow-inspector";
+const REPOSITORY_URL = "https://github.com/snowplow/chrome-snowplow-inspector";
 
 const Popup = () => (
   <>
