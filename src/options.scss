@@ -1,14 +1,57 @@
 body {
   margin: 0;
-  padding: 10px;
+  font-family: "Roboto", sans-serif;
 }
 
-label,
-textarea {
-  display: block;
+fieldset {
+  margin: auto;
   width: 100%;
+  max-width: 30em;
+  border: 0;
 }
 
-textarea {
-  min-height: 18em;
+h1 {
+  background-color: #6738b8;
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 1em;
+}
+
+label {
+  display: flex;
+  gap: 0.6em;
+  line-height: 2em;
+  width: 100%;
+  margin: 1.5em 0;
+  cursor: pointer;
+}
+
+button {
+  width: 100%;
+  appearance: none;
+  cursor: pointer;
+  min-height: 2rem;
+  box-sizing: border-box;
+  padding: 0 1em;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  outline: 0;
+  color: white;
+  background-color: #6738b8;
+  line-height: normal;
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.875em;
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+}
+
+p {
+  background-color: #039855;
+  color: white;
+  padding: 1em;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  text-align: center;
 }
