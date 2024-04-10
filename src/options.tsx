@@ -47,31 +47,37 @@ const Options = () => {
       }}
       onSubmit={handler}
     >
-      <label>
-        <input
-          type="checkbox"
-          name="enableTracking"
-          checked={options.enableTracking}
-        />
-        Send anonymous usage information
-      </label>
+      <h1>Snowplow Inspector Options</h1>
+      <fieldset>
+        <label>
+          <input
+            type="checkbox"
+            name="enableTracking"
+            checked={options.enableTracking}
+          />
+          Send anonymous usage information
+        </label>
 
-      <label>
-        <input
-          type="checkbox"
-          name="hideTestSuites"
-          checked={options.hideTestSuites}
-        />
-        Hide the Test Suites panel
-      </label>
+        <label>
+          <input
+            type="checkbox"
+            name="hideTestSuites"
+            checked={options.hideTestSuites}
+          />
+          Hide the Test Suites panel
+        </label>
 
-      <label>
-        Ngrok tunnel address
-        <input type="text" name="tunnelAddress" value={options.tunnelAddress} />
-      </label>
+        <label>
+          Ngrok tunnel address
+          <input
+            type="text"
+            name="tunnelAddress"
+            value={options.tunnelAddress}
+          />
+        </label>
 
-      <p>{status}</p>
-      <button>Save</button>
+        {status ? <p>{status}</p> : <button>Save</button>}
+      </fieldset>
     </form>
   );
 };
