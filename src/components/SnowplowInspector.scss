@@ -80,19 +80,19 @@ input[type="file"].button:hover::before {
   background-color: var(--color-highlight);
 }
 
-button:enabled:active,
-select.button:enabled:active,
-a.button:enabled:active,
-input.button:enabled:active,
-input[type="file"].button:enabled:active:before {
+button:enabled:focus,
+select.button:enabled:focus,
+a.button:enabled:focus,
+input.button:enabled:focus,
+input[type="file"].button:enabled:focus:before {
   outline: var(--color-interactive) solid 0.25rem;
 }
 
-button:focus,
-select.button:focus,
-a.button:focus,
-input.button:focus,
-input[type="file"].button:focus:before {
+button:active,
+select.button:active,
+a.button:active,
+input.button:active,
+input[type="file"].button:active:before {
   text-decoration: underline;
 }
 

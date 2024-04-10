@@ -148,6 +148,7 @@ export const EditRegistrySchemas: FunctionComponent<{
         //@ts-ignore: non-standard attribute
         webkitdirectory
         multiple
+        data-label="From Files"
         onChange={(event) => {
           const target = event.currentTarget;
           if (target.files) {
