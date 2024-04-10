@@ -1,7 +1,7 @@
 import { SearchResponse } from "elasticsearch";
 import { Entry } from "har-format";
 import { h, FunctionComponent } from "preact";
-import { StateUpdater, useMemo, useState } from "preact/hooks";
+import { Dispatch, StateUpdater, useMemo, useState } from "preact/hooks";
 import { BaseModal } from "./BaseModal";
 
 import { esToRequests } from "../../ts/util";
@@ -11,7 +11,7 @@ import { ModalOptions } from ".";
 export interface LiveStreamOptions extends ModalOptions {
   addRequests: (reqs: Entry[]) => void;
   streamLock?: number;
-  setStreamLock: StateUpdater<number>;
+  setStreamLock: Dispatch<StateUpdater<number>>;
 }
 
 export const LiveStream: FunctionComponent<LiveStreamOptions> = ({

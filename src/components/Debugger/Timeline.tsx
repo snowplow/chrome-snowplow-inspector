@@ -1,6 +1,7 @@
 import { Cookie, Entry } from "har-format";
 import { h, FunctionComponent, VNode } from "preact";
 import {
+  Dispatch,
   StateUpdater,
   useCallback,
   useEffect,
@@ -102,7 +103,7 @@ const validateEvent = (
   id: string,
   params: Map<string, string>,
   resolver: Resolver,
-  updateValidity: StateUpdater<number>,
+  updateValidity: Dispatch<StateUpdater<number>>,
 ) => {
   type SDJ = { schema: IgluUri; data: object | SDJ[] };
 
@@ -206,7 +207,7 @@ const summariseBeacons = (
   index: number,
   resolver: Resolver,
   filter: RegExp | undefined,
-  updateValidity: StateUpdater<number>,
+  updateValidity: Dispatch<StateUpdater<number>>,
 ): IBeaconSummary[] => {
   const {
     id,
