@@ -326,6 +326,8 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
       case "string":
         try {
           const json = JSON.parse(obj);
+          if (typeof json !== "object")
+            throw Error("Simple JSON value can be displayed normally");
           return (
             <BeaconValue resolver={resolver} obj={json} setModal={setModal} />
           );
