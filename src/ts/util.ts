@@ -685,14 +685,12 @@ const badToRequests = (data: string[]): Entry[] => {
                   d.setHours(parts[0]);
                   d.setMinutes(parts[1]);
                   d.setSeconds(parts[2]);
-                  // @ts-ignore we know this is a string from above
-                  parts = result[field].split("-");
+                  parts = result[field].split("-").map((p: string) => parseInt(p, 10));
                   d.setFullYear(parts[0]);
                   d.setMonth(parts[1]);
                   d.setDate(parts[2]);
                 } else {
-                  // @ts-ignore we know this is a string from above
-                  parts = result[field].split(":");
+                  parts = result[field].split(":").map((p: string) => parseInt(p, 10));
                   d.setHours(parts[0]);
                   d.setMinutes(parts[1]);
                   d.setSeconds(parts[2]);
