@@ -20,6 +20,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   addRequests,
   clearRequests,
   events,
+  destinationManager,
   resolver,
   setModal,
 }) => {
@@ -47,17 +48,21 @@ export const Debugger: FunctionComponent<IDebugger> = ({
     (reqs: Entry[] | Entry) => {
       const batch = Array.isArray(reqs) ? reqs : [reqs];
 
-      addRequests(
-        batch.filter(
-          (req) =>
-            !(
-              req.serverIPAddress === "" ||
-              !isSnowplow(req.request) ||
-              req.request.method === "OPTIONS" ||
-              req.response.statusText === "Service Worker Fallback Required"
-            ),
-        ),
-      );
+      const validEntries: Entry[] = [];
+
+      batch.forEach((req) => {
+        if (req.serverIPAddress === "") return;
+        if (req.request.method === "OPTIONS") return;
+        if (req.response.statusText === "Service Worker Fallback Required")
+          return;
+
+        if (isSnowplow(req.request)) {
+          validEntries.push(req);
+          destinationManager.addPath(req.request.url);
+        }
+      });
+
+      addRequests(validEntries);
     },
     [addRequests],
   );

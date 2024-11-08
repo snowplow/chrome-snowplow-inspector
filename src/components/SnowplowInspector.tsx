@@ -10,6 +10,7 @@ import {
 
 import { Application } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
+import { DestinationManager } from "../ts/DestinationManager";
 
 import { modals, Modal, ModalOptions, ModalSetter } from "./Modals";
 import { Debugger } from "./Debugger";
@@ -24,6 +25,8 @@ export const SnowplowInspector: FunctionComponent = () => {
   const modalOpts = useRef<ModalOptions>();
 
   const resolver = useMemo(() => new Resolver(), []);
+  const destinationManager = useMemo(() => new DestinationManager(), []);
+
   useEffect(() => void resolver.walk(), [resolver]);
 
   const [events, setEvents] = useState<Entry[]>([]);
@@ -72,6 +75,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           clearRequests={clearRequests}
           events={events}
           resolver={resolver}
+          destinationManager={destinationManager}
           setModal={setModal}
         />,
       );
@@ -92,6 +96,7 @@ export const SnowplowInspector: FunctionComponent = () => {
         changeApp={setApplication}
         application={application}
         setModal={setModal}
+        destinationManager={destinationManager}
         resolver={resolver}
       />
       {app}

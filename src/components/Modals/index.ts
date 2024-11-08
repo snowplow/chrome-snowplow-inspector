@@ -1,4 +1,5 @@
 import { BadRows } from "./BadRows";
+import { ChangeDestination } from "./ChangeDestination";
 import { ConsoleSync } from "./ConsoleSync";
 import { DeleteRegistries } from "./DeleteRegistries";
 import { EditRegistries } from "./EditRegistries";
@@ -13,6 +14,7 @@ export const modals = {
   badRows: BadRows,
   consoleSync: ConsoleSync,
   deleteRegistries: DeleteRegistries,
+  destination: ChangeDestination,
   editRegistries: EditRegistries,
   editSchemas: EditSchemas,
   editTestSuites: EditTestSuites,

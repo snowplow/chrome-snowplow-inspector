@@ -140,7 +140,7 @@ export class DataStructuresRegistry extends Registry {
     if (this.authLock) return this.authLock;
 
     return (this.authLock =
-      this.useOAuth ?? false ? this.oauthAuth() : this.apiAuth())
+      (this.useOAuth ?? false) ? this.oauthAuth() : this.apiAuth())
       .then((auth) => {
         this.updated = true;
         this.authLock = undefined;

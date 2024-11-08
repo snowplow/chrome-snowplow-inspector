@@ -84,7 +84,12 @@ dialog[open] {
       margin: 1rem 0;
     }
 
+    label {
+      margin-top: 1rem;
+    }
+
     input,
+    textarea,
     select {
       display: block;
       width: 100%;
@@ -101,6 +106,10 @@ dialog[open] {
       line-height: 2.75rem;
       font-size: 0.875rem;
       outline: 0;
+    }
+
+    textarea {
+      line-height: inherit;
     }
 
     input[type="checkbox"] {

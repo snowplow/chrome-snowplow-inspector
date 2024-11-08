@@ -3,6 +3,7 @@ import { Schema } from "jsonschema";
 import { Dispatch, StateUpdater } from "preact/hooks";
 
 import { Resolver } from "./iglu";
+import { DestinationManager } from "./DestinationManager";
 import { ModalSetter } from "../components/Modals";
 
 export type Application = "debugger" | "schemaManager";
@@ -54,6 +55,7 @@ export interface IDebugger {
   addRequests: (requests: Entry[]) => void;
   clearRequests: () => void;
   events: Entry[];
+  destinationManager: DestinationManager;
   resolver: Resolver;
   setModal: ModalSetter;
 }
@@ -111,8 +113,9 @@ export interface IErrorMessageSet {
 export interface IToolbar {
   application: Application;
   changeApp: Dispatch<StateUpdater<Application>>;
-  setModal: ModalSetter;
+  destinationManager: DestinationManager;
   resolver: Resolver;
+  setModal: ModalSetter;
 }
 
 export interface IRowSet {

@@ -272,7 +272,7 @@ const getPageUrl = (entries: Entry[]) => {
   const page = entries
     .flatMap((entry) => entry.request.headers)
     .find((header) => /referr?er/i.test(header.name));
-  return page ? new URL(page.value) : null;
+  return page && page.value ? new URL(page.value) : null;
 };
 
 const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
@@ -352,7 +352,7 @@ const extractRequests = (
       if (refr && refr.value) beacon.set("url", refr.value);
 
       beacons.push(beacon);
-    } else if (req.postData && req.postData.text && ct != null) {
+    } else if (req.postData && req.postData.text) {
       try {
         const payload = JSON.parse(req.postData.text);
 

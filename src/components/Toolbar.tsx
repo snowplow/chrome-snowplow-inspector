@@ -10,6 +10,7 @@ import "./Toolbar.scss";
 const ToolbarView: FunctionComponent<IToolbar> = ({
   application,
   changeApp,
+  destinationManager,
   setModal,
 }) => {
   const changeToSchemaManager = useCallback(
@@ -21,6 +22,11 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
     [changeApp],
   );
 
+  const changeDestination = useCallback(
+    () => setModal("destination", { destinationManager }),
+    [setModal],
+  );
+
   switch (application) {
     case "debugger":
       return (
@@ -30,6 +36,12 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
             onClick={changeToSchemaManager}
           >
             Manage Schemas
+          </button>
+          <button
+            class="button is-outlined is-small control"
+            onClick={changeDestination}
+          >
+            Change Destination
           </button>
         </>
       );

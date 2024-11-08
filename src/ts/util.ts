@@ -685,12 +685,16 @@ const badToRequests = (data: string[]): Entry[] => {
                   d.setHours(parts[0]);
                   d.setMinutes(parts[1]);
                   d.setSeconds(parts[2]);
-                  parts = result[field].split("-").map((p: string) => parseInt(p, 10));
+                  parts = result[field]
+                    .split("-")
+                    .map((p: string) => parseInt(p, 10));
                   d.setFullYear(parts[0]);
                   d.setMonth(parts[1]);
                   d.setDate(parts[2]);
                 } else {
-                  parts = result[field].split(":").map((p: string) => parseInt(p, 10));
+                  parts = result[field]
+                    .split(":")
+                    .map((p: string) => parseInt(p, 10));
                   d.setHours(parts[0]);
                   d.setMinutes(parts[1]);
                   d.setSeconds(parts[2]);
