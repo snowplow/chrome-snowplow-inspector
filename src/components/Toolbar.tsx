@@ -27,6 +27,8 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
     [setModal],
   );
 
+  const forwardingStatus = destinationManager.status();
+
   switch (application) {
     case "debugger":
       return (
@@ -38,8 +40,13 @@ const ToolbarView: FunctionComponent<IToolbar> = ({
             Manage Schemas
           </button>
           <button
-            class="button is-outlined is-small control"
+            class={`button is-outlined is-small control ${forwardingStatus.enabled ? "is-forwarding" : ""}`}
             onClick={changeDestination}
+            title={
+              forwardingStatus.enabled
+                ? `Forwarding to ${forwardingStatus.endpoint}`
+                : "Not forwarding events"
+            }
           >
             Change Destination
           </button>

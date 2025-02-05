@@ -78,6 +78,17 @@ export const ChangeDestination: FunctionComponent<ChangeDestinationOptions> = ({
           , or to prevent internal traffic polluting production pipelines. Enter
           collector domains, one per line.
         </p>
+        <p>
+          Forwarding will only occur for the tab you are currently inspecting,
+          and will continue until you disable Destination Changing (even after
+          closing the extension).
+        </p>
+        <p>
+          The extension requires permissions to modify the requests for each
+          site you want to use this feature on. If forwarding doesn't work, save
+          these settings while inspecting the new site for the extension to
+          trigger a permissions prompt.
+        </p>
         <div>
           <label>
             Collector Endpoints

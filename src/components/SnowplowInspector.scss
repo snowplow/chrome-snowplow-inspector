@@ -179,3 +179,9 @@ details {
 a {
   color: var(--color-text);
 }
+
+button.is-forwarding,
+button.is-forwarding:active,
+button.is-forwarding:focus {
+  outline: green solid 0.25rem;
+}
