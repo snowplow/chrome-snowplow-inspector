@@ -21,10 +21,9 @@ const prodExtIds = [
   "maplkdomeamdlngconidoefjpogkmljm",
 ];
 
-const PROD_CONSOLE_API = "https://console.snowplowanalytics.com/api/msc/v1/";
+const PROD_CONSOLE_API = "https://console.snowplowanalytics.com/";
 
-const NONPROD_CONSOLE_API =
-  "https://next.console.snowplowanalytics.com/api/msc/v1/";
+const NONPROD_CONSOLE_API = "https://next.console.snowplowanalytics.com/";
 
 export const CONSOLE_API = prodExtIds.includes(chrome.runtime.id)
   ? PROD_CONSOLE_API
@@ -67,7 +66,7 @@ export interface ConsoleSyncOptions extends ModalOptions {
 }
 
 const apiFetch = (path: string, opts?: Parameters<typeof fetch>[1]) =>
-  fetch(new URL(path, CONSOLE_API), opts).then((r) =>
+  fetch(new URL("/api/msc/v1/" + path, CONSOLE_API), opts).then((r) =>
     r.ok ? r.json() : Promise.reject(r.statusText),
   );
 
@@ -274,6 +273,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                                   name: `${org.name} (Console)`,
                                   organizationId: org.id,
                                   useOAuth: true,
+                                  dsApiEndpoint: CONSOLE_API,
                                 }),
                               ),
                             ];
@@ -333,6 +333,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
                                       name: `${org.name} (${env})`,
                                       uri: endpoint,
                                       apiKey: keyDetails.key.value,
+                                      dsApiEndpoint: CONSOLE_API,
                                     }),
                                 ),
                             ];
