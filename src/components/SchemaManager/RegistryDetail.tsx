@@ -22,7 +22,7 @@ const EditableRegistry: FunctionComponent<{
   const [vendorPrefixes, setVendorPrefixes] = useState(
     registry.vendorPrefixes || [],
   );
-  const [fieldVals, setFieldVals] = useState<Record<string, string>>(
+  const [fieldVals, setFieldVals] = useState<Record<string, string | boolean>>(
     registry.opts,
   );
 
@@ -75,11 +75,23 @@ const EditableRegistry: FunctionComponent<{
               onInput={(event) =>
                 setFieldVals((fv) => ({
                   ...fv,
-                  [field]: event.currentTarget.value,
+                  [field]:
+                    type === "checkbox"
+                      ? !!event.currentTarget.checked
+                      : event.currentTarget.value,
                 }))
               }
               onChange={(event) => event.currentTarget.reportValidity()}
-              value={fieldVals[field] || ""}
+              value={
+                type !== "checkbox"
+                  ? ((fieldVals[field] as string | undefined) ?? "")
+                  : undefined
+              }
+              checked={
+                type === "checkbox"
+                  ? String(fieldVals[field]) === "true"
+                  : undefined
+              }
             />
           </label>
         ),
