@@ -110,6 +110,8 @@ dialog[open] {
 
     textarea {
       line-height: inherit;
+      padding: 1rem;
+      resize: vertical;
     }
 
     input[type="checkbox"] {
