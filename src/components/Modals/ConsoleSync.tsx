@@ -639,7 +639,7 @@ export const ConsoleSync: FunctionComponent<ConsoleSyncOptions> = ({
         ) : status === "authenticated" ? (
           <button>Synchronize</button>
         ) : status === "working" ? (
-          <progress indeterminate />
+          <progress />
         ) : status === "error" ? (
           <button onClick={() => setModal()}>Quit</button>
         ) : (

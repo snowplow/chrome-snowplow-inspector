@@ -252,7 +252,6 @@ export const EditTestSuites: FunctionComponent<EditTestSuitesOptions> = ({
         </button>
         <a
           class="button"
-          disabled={!suites.length && suites.some(Boolean)}
           download="Snowplow-Test-Suites.json"
           href={
             "data:application/json," +

@@ -1,5 +1,5 @@
-@import "~@fontsource/rubik/latin-400";
-@import "~@fontsource/roboto/latin-400";
+@use "~@fontsource/rubik/latin-400" as *;
+@use "~@fontsource/roboto/latin-400" as *;
 
 html {
   margin: 0;

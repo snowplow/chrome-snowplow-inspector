@@ -14,6 +14,7 @@ const SCHEMA_COLLECTOR_TELEMETRY =
 newTracker("sp", SNOWPLOW_ENDPOINT, {
   appId: "snowplow-chrome-extension",
   platform: "app",
+  discoverRootDomain: false,
   anonymousTracking: { withSessionTracking: true },
   stateStorageStrategy: "localStorage",
   eventMethod: "post",

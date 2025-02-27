@@ -110,7 +110,7 @@ const EditableRegistry: FunctionComponent<{
         Vendor Prefixes
         <textarea
           name="vendorPrefixes"
-          size={Math.min(5, vendorPrefixes.length || 1)}
+          rows={Math.min(5, vendorPrefixes.length || 1)}
           onChange={(event) =>
             setVendorPrefixes(
               event.currentTarget.value.split("\n").filter(Boolean),
