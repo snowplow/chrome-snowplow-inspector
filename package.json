@@ -48,9 +48,14 @@
     "@types/har-format": "1.*",
     "@types/node": "*",
     "prettier": "^3.0.2",
-    "rollup": "^3.29.4",
+    "rollup": "^4.34.8",
     "sass": "^1.23.7",
     "tslib": "*",
     "typescript": "^5.0.0"
+  },
+  "overrides": {
+    "@ironkinoko/rollup-plugin-styles": {
+      "rollup": "$rollup"
+    }
   }
 }
