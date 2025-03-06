@@ -89,6 +89,12 @@ export const ChangeDestination: FunctionComponent<ChangeDestinationOptions> = ({
           these settings while inspecting the new site for the extension to
           trigger a permissions prompt.
         </p>
+        <p>
+          Requests using custom POST paths will preserve their custom path
+          unless your Target Endpoint specifies an explicit path to prefer, e.g.
+          <code> /com.snowplowanalytics.snowplow/tp2 </code>
+          for the default POST endpoint.
+        </p>
         <div>
           <label>
             Collector Endpoints

@@ -102,7 +102,10 @@ export class DestinationManager {
         customPaths.length ? "|" + customPaths.join("|") : "",
       );
 
-      const endpoint = this.endpoint.href.replace(/\/+$/, "") + "\\1";
+      const endpoint =
+        this.endpoint.pathname.length > 1
+          ? this.endpoint.href
+          : this.endpoint.href.replace(/\/+$/, "") + "\\1";
 
       updateSessionRules({
         removeRuleIds: [
