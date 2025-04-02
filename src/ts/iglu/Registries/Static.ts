@@ -22,11 +22,18 @@ export class StaticRegistry extends Registry {
         "URI to a JSON object listing all the schemas served by this registry",
       required: false,
     },
+    disableCache: {
+      title: "Disable Cache",
+      type: "checkbox",
+      description: "Do not cache schema results, always fetch the latest version",
+      required: false,
+    },
   };
 
   private readonly cache: Map<IgluUri, Promise<ResolvedIgluSchema>> = new Map();
   private readonly base: URL;
   private readonly manifest: URL;
+  private readonly disableCache: boolean;
 
   constructor(spec: RegistrySpec) {
     super(spec);
@@ -34,6 +41,8 @@ export class StaticRegistry extends Registry {
     this.manifest = spec["manifestUri"]
       ? new URL(spec["manifestUri"])
       : new URL("schemas", this.base);
+
+      this.disableCache = !!spec["disableCache"];
   }
 
   private fetch(schemaPath: string): ReturnType<typeof fetch> {
@@ -44,7 +53,7 @@ export class StaticRegistry extends Registry {
       referrerPolicy: "origin",
       signal: ac.signal,
       credentials: this.base.username ? "include" : "omit",
-      cache: "default",
+      cache: this.disableCache ? "no-store" : "default",
     };
     return fetch(new URL(schemaPath, this.base).href, opts)
       .catch((reason) => {
@@ -70,7 +79,7 @@ export class StaticRegistry extends Registry {
   }
 
   resolve(schema: IgluSchema) {
-    if (this.cache.has(schema.uri())) {
+    if (!this.disableCache && this.cache.has(schema.uri())) {
       return this.cache.get(schema.uri())!;
     } else {
       if (this.vendorPrefixes && this.vendorPrefixes.length) {
