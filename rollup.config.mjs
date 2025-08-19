@@ -3,6 +3,7 @@ import { basename, resolve as resolvePath } from "path";
 
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
 import html from "@rollup/plugin-html";
 import resolve from "@rollup/plugin-node-resolve";
 import styles from "@ironkinoko/rollup-plugin-styles";
@@ -33,6 +34,7 @@ export default Object.entries({
           input: [
             "manifest.json",
             "res/logo.svg",
+            "res/devbar.png",
             "res/icon.png",
             "res/icon-16.png",
             "res/icon-48.png",
@@ -49,6 +51,7 @@ export default Object.entries({
         buffer: "",
       },
     }),
+    json(),
     typescript(),
     styles({
       mode: "extract",

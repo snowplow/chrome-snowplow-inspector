@@ -26,8 +26,9 @@
   "bugs": {
     "url": "https://github.com/snowplow/chrome-snowplow-inspector/issues"
   },
-  "homepage": "https://github.com/snowplow/chrome-snowplow-inspector#readme",
+  "homepage": "https://github.com/snowplow/chrome-snowplow-inspector",
   "dependencies": {
+    "@fontsource/inter": "^5.2.6",
     "@fontsource/roboto": "^5.0.0",
     "@fontsource/rubik": "^5.0.0",
     "@snowplow/browser-tracker": "^4.3.1",
@@ -40,6 +41,7 @@
     "@rollup/plugin-alias": "^5.0.0",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-html": "^2.0.0",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^12.1.2",
