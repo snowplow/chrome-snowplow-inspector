@@ -1,7 +1,13 @@
 import { Entry } from "har-format";
 import { h, FunctionComponent } from "preact";
-import { useCallback, useEffect, useState } from "preact/hooks";
+import {
+  useCallback,
+  useEffect,
+  useErrorBoundary,
+  useState,
+} from "preact/hooks";
 
+import { errorAnalytics } from "../../ts/analytics";
 import {
   DisplayItem,
   IBeaconSummary,
@@ -24,6 +30,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   resolver,
   setModal,
 }) => {
+  useErrorBoundary(errorAnalytics);
   const [active, setActive] = useState<DisplayItem>();
   const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
 

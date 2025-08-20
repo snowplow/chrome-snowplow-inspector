@@ -150,6 +150,33 @@ export const repoAnalytics = (
   });
 };
 
+export const errorAnalytics = (error: unknown) => {
+  if (error instanceof Error) {
+    trackStructEvent({
+      category: "Unhandled Error",
+      action: error.name,
+      label: error.message,
+    });
+  } else if (typeof error !== "string") {
+    try {
+      error = JSON.stringify(error);
+    } catch (e) {
+      error = String(error).concat(": ", String(e));
+    }
+    trackStructEvent({
+      category: "Unhandled Error",
+      action: "ObjectError",
+      label: String(error),
+    });
+  } else {
+    trackStructEvent({
+      category: "Unhandled Error",
+      action: "StringError",
+      label: error,
+    });
+  }
+};
+
 export const landingUrl =
   "https://snowplow.io/?" +
   [
