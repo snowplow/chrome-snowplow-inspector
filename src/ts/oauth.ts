@@ -1,36 +1,42 @@
 import { uuidv4, tryb64 } from "./util";
-import type { OAuthAccess, OAuthIdentity } from "./types";
+import type { OAuthAccess, OAuthIdentity, OAuthResult } from "./types";
 
 const prodExtIds = [
   "4166b542-f87d-4dbc-a6b1-34cb31a5b04e",
   "maplkdomeamdlngconidoefjpogkmljm",
 ];
 
-const PROD_OAUTH_FLOW = "https://id.snowplowanalytics.com/";
-const PROD_OAUTH_CLIENTID = "ljiYxb2Cs1gyN0wTWvfByrt1jdRaqxyM";
-
-const NONPROD_OAUTH_FLOW = "https://next.id.snowplowanalytics.com/";
-const NONPROD_OAUTH_CLIENTID = "xLciUpURW0s0SV5wF2kZ7WLQWkaa9fS9";
-
 const CONSOLE_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api/";
 const CONSOLE_OAUTH_SCOPES = "openid profile";
 
-const OAUTH_FLOW = prodExtIds.includes(chrome.runtime.id)
-  ? PROD_OAUTH_FLOW
-  : NONPROD_OAUTH_FLOW;
-
-const CONSOLE_OAUTH_CLIENTID = prodExtIds.includes(chrome.runtime.id)
-  ? PROD_OAUTH_CLIENTID
-  : NONPROD_OAUTH_CLIENTID;
+export const { CONSOLE_API, OAUTH_FLOW, CONSOLE_OAUTH_CLIENTID } =
+  prodExtIds.includes(chrome.runtime.id)
+    ? {
+        CONSOLE_API: "https://console.snowplowanalytics.com/",
+        CONSOLE_OAUTH_CLIENTID: "ljiYxb2Cs1gyN0wTWvfByrt1jdRaqxyM",
+        OAUTH_FLOW: "https://id.snowplowanalytics.com/",
+      }
+    : {
+        CONSOLE_API: "https://next.console.snowplowanalytics.com/",
+        CONSOLE_OAUTH_CLIENTID: "xLciUpURW0s0SV5wF2kZ7WLQWkaa9fS9",
+        OAUTH_FLOW: "https://next.id.snowplowanalytics.com/",
+      };
 
 const b64url = (s: string) =>
   btoa(s).replace(/[\+\/=]/g, (c) => ({ "+": "-", "/": "_", "=": "" })[c]!);
 
-type OAuthResult = {
-  identity: OAuthIdentity;
-  access: OAuthAccess;
-  authentication: Partial<RequestInit>;
-};
+export const apiFetch = (
+  path: string,
+  opts?: Parameters<typeof fetch>[1],
+  org?: string,
+) =>
+  fetch(
+    new URL(
+      `/api/msc/v1/${org ? `organizations/${org}/${path}` : path}`,
+      CONSOLE_API,
+    ),
+    opts,
+  ).then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)));
 
 export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
   const flowUrl = new URL("authorize", OAUTH_FLOW);
@@ -96,7 +102,22 @@ export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
           headers: { Authorization: `Bearer ${access_token}` },
         };
 
-        return resolve({ identity, access, authentication });
+        const logout = () => {
+          const flowUrl = new URL("oidc/logout", OAUTH_FLOW);
+          Object.entries({
+            client_id: CONSOLE_OAUTH_CLIENTID,
+            logout_hint: identity.sid,
+          }).forEach(([key, val]) => flowUrl.searchParams.set(key, val));
+
+          return new Promise<string>((resolve, reject) =>
+            chrome.identity.launchWebAuthFlow(
+              { interactive: false, url: flowUrl.toString() },
+              (url) => (url ? resolve(url) : reject()),
+            ),
+          );
+        };
+
+        return resolve({ identity, access, authentication, logout });
       },
     );
   });

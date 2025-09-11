@@ -17,7 +17,6 @@ import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 
 import * as importers from "./importers";
 import * as exporters from "./exporters";
-import { TestSuites } from "./TestSuites";
 
 import "./Timeline.scss";
 
@@ -436,9 +435,8 @@ const extractRequests = (
 };
 
 export const Timeline: FunctionComponent<ITimeline> = ({
-  displayMode,
-  isActive,
-  requests,
+  active,
+  batches,
   resolver,
   setActive,
   setModal,
@@ -455,35 +453,25 @@ export const Timeline: FunctionComponent<ITimeline> = ({
     }
   }, [filterStr]);
 
-  const fallbackUrl = useMemo(() => getPageUrl(requests), [requests]);
-
-  const [first, setFirst] = useState<IBeaconSummary>();
-  const [hideSuites, setHideSuites] = useState(false);
-
-  useEffect(() => {
-    chrome.storage.sync.get({ hideTestSuites: false }, ({ hideTestSuites }) =>
-      setHideSuites(hideTestSuites),
-    );
-  }, []);
+  const fallbackUrl = useMemo(() => getPageUrl(batches), [batches]);
 
   const [validity, updateValidity] = useState(0);
 
-  const events = useMemo(
+  const batchSummaries = useMemo(
     () =>
-      requests.map((batch, i) =>
+      batches.map((batch, i) =>
         summariseBeacons(batch, i, resolver, filter, updateValidity),
       ),
-    [requests, resolver, filter, validity],
+    [batches, resolver, filter, validity],
   );
 
-  const beacons = events.map((summaries) => {
-    setFirst((prev) => prev || summaries[0]);
-    return summaries.map((summary): [URL | string | null, VNode] => [
+  const beacons = batchSummaries.map((summaries) =>
+    summaries.map((summary): [URL | string | null, VNode] => [
       summary.pageref || (summary.page ? new URL(summary.page) : fallbackUrl),
       <a
         class={[
           "event",
-          isActive(summary) ? "event--active" : "",
+          summary.id === active?.id ? "event--active" : "",
           // Some race in Firefox where the response information isn't always populated
           summary.collectorStatus.code === 200 ||
           (summary.collectorStatus.code === 0 &&
@@ -504,12 +492,12 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           `Status: ${summary.collectorStatus.code} ${summary.collectorStatus.text}`,
           `Validity: ${summary.validity}`,
         ].join("\n")}
-        onClick={setActive.bind(null, { display: "beacon", item: summary })}
+        onClick={setActive.bind(null, summary)}
       >
         {summary.eventName}
       </a>,
-    ]);
-  });
+    ]),
+  );
 
   const byPage = beacons.reduce(
     (acc, batch) =>
@@ -538,9 +526,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         text: "" + beacons.length,
       });
   }, [beacons.length]);
-
-  if (displayMode === "beacon" && first)
-    setActive((active) => active || { display: "beacon", item: first });
 
   const [streamLock, setStreamLock] = useState(-1);
   const [ngrokStreaming, setNgrokStreaming] = useState(false);
@@ -582,11 +567,11 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         currentTarget.selectedIndex = 0;
         exporters.exportToFormat(
           value as exporters.ExporterFormat,
-          requests,
-          events,
+          batches,
+          batchSummaries,
         );
       },
-      [requests, events],
+      [batches, batchSummaries],
     );
 
   return (
@@ -646,9 +631,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           </article>
         ))}
       </div>
-      {hideSuites ? null : (
-        <TestSuites events={events} setActive={setActive} setModal={setModal} />
-      )}
     </aside>
   );
 };

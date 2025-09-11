@@ -25,7 +25,8 @@ export class StaticRegistry extends Registry {
     disableCache: {
       title: "Disable Cache",
       type: "checkbox",
-      description: "Do not cache schema results, always fetch the latest version",
+      description:
+        "Do not cache schema results, always fetch the latest version",
       required: false,
     },
   };
@@ -42,7 +43,7 @@ export class StaticRegistry extends Registry {
       ? new URL(spec["manifestUri"])
       : new URL("schemas", this.base);
 
-      this.disableCache = !!spec["disableCache"];
+    this.disableCache = !!spec["disableCache"];
   }
 
   private fetch(schemaPath: string): ReturnType<typeof fetch> {

@@ -1,26 +1,66 @@
 .toolbar {
   display: flex;
-  align-items: center;
-  height: 4rem;
-  padding: 1rem 0;
-  background-color: var(--color-contrast);
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: space-between;
 
-  &__logo {
-    padding: 1rem 1.5rem;
-    line-height: 1;
-    & img {
-      max-width: 100%;
-      height: 2rem;
+  &__tabs {
+    flex: 1;
+    display: flex;
+    flex-flow: column;
+    align-items: stretch;
+    padding: 1rem 0 0 0.25rem;
+    gap: 0.25rem;
+
+    label {
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+      align-items: center;
+
+      border-radius: 0.25rem 0 0 0.25rem;
+      padding: 2rem 1.5rem;
+      margin-left: 0.25rem;
+
+      text-align: center;
+
+      cursor: pointer;
+      user-select: none;
+
+      background-color: #282828;
+
+      &:has(:checked) {
+        background-color: #1f2020;
+      }
+
+      input[value="debugger"] + span {
+        &::before,
+        &::after {
+          content: "";
+          display: inline-block;
+          position: relative;
+          top: -0.65rem;
+          border-radius: 100%;
+          border: 0.3rem solid transparent;
+        }
+
+        &.active::before {
+          left: 0.4rem;
+          border-color: #916ce7;
+        }
+        &.inactive::before {
+          left: 0.4rem;
+          border-color: #c62a1f;
+        }
+
+        &::after {
+          right: 0.4rem;
+        }
+      }
     }
   }
 
-  &__buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  nav {
-    flex: 1;
+  input {
+    appearance: none;
   }
 }

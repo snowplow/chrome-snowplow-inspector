@@ -1,79 +1,83 @@
-import { h, FunctionComponent, Fragment } from "preact";
-import { useCallback } from "preact/hooks";
+import { h, FunctionComponent } from "preact";
 
-import { landingUrl } from "../ts/analytics";
-import { IToolbar } from "../ts/types";
+import { Application, IToolbar } from "../ts/types";
 import { ConsoleStatus } from "./ConsoleStatus";
 
 import "./Toolbar.scss";
 
-const ToolbarView: FunctionComponent<IToolbar> = ({
+export const Toolbar: FunctionComponent<IToolbar> = ({
   application,
-  changeApp,
-  destinationManager,
-  setModal,
+  eventCount,
+  login,
+  setApp,
+  setLogin,
+  signalsInfo,
 }) => {
-  const changeToSchemaManager = useCallback(
-    () => changeApp("schemaManager"),
-    [changeApp],
-  );
-  const changeToDebugger = useCallback(
-    () => changeApp("debugger"),
-    [changeApp],
-  );
+  const status =
+    typeof eventCount == "number"
+      ? eventCount > 0
+        ? "active"
+        : "inactive"
+      : "";
 
-  const changeDestination = useCallback(
-    () => setModal("destination", { destinationManager }),
-    [setModal],
+  const enableSignals = Object.values(signalsInfo).some(Boolean);
+  return (
+    <header class="toolbar">
+      <nav
+        class="toolbar__tabs"
+        onChange={(e) => {
+          if (e.target instanceof HTMLInputElement) {
+            e.stopPropagation();
+            setApp(e.target.value as Application);
+          }
+        }}
+      >
+        <label>
+          <input
+            type="radio"
+            name="application"
+            value="debugger"
+            checked={application === "debugger"}
+          />
+          <span class={status}>
+            <img alt="" src="list-tree.svg" />
+          </span>
+          <span>Events</span>
+          {eventCount ? <span>{eventCount}</span> : null}
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="application"
+            value="schemaManager"
+            checked={application === "schemaManager"}
+          />
+          Data Structures
+        </label>
+        {enableSignals && (
+          <label>
+            <input
+              type="radio"
+              name="application"
+              value="attributes"
+              checked={application === "attributes"}
+            />
+            Attributes
+          </label>
+        )}
+        {enableSignals && (
+          <label>
+            <input
+              type="radio"
+              name="application"
+              value="interventions"
+              checked={application === "interventions"}
+            />
+            Interventions
+          </label>
+        )}
+      </nav>
+      <ConsoleStatus login={login} setLogin={setLogin} />
+    </header>
   );
-
-  const forwardingStatus = destinationManager.status();
-
-  switch (application) {
-    case "debugger":
-      return (
-        <>
-          <button
-            class="button is-outlined is-small control"
-            onClick={changeToSchemaManager}
-          >
-            Manage Schemas
-          </button>
-          <button
-            class={`button is-outlined is-small control ${forwardingStatus.enabled ? "is-forwarding" : ""}`}
-            onClick={changeDestination}
-            title={
-              forwardingStatus.enabled
-                ? `Forwarding to ${forwardingStatus.endpoint}`
-                : "Not forwarding events"
-            }
-          >
-            Change Destination
-          </button>
-        </>
-      );
-    case "schemaManager":
-      return (
-        <>
-          <button
-            class="button is-outlined is-small control"
-            onClick={changeToDebugger}
-          >
-            Back to Debugger
-          </button>
-        </>
-      );
-  }
 };
-
-export const Toolbar: FunctionComponent<IToolbar> = (props) => (
-  <header class="toolbar">
-    <a class="toolbar__logo" href={landingUrl} target="_blank">
-      <img alt="Snowplow logo" src="logo.svg" />
-    </a>
-    <nav class="toolbar__buttons">
-      <ToolbarView {...props} />
-    </nav>
-    <ConsoleStatus setModal={props.setModal} resolver={props.resolver} />
-  </header>
-);

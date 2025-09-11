@@ -25,10 +25,44 @@
   --color-contrast: #6738b8;
 
   &.themedark {
+    --btn-hover: #ffffff26;
+    --btn-clicked: #ffffff40;
+    --text-standard: #ffffffb2;
+    --icon-default: #ffffffb3;
+    --icon-disabled: #ffffff4d;
+    --tab-hover: #004178;
+    --newtabl-btn-hover: #004a78;
+    --newtab-btn-clicked: : #004a78;
+    --close-btn-hover: #ffffff40;
+    --close-btn-clicked: #ffffff47;
+    --divider: #ffffff1d;
+    --search-btn-icon: #ffffff;
+    --search-btn-surface: #3c3c3c;
+    --search-btn-hover: #595959;
+    --favorite-icon-active: #659df6;
+    --favorite-btn-hover: #ffffff26;
+    --searchbar-surface: #1f2020;
+    --searchbar-hover: #4a4a4a;
+    --text-searchbar: #ffffffe6;
+    --surface-1: #1f2020;
+    --surface-2: #3c3c3c;
+    --stroke: #ffffff1f;
+    --toggle-background: #3d4043;
+    --toggle: white;
+
+    --muted-foreground: #999999;
+    --border: #232323;
+    --foreground: #e6e6e6;
+    --secondary-foreground: #e6e6e6;
+    --secondary: #000000;
+    --popover: #101010;
+    --card: #191919;
+    --chart_2: #65bfc5;
+
     --color-text: white;
     --color-text-light: #d0d5dd;
     --color-text-contrast: white;
-    --color-background: #1d2939;
+    --color-background: #3c3c3c;
     --color-foreground: #344054;
     --color-highlight: #475467;
     --color-interactive: #667085;
@@ -39,9 +73,9 @@
 
 body {
   display: flex;
-  flex-direction: column;
+  flex-flow: row nowrap;
   flex: 1;
-  align-self: stretch;
+  align-items: stretch;
   background-color: var(--color-background);
   font-family: "Roboto", sans-serif;
   margin: 0;
@@ -174,6 +208,10 @@ details {
   overflow-x: hidden;
   display: flex;
   flex: 1;
+
+  margin: 0.25rem 0.25rem 0.25rem 0;
+  border-radius: 0.5rem;
+  background-color: #1f2020;
 }
 
 a {

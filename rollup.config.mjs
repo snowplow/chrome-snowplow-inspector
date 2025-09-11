@@ -34,6 +34,7 @@ export default Object.entries({
           input: [
             "manifest.json",
             "res/logo.svg",
+            "res/list-tree.svg",
             "res/devbar.png",
             "res/icon.png",
             "res/icon-16.png",

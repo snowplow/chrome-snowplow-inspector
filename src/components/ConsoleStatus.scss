@@ -1,15 +1,61 @@
 .console {
-  margin-right: 1.5rem;
   display: flex;
   align-items: center;
-  padding: 0.25rem;
+  align-self: center;
+  margin: 0.5rem 1.04rem;
+  padding: 0;
 
-  &:disabled {
-    color: var(--color-text);
+  border-radius: 0.5rem;
+
+  &:focus-within {
+    border: 1px solid #232323;
+    background-color: #101010;
+  }
+
+  .profile {
+    clip-path: circle(50%);
+    background-color: #232323;
+    line-height: 0;
+
+    img {
+      clip-path: circle(44%);
+    }
   }
 
   img {
     max-height: 2rem;
-    margin-right: 0.5rem;
+  }
+
+  ul {
+    display: none;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+
+    margin: 0;
+    padding: 0.5rem;
+
+    list-style: none;
+    text-decoration: none;
+    text-align: left;
+  }
+
+  li {
+    display: flex;
+    padding: 0.5rem 0;
+    align-items: center;
+  }
+
+  &:active,
+  &:focus-within {
+    position: absolute;
+    bottom: 0;
+
+    ul {
+      display: flex;
+    }
+
+    > .profile {
+      display: none;
+    }
   }
 }
