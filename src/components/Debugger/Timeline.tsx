@@ -544,35 +544,29 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   useEffect(() => importHandler("ngrok"), [importHandler, ngrokStreaming]);
 
-  const importButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
-    useCallback(
-      ({ currentTarget }) => {
-        const { value } = currentTarget;
+  const importHandlers = useMemo<Record<importers.ImporterFormat, () => void>>(
+    () => ({
+      bad: importHandler.bind(null, "bad"),
+      ngrok: setNgrokStreaming.bind(null, (n) => !n),
+      har: importHandler.bind(null, "har"),
+      stream: importHandler.bind(null, "stream"),
+    }),
+    [importHandler],
+  );
 
-        currentTarget.selectedIndex = 0;
-        if (value === "ngrok") {
-          setNgrokStreaming((n) => !n);
-        } else {
-          importHandler(value as importers.ImporterFormat);
-        }
-      },
-      [importHandler],
-    );
-
-  const exportButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
-    useCallback(
-      ({ currentTarget }) => {
-        const { value } = currentTarget;
-
-        currentTarget.selectedIndex = 0;
-        exporters.exportToFormat(
-          value as exporters.ExporterFormat,
-          batches,
-          batchSummaries,
-        );
-      },
-      [batches, batchSummaries],
-    );
+  const exportHandlers = useMemo<Record<exporters.ExporterFormat, () => void>>(
+    () => ({
+      csv: exporters.exportToFormat.bind(null, "csv", batches, batchSummaries),
+      har: exporters.exportToFormat.bind(null, "har", batches, batchSummaries),
+      json: exporters.exportToFormat.bind(
+        null,
+        "json",
+        batches,
+        batchSummaries,
+      ),
+    }),
+    [batches, batchSummaries],
+  );
 
   return (
     <aside class="timeline">
@@ -582,44 +576,66 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             type="button"
             onClick={clearRequests}
             disabled={!beacons.length}
+            title="Clear Events"
           >
-            Clear Events
+            <img alt="Clear Events" src="ban.svg" />
           </button>
-          <select class="button" onChange={importButtonHandler}>
-            <option selected hidden>
-              Import
-            </option>
-            {Object.entries(importers.formats).map(([key, label]) => (
-              <option value={key}>
-                {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
-              </option>
-            ))}
-          </select>
-          <select
-            class="button"
-            disabled={!beacons.length}
-            onChange={exportButtonHandler}
+          <button
+            type="button"
+            title="Import Events"
+            popovertarget="importevents-po"
           >
-            <option selected hidden>
-              Export
-            </option>
-            {Object.entries(exporters.formats).map(([key, label]) => (
-              <option value={key}>{label}</option>
+            <img alt="Import Events" src="download.svg" />
+          </button>
+          <ul id="importevents-po" popover="auto">
+            {Object.entries(importers.formats).map(([key, label]) => (
+              <li
+                value={key}
+                onClick={importHandlers[key as importers.ImporterFormat]}
+                role="button"
+                tabindex={0}
+              >
+                {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
+              </li>
             ))}
-          </select>
+          </ul>
+          <button
+            type="button"
+            title="Export Events"
+            popovertarget="exportevents-po"
+            disabled={!beacons.length}
+          >
+            <img alt="Export Events" src="upload.svg" />
+          </button>
+          <ul id="exportevents-po" popover="auto">
+            {Object.entries(exporters.formats).map(([key, label]) => (
+              <li
+                value={key}
+                onClick={exportHandlers[key as exporters.ExporterFormat]}
+                role="button"
+                tabindex={0}
+              >
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
-        <input
-          class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(" ")}
-          type="text"
-          placeholder="Start typing to filter events&hellip;"
-          onKeyUp={(e) => {
-            if (e.currentTarget instanceof HTMLInputElement) {
-              const val = e.currentTarget.value;
-              setFilterStr(val);
-            }
-          }}
-          value={filterStr}
-        />
+        <label title="Search Events">
+          <img alt="Search Events" src="search.svg" />
+          <input
+            class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(
+              " ",
+            )}
+            type="text"
+            placeholder="Search Events"
+            onKeyUp={(e) => {
+              if (e.currentTarget instanceof HTMLInputElement) {
+                setFilterStr(e.currentTarget.value);
+              }
+            }}
+            value={filterStr}
+          />
+        </label>
       </div>
       <div class="timeline__events">
         {byPage.map(([pageName, beacons]) => (

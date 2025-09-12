@@ -1,20 +1,14 @@
-.console {
+.console_info {
   display: flex;
+  flex-flow: column nowrap;
+
   align-items: center;
-  align-self: center;
+  justify-content: end;
+  gap: 0.5rem;
+
   margin: 0.5rem 1.04rem;
-  padding: 0;
-
-  border-radius: 0.5rem;
-
-  &:focus-within {
-    border: 1px solid #232323;
-    background-color: #101010;
-  }
 
   .profile {
-    clip-path: circle(50%);
-    background-color: #232323;
     line-height: 0;
 
     img {
@@ -25,37 +19,32 @@
   img {
     max-height: 2rem;
   }
+}
 
-  ul {
-    display: none;
-    flex-flow: column nowrap;
-    justify-content: space-between;
+[popovertarget="consolestatus-po"] {
+  background-color: unset;
+  border: 0;
 
-    margin: 0;
-    padding: 0.5rem;
+  &:enabled:hover,
+  &:enabled:active,
+  &:enabled:focus {
+    border: none;
+    background-color: unset;
+    outline: none;
+  }
+}
 
-    list-style: none;
-    text-decoration: none;
-    text-align: left;
+#consolestatus-po {
+  position-area: top;
+
+  img {
+    margin-right: 0.5rem;
   }
 
-  li {
-    display: flex;
-    padding: 0.5rem 0;
-    align-items: center;
-  }
-
-  &:active,
-  &:focus-within {
-    position: absolute;
-    bottom: 0;
-
-    ul {
-      display: flex;
-    }
-
-    > .profile {
-      display: none;
-    }
+  li:last-child {
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+    border-top: 1px solid #232323;
+    margin-top: 0.25rem;
   }
 }

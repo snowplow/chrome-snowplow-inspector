@@ -6,8 +6,6 @@ let nextClick: Promise<void> | undefined;
 export const immediatelyRequest = (batch: string[]) => {
   const distinct = batch.filter((e, i, a) => a.indexOf(e) === i);
 
-  return;
-
   return new Promise<void>((fulfil, fail) => {
     chrome.tabs
       ? chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) =>

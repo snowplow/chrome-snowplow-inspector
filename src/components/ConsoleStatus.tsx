@@ -62,28 +62,37 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
   const { access, identity } = login ?? {};
   const { "https://snowplowanalytics.com/roles": { user } = {} } = access ?? {};
 
-  return identity ? (
-    <button type="button" class="console">
-      <ul>
-        <li title={`User ID: ${user?.id}`}>
-          <Profile identity={identity} />
-          {user?.name}
-        </li>
-        <li title={`Organization ID: ${user?.organization.id}`}>
-          {user?.organization.name}
-        </li>
-        <li
-          title={`Last Login: ${identity?.updated_at}`}
-          onClick={logoutHandler}
-        >
-          Log Out
-        </li>
-      </ul>
-      <Profile identity={identity} />
-    </button>
-  ) : (
-    <LogoOrButton handler={loginHandler}>
-      <img alt="Snowplow logo" src="logo.svg" />
-    </LogoOrButton>
+  return (
+    <div class="console_info">
+      {identity ? (
+        [
+          <ul id="consolestatus-po" popover="auto">
+            <li title={`User ID: ${user?.id}`}>
+              <Profile identity={identity} />
+              {user?.name}
+            </li>
+            <li title={`Organization ID: ${user?.organization.id}`}>
+              {user?.organization.name}
+            </li>
+            <li
+              title={`Last Login: ${identity?.updated_at}`}
+              onClick={logoutHandler}
+              role="button"
+              tabIndex={0}
+            >
+              <img alt="" src="log-out.svg" />
+              Log Out
+            </li>
+          </ul>,
+          <button type="button" popovertarget="consolestatus-po">
+            <Profile identity={identity} />
+          </button>,
+        ]
+      ) : (
+        <LogoOrButton handler={loginHandler}>
+          <img alt="Snowplow logo" src="logo.svg" />
+        </LogoOrButton>
+      )}
+    </div>
   );
 };

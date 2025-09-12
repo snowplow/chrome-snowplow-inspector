@@ -22,50 +22,7 @@
     > div {
       display: flex;
       gap: 0.25rem;
-      justify-content: space-between;
-      white-space: nowrap;
-      flex-wrap: wrap;
-
-      select,
-      button {
-        flex: 1;
-      }
-
-      select {
-        flex-basis: auto;
-
-        option {
-          margin: 0 auto;
-          text-align: center;
-        }
-      }
     }
-
-    input {
-      display: block;
-      width: 100%;
-      appearance: none;
-      border: 0 none;
-      border-radius: 0.25rem;
-      margin-top: 0.5rem;
-      padding: 0 1rem;
-      color: var(--color-text);
-      box-shadow:
-        0 0 2px rgba(0, 0, 0, 0.5),
-        0 1px 2px rgba(16, 24, 40, 0.05);
-      background-color: var(--color-highlight);
-      line-height: 2.75rem;
-      font-size: 0.875rem;
-      outline: 0;
-    }
-
-    input::placeholder {
-      color: #98a2b3;
-    }
-  }
-
-  > .testsuite {
-    padding-right: 1rem;
   }
 }
 

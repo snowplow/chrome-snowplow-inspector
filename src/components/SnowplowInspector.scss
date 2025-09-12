@@ -25,6 +25,7 @@
   --color-contrast: #6738b8;
 
   &.themedark {
+    color-scheme: dark;
     --btn-hover: #ffffff26;
     --btn-clicked: #ffffff40;
     --text-standard: #ffffffb2;
@@ -226,4 +227,79 @@ button.is-forwarding:focus {
 
 code {
   font-family: monospace;
+}
+
+ul[popover] {
+  &:popover-open {
+    display: flex;
+  }
+
+  position: relative;
+  inset: unset;
+  flex-flow: column nowrap;
+  justify-content: end;
+
+  margin: 0.04rem 1.04rem;
+  border: 1px solid #232323;
+  border-radius: 0.5rem;
+  padding: 0;
+
+  position-area: bottom;
+
+  background-color: #101010;
+  color: inherit;
+
+  list-style: none;
+  text-align: left;
+
+  li {
+    display: flex;
+    padding: 0.375rem 0.75rem;
+    align-items: center;
+  }
+
+  li:first-child {
+    padding-top: 0.875rem;
+  }
+  li[role="button"] {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #232323;
+    }
+  }
+}
+
+label[title] {
+  display: flex;
+  margin: 0.5rem 0;
+  background-color: #191919;
+  cursor: text;
+  outline: 0;
+  opacity: 0.9;
+
+  &:focus-within {
+    opacity: 1;
+  }
+
+  img {
+    border-radius: 0.25rem 0 0 0.25rem;
+    border: 1px solid #232323;
+    border-right: 0;
+    padding: 0.6125rem 0.75rem;
+  }
+
+  input[type="text"] {
+    &:focus {
+      outline: 0;
+    }
+
+    flex: 1;
+    background-color: inherit;
+    border-radius: 0 0.25rem 0.25rem 0;
+    border: 1px solid #232323;
+    border-left: 0;
+    padding: 0.6125rem 0.75rem;
+    padding-left: 0;
+  }
 }
