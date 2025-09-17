@@ -3,7 +3,8 @@ import { h, FunctionComponent } from "preact";
 import { Application, IToolbar } from "../ts/types";
 import { ConsoleStatus } from "./ConsoleStatus";
 
-import "./Toolbar.scss";
+import "./Toolbar.css";
+import listTree from "@res/list-tree.svg";
 
 export const Toolbar: FunctionComponent<IToolbar> = ({
   application,
@@ -40,7 +41,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             checked={application === "debugger"}
           />
           <span class={status}>
-            <img alt="" src="list-tree.svg" />
+            <img alt="" src={listTree} />
           </span>
           <span>Events</span>
           {eventCount ? <span>{eventCount}</span> : null}

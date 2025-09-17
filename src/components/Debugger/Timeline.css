@@ -5,7 +5,7 @@
   scrollbar-gutter: stable;
   overflow-x: clip;
 
-  &__events {
+  .timeline__events {
     scrollbar-gutter: stable;
     margin-right: -1rem;
     display: flex;
@@ -15,7 +15,7 @@
     gap: 0.5rem;
   }
 
-  &__controls {
+  .timeline__controls {
     display: flex;
     flex-direction: column;
 
@@ -30,7 +30,7 @@
   display: flex;
   flex-flow: column nowrap;
 
-  &__heading {
+  .event-group__heading {
     background-color: var(--color-contrast);
     color: var(--color-text-contrast);
     border-radius: 0.25rem 0.25rem 0 0;
@@ -67,32 +67,32 @@
       margin-right: 0.5em;
     }
 
-    &--destination-blue::before {
+    .event--destination-blue::before {
       background-color: #30b8f6;
     }
-    &--destination-red::before {
+    .event--destination-red::before {
       background-color: #661712;
     }
-    &--destination-dark::before {
+    .event--destination-dark::before {
       background-color: #98a2b3;
     }
-    &--destination-purple::before {
+    .event--destination-purple::before {
       background-color: #412476;
     }
-    &--destination-black::before {
+    .event--destination-black::before {
       background-color: black;
     }
-    &--destination-turquoise::before {
+    .event--destination-turquoise::before {
       background-color: #0b7f86;
     }
-    &--destination-yellow::before {
+    .event--destination-yellow::before {
       background-color: #ffd760;
     }
-    &--destination-light::before {
+    .event--destination-light::before {
       background-color: var(--color-highlight);
     }
 
-    &--invalid::after {
+    .event--invalid::after {
       content: "\0026d4\00fe0f";
       float: right;
     }

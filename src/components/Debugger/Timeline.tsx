@@ -18,7 +18,11 @@ import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 import * as importers from "./importers";
 import * as exporters from "./exporters";
 
-import "./Timeline.scss";
+import "./Timeline.css";
+import ban from "@res/ban.svg";
+import download from "@res/download.svg";
+import upload from "@res/upload.svg";
+import search from "@res/search.svg";
 
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
 const KNOWN_FAKE_PAGES = [
@@ -578,14 +582,14 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             disabled={!beacons.length}
             title="Clear Events"
           >
-            <img alt="Clear Events" src="ban.svg" />
+            <img alt="Clear Events" src={ban} />
           </button>
           <button
             type="button"
             title="Import Events"
             popovertarget="importevents-po"
           >
-            <img alt="Import Events" src="download.svg" />
+            <img alt="Import Events" src={download} />
           </button>
           <ul id="importevents-po" popover="auto">
             {Object.entries(importers.formats).map(([key, label]) => (
@@ -605,7 +609,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             popovertarget="exportevents-po"
             disabled={!beacons.length}
           >
-            <img alt="Export Events" src="upload.svg" />
+            <img alt="Export Events" src={upload} />
           </button>
           <ul id="exportevents-po" popover="auto">
             {Object.entries(exporters.formats).map(([key, label]) => (
@@ -621,7 +625,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           </ul>
         </div>
         <label title="Search Events">
-          <img alt="Search Events" src="search.svg" />
+          <img alt="Search Events" src={search} />
           <input
             class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(
               " ",

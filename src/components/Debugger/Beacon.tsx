@@ -21,7 +21,7 @@ import { ModalSetter } from "../Modals";
 
 import { CopyMenu } from "./CopyMenu";
 
-import "./Beacon.scss";
+import "./Beacon.css";
 
 type ProtocolField = (typeof protocol.paramMap)[keyof typeof protocol.paramMap];
 

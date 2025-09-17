@@ -65,7 +65,7 @@
     padding: 0 1.5rem;
   }
 
-  &__validation {
+  .iglu__validation {
     color: var(--color-text-contrast);
     padding: 0.125rem 0.5rem;
     border-radius: 0.25rem;
@@ -76,25 +76,25 @@
     user-select: none;
   }
 
-  &--valid {
+  .iglu--valid {
     .iglu__validation {
       background-color: #039855;
     }
   }
 
-  &--unrecognised {
+  .iglu--unrecognised {
     .iglu__validation {
       background-color: #03a9f4;
     }
   }
 
-  &--invalid {
+  .iglu--invalid {
     .iglu__validation {
       background-color: #dd3327;
     }
   }
 
-  &__payload {
+  .iglu__payload {
     padding: 0.1rem;
     display: flex;
 
@@ -116,12 +116,12 @@
       color: var(--color-text-light);
     }
 
-    &--Errors {
+    .iglu__payload--Errors {
       color: var(--color-text-contrast);
     }
   }
 
-  &__tabs-control {
+  .iglu__tabs-control {
     display: flex;
     background-color: var(--color-foreground);
     margin: 0 0.1rem;

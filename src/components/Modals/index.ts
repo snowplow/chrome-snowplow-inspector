@@ -7,7 +7,7 @@ import { EditTestSuites } from "./EditTestSuites";
 import { ImportRegistries } from "./ImportRegistries";
 import { LiveStream } from "./LiveStream";
 
-import "./Modals.scss";
+import "./Modals.css";
 
 export const modals = {
   badRows: BadRows,

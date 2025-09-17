@@ -20,7 +20,7 @@ import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
 
-import "./SnowplowInspector.scss";
+import "./SnowplowInspector.css";
 
 export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");

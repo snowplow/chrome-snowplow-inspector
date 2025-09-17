@@ -1,6 +1,6 @@
-@use "~@fontsource/rubik/latin-400" as *;
-@use "~@fontsource/roboto/latin-400" as *;
-@use "~@fontsource/roboto/latin-500" as *;
+@import url("@fontsource/rubik/latin-400");
+@import url("@fontsource/roboto/latin-400");
+@import url("@fontsource/roboto/latin-500");
 
 * {
   box-sizing: inherit;

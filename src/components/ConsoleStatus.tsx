@@ -4,7 +4,9 @@ import { consoleAnalytics, landingUrl } from "../ts/analytics";
 import { doOAuthFlow } from "../ts/oauth";
 import { IConsoleStatus, OAuthIdentity } from "../ts/types";
 
-import "./ConsoleStatus.scss";
+import "./ConsoleStatus.css";
+import logo from "@res/logo.svg";
+import logOut from "@res/log-out.svg";
 
 const LogoOrButton: FunctionComponent<{ handler: () => void }> = ({
   handler,
@@ -80,7 +82,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
               role="button"
               tabIndex={0}
             >
-              <img alt="" src="log-out.svg" />
+              <img alt="" src={logOut} />
               Log Out
             </li>
           </ul>,
@@ -90,7 +92,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
         ]
       ) : (
         <LogoOrButton handler={loginHandler}>
-          <img alt="Snowplow logo" src="logo.svg" />
+          <img alt="Snowplow logo" src={logo} />
         </LogoOrButton>
       )}
     </div>

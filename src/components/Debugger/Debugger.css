@@ -10,7 +10,7 @@
     resize: horizontal;
   }
 
-  &__display {
+  .debugger__display {
     flex: 84;
     margin: 1.5rem 1.5rem 1.5rem 0.5rem;
     display: flex;

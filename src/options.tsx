@@ -1,7 +1,7 @@
 import { h, render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
-import "./options.scss";
+import "./options.css";
 
 type StoredOptions = {
   enableTracking: boolean;

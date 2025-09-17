@@ -2,7 +2,7 @@ import { h, FunctionComponent } from "preact";
 import { IBeaconSummary } from "../../ts/types";
 import { copyToClipboard, tryb64 } from "../../ts/util";
 
-import "./CopyMenu.scss";
+import "./CopyMenu.css";
 
 const wrapPost = (data: object) => {
   return {

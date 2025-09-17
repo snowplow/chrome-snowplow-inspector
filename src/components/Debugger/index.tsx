@@ -14,7 +14,7 @@ import { isSnowplow } from "../../ts/util";
 import { Beacon } from "./Beacon";
 import { Timeline } from "./Timeline";
 
-import "./Debugger.scss";
+import "./Debugger.css";
 
 const isValidBatch = (req: Entry): boolean => {
   if (req.serverIPAddress === "") return false;

@@ -5,7 +5,8 @@ import { homepage } from "../package.json";
 import { doOAuthFlow } from "./ts/oauth";
 import type { OAuthIdentity } from "./ts/types";
 
-import "./popup.scss";
+import "./popup.css";
+import logo from "../res/logo.svg";
 
 const Shortcut = () => {
   const [os, setOs] = useState<chrome.runtime.PlatformInfo["os"]>("win");
@@ -76,7 +77,7 @@ const ConsoleDetails = () => {
 const Popup = () => (
   <div class="wrapper">
     <h1>
-      <img src="logo.svg" alt="Snowplow logo" />
+      <img src={logo} alt="Snowplow logo" />
       Snowplow Inspector
     </h1>
     <div>
