@@ -100,7 +100,6 @@ export interface IBeaconSummary {
   page?: string;
   payload: Map<string, string>;
   time: string;
-  validity: BeaconValidity;
   serverAnonymous: boolean;
   collectorStatus: {
     code: number;
@@ -156,6 +155,7 @@ export interface ITimeline {
   resolver: Resolver;
   setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;
   setModal: ModalSetter;
+  setEventCount: Dispatch<StateUpdater<number | undefined>>;
 }
 
 export interface IBeacon {

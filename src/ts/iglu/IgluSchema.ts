@@ -115,9 +115,7 @@ export class ResolvedIgluSchema extends IgluSchema {
       }
 
       if (data.items) {
-        for (const [prop, d] of Object.entries(data.items)) {
-          stack.push(d);
-        }
+        stack.push(...Object.values(data.items));
       }
 
       if (data.properties) {

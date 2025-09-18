@@ -111,13 +111,14 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   return (
     <main class="app app--debugger debugger">
       <Timeline
-        setActive={setActive}
         active={active}
+        setActive={setActive}
         batches={requests}
         resolver={resolver}
         setModal={setModal}
         addRequests={addRequests}
         clearRequests={clearRequests}
+        setEventCount={setEventCount}
       />
       <div class="debugger__display debugger--beacon">
         {active && (

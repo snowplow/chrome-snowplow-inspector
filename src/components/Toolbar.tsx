@@ -42,7 +42,9 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             value="debugger"
             checked={application === "debugger"}
           />
-          <span class={eventStatus}><ListTree /></span>
+          <span class={eventStatus}>
+            <ListTree />
+          </span>
           <span>Events</span>
           {eventCount ? <span>{eventCount}</span> : null}
         </label>
@@ -53,7 +55,9 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             value="schemaManager"
             checked={application === "schemaManager"}
           />
-          <span><Box /></span>
+          <span>
+            <Box />
+          </span>
           <span>Data Structures</span>
         </label>
         <label>
@@ -63,7 +67,9 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             value="attributes"
             checked={application === "attributes"}
           />
-          <span class={attributeStatus}><DatabaseZap /></span>
+          <span class={attributeStatus}>
+            <DatabaseZap />
+          </span>
           <span>Attributes</span>
         </label>
         <label>
@@ -73,7 +79,9 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             value="interventions"
             checked={application === "interventions"}
           />
-          <span class={interventionStatus}><GitBranchPlus /></span>
+          <span class={interventionStatus}>
+            <GitBranchPlus />
+          </span>
           <span>Interventions</span>
         </label>
       </nav>

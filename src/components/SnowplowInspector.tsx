@@ -113,6 +113,13 @@ export const SnowplowInspector: FunctionComponent = () => {
   const [requests, setRequests] = useState<Entry[]>([]);
   const [eventCount, setEventCount] = useState<number>();
 
+  useEffect(() => {
+    chrome.action?.setBadgeText({
+      tabId: chrome.devtools.inspectedWindow.tabId,
+      text: String(eventCount),
+    });
+  }, [eventCount]);
+
   const Modal = activeModal && modals[activeModal];
 
   return (

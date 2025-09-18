@@ -34,8 +34,8 @@
       }
 
       svg {
-        height: .875rem;
-        width: .875rem;
+        height: 0.875rem;
+        width: 0.875rem;
       }
 
       input[value="debugger"] + span {
