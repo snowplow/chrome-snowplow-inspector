@@ -1,8 +1,8 @@
-import { h, FunctionComponent, Fragment, VNode } from "preact";
+import { h, type FunctionComponent, Fragment, type VNode } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { protocol } from "../../ts/protocol";
-import {
+import type {
   IBeacon,
   IBeaconDetails,
   IBeaconSummary,
@@ -11,13 +11,13 @@ import {
 } from "../../ts/types";
 import { b64d, nameType, copyToClipboard } from "../../ts/util";
 import {
-  IgluUri,
+  type IgluUri,
   IgluSchema,
   ResolvedIgluSchema,
   Resolver,
 } from "../../ts/iglu";
 
-import { ModalSetter } from "../Modals";
+import type { ModalSetter } from "../Modals";
 
 import { CopyMenu } from "./CopyMenu";
 

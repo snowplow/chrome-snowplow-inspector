@@ -8,7 +8,7 @@ import { StaticRegistry } from "./Static";
 
 export {
   Registry,
-  RegistrySpec,
+  type RegistrySpec,
   DataStructuresRegistry,
   IgluRegistry,
   LocalRegistry,

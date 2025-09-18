@@ -1,6 +1,6 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 
-import { Registry, Resolver } from "../../ts/iglu";
+import { type Registry, Resolver } from "../../ts/iglu";
 
 import { RegistryDetail } from "./RegistryDetail";
 

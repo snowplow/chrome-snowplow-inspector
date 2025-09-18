@@ -1,13 +1,13 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { ModalOptions } from ".";
+import type { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
 import {
   $SCHEMA,
   IgluSchema,
-  IgluUri,
-  Registry,
+  type IgluUri,
+  type Registry,
   ResolvedIgluSchema,
 } from "../../ts/iglu";
 import { LocalRegistry } from "../../ts/iglu/Registries";

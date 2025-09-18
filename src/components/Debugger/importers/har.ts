@@ -1,4 +1,4 @@
-import { Entry, Har } from "har-format";
+import type { Entry, Har } from "har-format";
 
 import { isSnowplow } from "../../../ts/util";
 

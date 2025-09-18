@@ -1,8 +1,8 @@
-import { Cookie, Entry } from "har-format";
-import { h, FunctionComponent, VNode } from "preact";
+import type { Cookie, Entry } from "har-format";
+import { h, type FunctionComponent, type VNode } from "preact";
 import {
-  Dispatch,
-  StateUpdater,
+  type Dispatch,
+  type StateUpdater,
   useCallback,
   useEffect,
   useMemo,
@@ -10,9 +10,9 @@ import {
 } from "preact/hooks";
 
 import { endpointAnalytics, trackerAnalytics } from "../../ts/analytics";
-import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
+import { IgluSchema, type IgluUri, Resolver } from "../../ts/iglu";
 import { protocol } from "../../ts/protocol";
-import { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
+import type { BeaconValidity, IBeaconSummary, ITimeline } from "../../ts/types";
 import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 
 import * as importers from "./importers";

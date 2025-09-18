@@ -1,9 +1,8 @@
-import { h, FunctionComponent } from "preact";
-import { StateUpdater } from "preact/hooks";
+import { h, type FunctionComponent } from "preact";
 
-import { Registry, Resolver } from "../../ts/iglu";
+import { type Registry, Resolver } from "../../ts/iglu";
 
-import { ModalSetter } from "../../components/Modals";
+import type { ModalSetter } from "../../components/Modals";
 import { LocalRegistry } from "../../ts/iglu/Registries/Local";
 import { ResolverListing } from "./ResolverListing";
 

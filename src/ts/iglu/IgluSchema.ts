@@ -1,5 +1,5 @@
 import { default as canonicalize } from "canonicalize";
-import { Schema, ValidatorResult } from "jsonschema";
+import { type Schema, ValidatorResult } from "jsonschema";
 
 import { Registry } from "./Registries";
 
@@ -99,7 +99,7 @@ export class ResolvedIgluSchema extends IgluSchema {
     super(self.vendor, self.name, self.format, self.version);
   }
 
-  protected buildSearchIndex(schema: ResolvedIgluSchema): string {
+  protected override buildSearchIndex(schema: ResolvedIgluSchema): string {
     const base = super.buildSearchIndex(schema);
     const fields = new Set<string>([base]);
 
@@ -132,7 +132,7 @@ export class ResolvedIgluSchema extends IgluSchema {
     return Array.from(fields).join("\n");
   }
 
-  uri(): IgluUri {
+  override uri(): IgluUri {
     return this.self.uri();
   }
 

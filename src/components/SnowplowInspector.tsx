@@ -1,5 +1,5 @@
-import { Entry } from "har-format";
-import { h, FunctionComponent, Fragment } from "preact";
+import type { Entry } from "har-format";
+import { h, type FunctionComponent, Fragment } from "preact";
 import {
   useCallback,
   useEffect,
@@ -11,11 +11,16 @@ import {
 import { consoleAnalytics } from "../ts/analytics";
 import { buildRegistry } from "../ts/iglu";
 import { apiFetch, doOAuthFlow, CONSOLE_API } from "../ts/oauth";
-import { Application, OAuthResult, Organization } from "../ts/types";
+import type { Application, OAuthResult, Organization } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
 import { DestinationManager } from "../ts/DestinationManager";
 
-import { modals, Modal, ModalOptions, ModalSetter } from "./Modals";
+import {
+  modals,
+  type Modal,
+  type ModalOptions,
+  type ModalSetter,
+} from "./Modals";
 import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";

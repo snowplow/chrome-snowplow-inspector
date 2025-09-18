@@ -1,19 +1,19 @@
 import { default as canonicalize } from "canonicalize";
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 import {
-  Dispatch,
-  StateUpdater,
+  type Dispatch,
+  type StateUpdater,
   useEffect,
   useMemo,
   useState,
 } from "preact/hooks";
 
 import {
-  Registry,
+  type Registry,
   IgluSchema,
   ResolvedIgluSchema,
   Resolver,
-  IgluUri,
+  type IgluUri,
 } from "../../ts/iglu";
 import { chunkEach, colorOf } from "../../ts/util";
 

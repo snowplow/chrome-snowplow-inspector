@@ -1,6 +1,6 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 
-import { Application, IToolbar } from "../ts/types";
+import type { Application, IToolbar } from "../ts/types";
 import { ConsoleStatus } from "./ConsoleStatus";
 
 import "./Toolbar.css";

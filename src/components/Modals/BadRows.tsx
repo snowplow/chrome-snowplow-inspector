@@ -1,9 +1,9 @@
-import { Entry } from "har-format";
-import { h, FunctionComponent } from "preact";
+import type { Entry } from "har-format";
+import { h, type FunctionComponent } from "preact";
 import { useCallback, useState } from "preact/hooks";
 
 import { badToRequests } from "../../ts/util";
-import { ModalOptions } from ".";
+import type { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
 
 export interface BadRowsOptions extends ModalOptions {

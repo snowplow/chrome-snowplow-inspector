@@ -1,7 +1,7 @@
 import { Validator } from "jsonschema";
 
 import { IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
-import { RegistrySpec, RegistryStatus } from "../../types";
+import type { RegistrySpec, RegistryStatus } from "../../types";
 import { request } from "../../permissions";
 import { uuidv4 } from "../../util";
 

@@ -1,8 +1,8 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
-import { Registry, Resolver } from "../../ts/iglu";
-import { ModalSetter } from "../../components/Modals";
+import { type Registry, Resolver } from "../../ts/iglu";
+import { type ModalSetter } from "../../components/Modals";
 
 import { Directory } from "./Directory";
 import { RegistryList } from "./RegistryList";

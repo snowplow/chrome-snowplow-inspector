@@ -1,7 +1,7 @@
-import { Entry } from "har-format";
+import type { Entry } from "har-format";
 
 import { protocol } from "../../../ts/protocol";
-import { IBeaconSummary } from "../../../ts/types";
+import type { IBeaconSummary } from "../../../ts/types";
 import { tryb64 } from "../../../ts/util";
 
 export default (requests: Entry[], events: IBeaconSummary[][]): File => {

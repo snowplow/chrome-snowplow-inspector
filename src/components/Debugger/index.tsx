@@ -1,5 +1,5 @@
-import { Entry } from "har-format";
-import { h, FunctionComponent } from "preact";
+import type { Entry } from "har-format";
+import { h, type FunctionComponent } from "preact";
 import {
   useCallback,
   useEffect,
@@ -8,7 +8,7 @@ import {
 } from "preact/hooks";
 
 import { errorAnalytics } from "../../ts/analytics";
-import { IBeaconSummary, IDebugger, PipelineInfo } from "../../ts/types";
+import type { IBeaconSummary, IDebugger, PipelineInfo } from "../../ts/types";
 import { isSnowplow } from "../../ts/util";
 
 import { Beacon } from "./Beacon";

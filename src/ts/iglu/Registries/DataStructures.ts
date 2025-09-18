@@ -1,6 +1,6 @@
 import { Registry } from "./Registry";
-import { RegistrySpec } from "../../types";
-import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
+import type { RegistrySpec } from "../../types";
+import { type IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 import { doOAuthFlow } from "../../oauth";
 
 const INSIGHTS_API_ENDPOINT = "https://console.snowplowanalytics.com/";
@@ -42,7 +42,7 @@ type DataStructuresMetaData = {
 } & DataStructuresSchema["meta"];
 
 export class DataStructuresRegistry extends Registry {
-  fields = {
+  override fields = {
     organizationId: {
       title: "Organization ID",
       type: "text",
@@ -72,7 +72,7 @@ export class DataStructuresRegistry extends Registry {
     },
   };
 
-  obsoleteOptions = [
+  override obsoleteOptions = [
     "clientId",
     "clientSecret",
     "oauthUsername",

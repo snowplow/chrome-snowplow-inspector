@@ -1,12 +1,12 @@
 import { Registry } from "./Registry";
-import { IgluSchema, IgluUri, ResolvedIgluSchema } from "../IgluSchema";
-import { RegistrySpec } from "../../types";
+import { IgluSchema, type IgluUri, ResolvedIgluSchema } from "../IgluSchema";
+import type { RegistrySpec } from "../../types";
 import { objHasProperty } from "../../util";
 
 const REQUEST_TIMEOUT_MS = 5000;
 
 export class StaticRegistry extends Registry {
-  fields = {
+  override fields = {
     uri: {
       title: "Base URI",
       type: "url",

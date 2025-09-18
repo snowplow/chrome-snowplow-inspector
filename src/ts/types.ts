@@ -1,10 +1,10 @@
-import { Entry } from "har-format";
-import { Schema } from "jsonschema";
-import { Dispatch, StateUpdater } from "preact/hooks";
+import type { Entry } from "har-format";
+import type { Schema } from "jsonschema";
+import type { Dispatch, StateUpdater } from "preact/hooks";
 
-import { Resolver } from "./iglu";
-import { DestinationManager } from "./DestinationManager";
-import { ModalSetter } from "../components/Modals";
+import type { Resolver } from "./iglu";
+import type { DestinationManager } from "./DestinationManager";
+import type { ModalSetter } from "../components/Modals";
 
 export type Application =
   | "debugger"

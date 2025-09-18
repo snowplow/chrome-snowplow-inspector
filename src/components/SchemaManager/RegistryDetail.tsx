@@ -1,8 +1,8 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 import { useState } from "preact/hooks";
 
-import { Registry } from "../../ts/iglu";
-import { RegistrySpec } from "../../ts/types";
+import type { Registry } from "../../ts/iglu";
+import type { RegistrySpec } from "../../ts/types";
 
 const kindFieldOptions: { [name: string]: RegistrySpec["kind"] } = {
   Local: "local",

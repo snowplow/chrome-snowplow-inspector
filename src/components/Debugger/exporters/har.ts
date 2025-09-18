@@ -1,4 +1,4 @@
-import { Entry, Har } from "har-format";
+import type { Entry, Har } from "har-format";
 
 export default (requests: Entry[]): File => {
   const manifest = chrome.runtime.getManifest();

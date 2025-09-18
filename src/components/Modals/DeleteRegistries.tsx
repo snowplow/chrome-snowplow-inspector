@@ -1,8 +1,8 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 
-import { ModalOptions } from ".";
+import type { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
-import { Registry, Resolver } from "../../ts/iglu";
+import { type Registry, Resolver } from "../../ts/iglu";
 import { RegistryDetail } from "../SchemaManager/RegistryDetail";
 
 export interface DeleteRegistriesOptions extends ModalOptions {

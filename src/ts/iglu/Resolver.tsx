@@ -5,9 +5,13 @@ import {
   LocalRegistry,
   StaticRegistry,
 } from "./Registries";
-import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
+import {
+  type IgluSchema,
+  type IgluUri,
+  ResolvedIgluSchema,
+} from "./IgluSchema";
 import { repoAnalytics } from "../analytics";
-import { ExtensionOptions, RegistrySpec } from "../types";
+import type { RegistrySpec } from "../types";
 
 const DEFAULT_REGISTRIES: RegistrySpec[] = [
   { kind: "local", name: "Local Registry", priority: 0 },
@@ -127,7 +131,7 @@ export class Resolver extends Registry {
     );
   }
 
-  walk() {
+  override walk() {
     this.hitCache.clear();
     return Promise.all(
       this.registries.map((reg) =>

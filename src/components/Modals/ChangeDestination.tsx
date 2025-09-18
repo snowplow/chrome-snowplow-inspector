@@ -1,8 +1,8 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { BaseModal } from "./BaseModal";
 
-import { ModalOptions } from ".";
+import type { ModalOptions } from ".";
 import { DestinationManager } from "../../ts/DestinationManager";
 import { request } from "../../ts/permissions";
 

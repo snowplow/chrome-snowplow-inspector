@@ -1,9 +1,9 @@
-import { Cookie, Entry, Header, Request } from "har-format";
-import { Schema } from "jsonschema";
+import type { Cookie, Entry, Header, Request } from "har-format";
+import type { Schema } from "jsonschema";
 
 import { protocol } from "./protocol";
 import { schemas, decodeB64Thrift } from "./thriftcodec";
-import {
+import type {
   ITomcatImport,
   NgrokEvent,
   TestSuiteCondition,

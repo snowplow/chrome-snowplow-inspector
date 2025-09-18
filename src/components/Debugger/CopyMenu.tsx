@@ -1,5 +1,5 @@
-import { h, FunctionComponent } from "preact";
-import { IBeaconSummary } from "../../ts/types";
+import { h, type FunctionComponent } from "preact";
+import type { IBeaconSummary } from "../../ts/types";
 import { copyToClipboard, tryb64 } from "../../ts/util";
 
 import "./CopyMenu.css";

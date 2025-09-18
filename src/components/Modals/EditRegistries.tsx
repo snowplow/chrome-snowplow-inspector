@@ -1,11 +1,16 @@
-import { h, FunctionComponent } from "preact";
-import { Dispatch, StateUpdater, useEffect, useState } from "preact/hooks";
+import { h, type FunctionComponent } from "preact";
+import {
+  type Dispatch,
+  type StateUpdater,
+  useEffect,
+  useState,
+} from "preact/hooks";
 
-import { ModalOptions } from ".";
+import type { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
-import { buildRegistry, Registry, Resolver } from "../../ts/iglu";
+import { buildRegistry, type Registry, Resolver } from "../../ts/iglu";
 import { RegistryDetail } from "../SchemaManager/RegistryDetail";
-import { RegistrySpec } from "../../ts/types";
+import type { RegistrySpec } from "../../ts/types";
 
 export interface EditRegistriesOptions extends ModalOptions {
   registries: Registry[];

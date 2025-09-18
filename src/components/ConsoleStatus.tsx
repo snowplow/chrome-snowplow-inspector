@@ -1,8 +1,8 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 
 import { consoleAnalytics, landingUrl } from "../ts/analytics";
 import { doOAuthFlow } from "../ts/oauth";
-import { IConsoleStatus, OAuthIdentity } from "../ts/types";
+import type { IConsoleStatus, OAuthIdentity } from "../ts/types";
 
 import "./ConsoleStatus.css";
 import logo from "@res/logo.svg";

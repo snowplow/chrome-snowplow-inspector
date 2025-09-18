@@ -4,7 +4,7 @@ import {
   trackStructEvent,
 } from "@snowplow/browser-tracker";
 
-import { RegistrySpec } from "./iglu/Registries";
+import type { RegistrySpec } from "./iglu/Registries";
 
 const SNOWPLOW_ENDPOINT = "https://snowflake-217500-prod1.collector.snplow.net";
 
