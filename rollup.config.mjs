@@ -7,6 +7,7 @@ import json from "@rollup/plugin-json";
 import html from "@rollup/plugin-html";
 import resolve from "@rollup/plugin-node-resolve";
 import styles from "@ironkinoko/rollup-plugin-styles";
+import postcss from "rollup-plugin-postcss";
 import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 
@@ -60,10 +61,19 @@ export default Object.entries({
     }),
     json(),
     typescript(),
+    // Process Tailwind CSS first
+    postcss({
+      extract: "tailwind.css",
+      minimize: !in_development,
+      sourceMap: in_development,
+      include: ["**/*.css"],
+    }),
+    // Keep existing Sass processing for gradual migration
     styles({
       mode: "extract",
       minimize: !in_development,
       sourceMap: in_development,
+      include: ["**/*.scss"],
     }),
     html({
       fileName,

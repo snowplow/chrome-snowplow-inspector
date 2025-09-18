@@ -36,9 +36,20 @@ export const SnowplowInspector: FunctionComponent = () => {
   const destinationManager = useMemo(() => new DestinationManager(), []);
 
   useEffect(() => {
-    doOAuthFlow(false)
-      .then(setLogin)
-      .finally(() => resolver.walk());
+    // Only attempt OAuth flow if Chrome identity API is available
+    // (it's not available in DevTools context)
+    if (chrome?.identity) {
+      doOAuthFlow(false)
+        .then(setLogin)
+        .catch((error) => {
+          // OAuth failed - this is expected in DevTools context, just continue
+          console.warn("OAuth flow failed (expected in DevTools):", error);
+        })
+        .finally(() => resolver.walk());
+    } else {
+      // Chrome identity not available, just walk the resolver
+      resolver.walk();
+    }
   }, [resolver]);
 
   useEffect(() => {

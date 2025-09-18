@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* shadcn/ui Dark Theme Variables - Chrome DevTools compatible */
+    --background: 210 40% 12%;      /* #1e1e1e - Chrome DevTools dark bg */
+    --foreground: 213 27% 84%;      /* #cccccc - Chrome DevTools text */
+    
+    --card: 215 25% 18%;            /* #2d2d30 - DevTools surface/card bg */
+    --card-foreground: 213 27% 84%; /* #cccccc - card text */
+    
+    --popover: 215 25% 18%;         /* #2d2d30 - popover bg */
+    --popover-foreground: 213 27% 84%; /* #cccccc - popover text */
+    
+    --primary: 199 89% 48%;         /* #0ea5e9 - Snowplow blue */
+    --primary-foreground: 0 0% 100%; /* white - primary button text */
+    
+    --secondary: 213 12% 25%;       /* #3e3e42 - DevTools borders/secondary */
+    --secondary-foreground: 213 27% 84%; /* #cccccc - secondary text */
+    
+    --muted: 213 12% 25%;           /* #3e3e42 - muted backgrounds */
+    --muted-foreground: 220 9% 60%; /* #999999 - muted text */
+    
+    --accent: 213 12% 25%;          /* #3e3e42 - accent color */
+    --accent-foreground: 213 27% 84%; /* #cccccc - accent text */
+    
+    --destructive: 0 84% 60%;       /* #ef4444 - error/destructive */
+    --destructive-foreground: 0 0% 100%; /* white - destructive text */
+    
+    --border: 213 12% 25%;          /* #3e3e42 - border color */
+    --input: 213 12% 25%;           /* #3e3e42 - input border */
+    --ring: 199 89% 48%;            /* #0ea5e9 - focus ring */
+    
+    --radius: 0.5rem;               /* border radius */
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    margin: 0;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}

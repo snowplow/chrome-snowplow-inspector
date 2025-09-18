@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "preact/hooks";
+import { RefreshCw, Download } from "lucide-preact";
 
 import { endpointAnalytics, trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
@@ -569,7 +570,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   );
 
   return (
-    <aside class="timeline">
+    <aside class="timeline m-0 px-4 py-2 sticky top-0">
       <div class="timeline__controls">
         <div>
           <button
@@ -578,14 +579,14 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             disabled={!beacons.length}
             title="Clear Events"
           >
-            <img alt="Clear Events" src="ban.svg" />
+            <RefreshCw size={16} />
           </button>
           <button
             type="button"
             title="Import Events"
             popovertarget="importevents-po"
           >
-            <img alt="Import Events" src="download.svg" />
+            <Download size={16} />
           </button>
           <ul id="importevents-po" popover="auto">
             {Object.entries(importers.formats).map(([key, label]) => (

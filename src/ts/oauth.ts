@@ -10,7 +10,7 @@ const CONSOLE_OAUTH_AUDIENCE = "https://snowplowanalytics.com/api/";
 const CONSOLE_OAUTH_SCOPES = "openid profile";
 
 export const { CONSOLE_API, OAUTH_FLOW, CONSOLE_OAUTH_CLIENTID } =
-  prodExtIds.includes(chrome.runtime.id)
+  chrome?.runtime?.id && prodExtIds.includes(chrome.runtime.id)
     ? {
         CONSOLE_API: "https://console.snowplowanalytics.com/",
         CONSOLE_OAUTH_CLIENTID: "ljiYxb2Cs1gyN0wTWvfByrt1jdRaqxyM",
@@ -39,6 +39,18 @@ export const apiFetch = (
   ).then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)));
 
 export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
+  if (!chrome?.identity) {
+    return Promise.reject(new Error("Chrome identity API not available"));
+  }
+
+  // Check if we're using development endpoints and warn about potential issues
+  const isDevelopment = OAUTH_FLOW.includes("next.");
+  if (isDevelopment && !interactive) {
+    // For development builds, skip non-interactive OAuth to avoid errors
+    console.warn("Skipping non-interactive OAuth flow in development build");
+    return Promise.reject(new Error("Non-interactive OAuth not supported in development"));
+  }
+
   const flowUrl = new URL("authorize", OAUTH_FLOW);
 
   const state = uuidv4();
@@ -64,6 +76,11 @@ export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
     chrome.identity.launchWebAuthFlow(
       { interactive, url: flowUrl.toString() },
       (responseUrl) => {
+        // Check for Chrome runtime errors
+        if (chrome.runtime.lastError) {
+          console.error("Chrome OAuth error:", chrome.runtime.lastError);
+          return reject(new Error(`OAuth failed: ${chrome.runtime.lastError.message}`));
+        }
         if (!responseUrl) throw reject(new Error("No OAuth redirect detected"));
 
         const response = new URL(responseUrl);
@@ -103,6 +120,10 @@ export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
         };
 
         const logout = () => {
+          if (!chrome?.identity) {
+            return Promise.reject(new Error("Chrome identity API not available"));
+          }
+
           const flowUrl = new URL("oidc/logout", OAUTH_FLOW);
           Object.entries({
             client_id: CONSOLE_OAUTH_CLIENTID,

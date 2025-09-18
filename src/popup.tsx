@@ -11,7 +11,13 @@ const Shortcut = () => {
   const [os, setOs] = useState<chrome.runtime.PlatformInfo["os"]>("win");
 
   useEffect(() => {
-    chrome.runtime.getPlatformInfo((info) => setOs(info.os));
+    try {
+      if (chrome?.runtime?.getPlatformInfo) {
+        chrome.runtime.getPlatformInfo((info) => setOs(info.os));
+      }
+    } catch (error) {
+      console.warn("Could not get platform info:", error);
+    }
   }, []);
 
   return os === "mac" ? (
@@ -30,15 +36,34 @@ const ConsoleDetails = () => {
   const [authenticating, setAuthenticating] = useState<boolean>(false);
 
   useEffect(() => {
-    doOAuthFlow(false).then(({ identity }) => setIdentity(identity));
+    try {
+      doOAuthFlow(false)
+        .then(({ identity }) => setIdentity(identity))
+        .catch((error) => {
+          // OAuth failed - this is expected in development builds
+          console.warn("Non-interactive OAuth flow failed (expected in dev):", error.message);
+        });
+    } catch (error) {
+      console.warn("Could not start OAuth flow:", error);
+    }
   }, []);
 
   const startFlow = useCallback(() => {
-    setAuthenticating(true);
-    doOAuthFlow(true).then(({ identity }) => {
-      setIdentity(identity);
+    try {
+      setAuthenticating(true);
+      doOAuthFlow(true)
+        .then(({ identity }) => {
+          setIdentity(identity);
+          setAuthenticating(false);
+        })
+        .catch((error) => {
+          console.warn("OAuth flow failed:", error);
+          setAuthenticating(false);
+        });
+    } catch (error) {
+      console.warn("Could not start OAuth flow:", error);
       setAuthenticating(false);
-    });
+    }
   }, []);
 
   return (
@@ -98,7 +123,7 @@ const Popup = () => (
         <a
           class="button"
           href={`${homepage}/releases/tag/v${
-            chrome.runtime.getManifest().version
+            chrome?.runtime?.getManifest()?.version || "latest"
           }`}
           target="_blank"
         >
