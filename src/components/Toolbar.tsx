@@ -1,10 +1,10 @@
 import { h, type FunctionComponent } from "preact";
+import { Box, DatabaseZap, GitBranchPlus, ListTree } from "lucide-preact";
 
 import type { Application, IToolbar } from "../ts/types";
 import { ConsoleStatus } from "./ConsoleStatus";
 
 import "./Toolbar.css";
-import listTree from "@res/list-tree.svg";
 
 export const Toolbar: FunctionComponent<IToolbar> = ({
   application,
@@ -14,14 +14,16 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
   setLogin,
   signalsInfo,
 }) => {
-  const status =
+  const eventStatus =
     typeof eventCount == "number"
       ? eventCount > 0
         ? "active"
         : "inactive"
       : "";
 
-  const enableSignals = Object.values(signalsInfo).some(Boolean);
+  const attributeStatus = "inactive";
+  const interventionStatus = "inactive";
+
   return (
     <header class="toolbar">
       <nav
@@ -40,9 +42,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             value="debugger"
             checked={application === "debugger"}
           />
-          <span class={status}>
-            <img alt="" src={listTree} />
-          </span>
+          <span class={eventStatus}><ListTree /></span>
           <span>Events</span>
           {eventCount ? <span>{eventCount}</span> : null}
         </label>
@@ -53,30 +53,29 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             value="schemaManager"
             checked={application === "schemaManager"}
           />
-          Data Structures
+          <span><Box /></span>
+          <span>Data Structures</span>
         </label>
-        {enableSignals && (
-          <label>
-            <input
-              type="radio"
-              name="application"
-              value="attributes"
-              checked={application === "attributes"}
-            />
-            Attributes
-          </label>
-        )}
-        {enableSignals && (
-          <label>
-            <input
-              type="radio"
-              name="application"
-              value="interventions"
-              checked={application === "interventions"}
-            />
-            Interventions
-          </label>
-        )}
+        <label>
+          <input
+            type="radio"
+            name="application"
+            value="attributes"
+            checked={application === "attributes"}
+          />
+          <span class={attributeStatus}><DatabaseZap /></span>
+          <span>Attributes</span>
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="application"
+            value="interventions"
+            checked={application === "interventions"}
+          />
+          <span class={interventionStatus}><GitBranchPlus /></span>
+          <span>Interventions</span>
+        </label>
       </nav>
       <ConsoleStatus login={login} setLogin={setLogin} />
     </header>

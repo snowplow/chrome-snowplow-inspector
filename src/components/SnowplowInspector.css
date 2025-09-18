@@ -282,11 +282,12 @@ label[title] {
     opacity: 1;
   }
 
-  img {
+  > span {
     border-radius: 0.25rem 0 0 0.25rem;
     border: 1px solid #232323;
     border-right: 0;
     padding: 0.6125rem 0.75rem;
+    line-height: 0;
   }
 
   input[type="text"] {

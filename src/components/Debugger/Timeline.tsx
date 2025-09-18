@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "preact/hooks";
+import { Ban, Download, Upload, Search } from "lucide-preact";
 
 import { endpointAnalytics, trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, type IgluUri, Resolver } from "../../ts/iglu";
@@ -19,10 +20,6 @@ import * as importers from "./importers";
 import * as exporters from "./exporters";
 
 import "./Timeline.css";
-import ban from "@res/ban.svg";
-import download from "@res/download.svg";
-import upload from "@res/upload.svg";
-import search from "@res/search.svg";
 
 const GA_REQUIRED_FIELDS = ["tid", "cid", "t", "v", "_gid"];
 const KNOWN_FAKE_PAGES = [
@@ -582,14 +579,14 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             disabled={!beacons.length}
             title="Clear Events"
           >
-            <img alt="Clear Events" src={ban} />
+            <Ban />
           </button>
           <button
             type="button"
             title="Import Events"
             popovertarget="importevents-po"
           >
-            <img alt="Import Events" src={download} />
+            <Download />
           </button>
           <ul id="importevents-po" popover="auto">
             {Object.entries(importers.formats).map(([key, label]) => (
@@ -609,7 +606,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             popovertarget="exportevents-po"
             disabled={!beacons.length}
           >
-            <img alt="Export Events" src={upload} />
+            <Upload />
           </button>
           <ul id="exportevents-po" popover="auto">
             {Object.entries(exporters.formats).map(([key, label]) => (
@@ -625,7 +622,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           </ul>
         </div>
         <label title="Search Events">
-          <img alt="Search Events" src={search} />
+          <span><Search /></span>
           <input
             class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(
               " ",

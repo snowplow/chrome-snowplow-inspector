@@ -1,4 +1,5 @@
 import { h, type FunctionComponent } from "preact";
+import { LogOut } from "lucide-preact";
 
 import { consoleAnalytics, landingUrl } from "../ts/analytics";
 import { doOAuthFlow } from "../ts/oauth";
@@ -6,7 +7,6 @@ import type { IConsoleStatus, OAuthIdentity } from "../ts/types";
 
 import "./ConsoleStatus.css";
 import logo from "@res/logo.svg";
-import logOut from "@res/log-out.svg";
 
 const LogoOrButton: FunctionComponent<{ handler: () => void }> = ({
   handler,
@@ -82,7 +82,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
               role="button"
               tabIndex={0}
             >
-              <img alt="" src={logOut} />
+              <LogOut />
               Log Out
             </li>
           </ul>,
