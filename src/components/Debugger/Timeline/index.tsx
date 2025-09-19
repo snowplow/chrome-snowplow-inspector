@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from "preact/hooks";
 import { endpointAnalytics, trackerAnalytics } from "../../../ts/analytics";
 import { protocol } from "../../../ts/protocol";
 import type { IBeaconSummary, ITimeline } from "../../../ts/types";
-import { b64d, hash, tryb64 } from "../../../ts/util";
+import { b64d, colorOf, hash, tryb64 } from "../../../ts/util";
 
 import { EventEntry } from "./EventEntry";
 import { PageGroup } from "./PageGroup";
@@ -123,7 +123,7 @@ const summariseBatch = ({
             "",
           10,
         ) || +new Date(),
-      ).toJSON(),
+      ),
       collectorStatus: {
         code: status,
         text: statusText,
@@ -383,6 +383,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   batchRef.current = batches;
   summariesRef.current = batchSummaries;
+  if (pageGroups.length && !active) setActive(pageGroups[0][1][0]);
 
   return (
     <TimelineChrome
@@ -395,19 +396,29 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       setFilterStr={setFilterStr}
       setModal={setModal}
     >
-      {pageGroups.map(([pageName, events], i) => (
-        <PageGroup key={i} pageName={pageName}>
-          {events.map((event) => (
-            <EventEntry
-              key={event.id}
-              event={event}
-              isActive={active?.id == event.id}
-              resolver={resolver}
-              setActive={setActive}
-            />
-          ))}
-        </PageGroup>
-      ))}
+      <ol class="timeline__events">
+        {pageGroups.map(([pageName, events], i) => (
+          <li>
+            <PageGroup key={i} pageName={pageName} events={events.length}>
+              <ol>
+                {events.map((event) => (
+                  <li
+                    class={`destination-${colorOf(event.collector + event.appId)}`}
+                  >
+                    <EventEntry
+                      key={event.id}
+                      event={event}
+                      isActive={active?.id == event.id}
+                      resolver={resolver}
+                      setActive={setActive}
+                    />
+                  </li>
+                ))}
+              </ol>
+            </PageGroup>
+          </li>
+        ))}
+      </ol>
     </TimelineChrome>
   );
 };

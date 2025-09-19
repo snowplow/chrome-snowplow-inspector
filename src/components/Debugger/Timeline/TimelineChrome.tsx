@@ -155,7 +155,7 @@ export const TimelineChrome: FunctionComponent<{
           />
         </label>
       </fieldset>
-      <ol class="timeline__events">{children}</ol>
+      {children}
     </aside>
   );
 };

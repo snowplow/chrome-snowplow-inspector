@@ -31,10 +31,7 @@ export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
   const [activeModal, setActiveModal] = useState<Modal>();
   const [login, setLogin] = useState<OAuthResult>();
-  const [signalsInfo, setSignalsInfo] = useState<Record<string, string>>({
-    "a6cca997-2453-4e05-bba0-5d0dc2a050a4":
-      "ebc6f23c-cec0-4e09-84ee-453e50b556ca.svc.snplow.net",
-  });
+  const [signalsInfo, setSignalsInfo] = useState<Record<string, string>>({});
   const modalOpts = useRef<ModalOptions>();
 
   const resolver = useMemo(() => new Resolver(), []);
@@ -116,7 +113,7 @@ export const SnowplowInspector: FunctionComponent = () => {
   useEffect(() => {
     chrome.action?.setBadgeText({
       tabId: chrome.devtools.inspectedWindow.tabId,
-      text: String(eventCount),
+      text: String(eventCount ?? ""),
     });
   }, [eventCount]);
 

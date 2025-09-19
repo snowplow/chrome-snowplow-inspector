@@ -99,7 +99,7 @@ export interface IBeaconSummary {
   method: string;
   page?: string;
   payload: Map<string, string>;
-  time: string;
+  time: Date;
   serverAnonymous: boolean;
   collectorStatus: {
     code: number;

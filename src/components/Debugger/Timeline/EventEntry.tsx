@@ -8,7 +8,7 @@ import {
 
 import { IgluSchema, type IgluUri, Resolver } from "../../../ts/iglu";
 import type { BeaconValidity, IBeaconSummary } from "../../../ts/types";
-import { colorOf, tryb64 } from "../../../ts/util";
+import { tryb64 } from "../../../ts/util";
 
 const validationCache = new Map<string, BeaconValidity>();
 const validateEvent = (
@@ -114,6 +114,16 @@ const validateEvent = (
   return validationCache.get(id) || "Unrecognised";
 };
 
+const dt = Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  timeZoneName: "short",
+  hour12: false,
+});
+
 export const EventEntry: FunctionComponent<{
   event: IBeaconSummary;
   isActive: boolean;
@@ -138,7 +148,6 @@ export const EventEntry: FunctionComponent<{
           collectorStatus.text !== "net::ERR_BLOCKED_BY_CLIENT")
           ? ""
           : "event--uncollected",
-        `event--destination-${colorOf(collector + appId)}`,
         validity === "Invalid"
           ? "event--invalid"
           : validity === "Valid"
@@ -146,7 +155,7 @@ export const EventEntry: FunctionComponent<{
             : "event--unrecognised",
       ].join(" ")}
       title={[
-        `Time: ${time}`,
+        `Time: ${time.toJSON()}`,
         `Collector: ${collector}`,
         `App ID: ${appId}`,
         `Status: ${collectorStatus.code} ${collectorStatus.text}`,
@@ -154,7 +163,7 @@ export const EventEntry: FunctionComponent<{
       ].join("\n")}
       onClick={setActive.bind(null, event)}
     >
-      {eventName}
+      <span data-timestamp={dt.format(time)}>{eventName}</span>
     </a>
   );
 };

@@ -187,9 +187,7 @@ details {
     align-items: center;
 
     &::before {
-      content: "";
-      flex: 1;
-      order: 1;
+      content: none;
     }
   }
 

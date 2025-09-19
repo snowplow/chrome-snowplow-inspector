@@ -2,13 +2,20 @@ import { h, type FunctionComponent } from "preact";
 
 export const PageGroup: FunctionComponent<{
   pageName: string;
-}> = ({ pageName, children }) => {
+  events: number;
+}> = ({ pageName, children, events }) => {
   return (
-    <article class="event-group">
-      <h1 class="event-group__heading" title="Group Name">
-        {pageName}
-      </h1>
+    <details class="event-group" open>
+      <summary>
+        <span
+          data-event-count={events.toLocaleString(undefined, {
+            minimumIntegerDigits: 2,
+          })}
+        >
+          {pageName}
+        </span>
+      </summary>
       {children}
-    </article>
+    </details>
   );
 };

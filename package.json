@@ -44,6 +44,7 @@
     "@types/node": "*",
     "esbuild": "^0.25.9",
     "lucide-preact": "^0.544.0",
+    "lucide-static": "^0.544.0",
     "prettier": "^3.0.2",
     "typescript": "^5.0.0"
   }

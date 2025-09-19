@@ -14,20 +14,6 @@
   margin: 1.5rem 0 1.5rem 1.5rem;
 }
 
-.timeline__events {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-
-  display: flex;
-  flex-flow: column nowrap;
-  flex: 1;
-  gap: 0.5rem;
-
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-
 .timeline__controls {
   display: flex;
   flex-flow: column nowrap;
@@ -55,79 +41,153 @@
   }
 }
 
+.timeline__events {
+  list-style: none;
+  padding: 0 0.5rem;
+  margin: 0;
+
+  display: flex;
+  flex-flow: column-reverse nowrap;
+  justify-content: start;
+  flex: 1;
+  gap: 0.5rem;
+
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
 .event-group {
   display: flex;
   flex-flow: column nowrap;
+  border-radius: 0.5rem;
+  background: linear-gradient();
 
-  .event-group__heading {
-    background-color: var(--color-contrast);
-    color: var(--color-text-contrast);
-    border-radius: 0.25rem 0.25rem 0 0;
-    margin: 0;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    font-family: "Roboto";
-    font-weight: 600;
-  }
-
-  .event {
+  > summary {
     display: flex;
-    align-items: center;
-    background-color: var(--color-foreground);
-    padding: 0.5rem 1rem;
-    cursor: pointer;
+    justify-content: space-between;
+    color: #999;
+    padding: 0.5rem 0;
 
-    &.event--uncollected {
-      color: red;
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      line-height: 1.25rem;
     }
 
-    &:hover,
-    &:active,
-    &.event--active {
-      background-color: var(--color-highlight);
+    & span::before {
+      content: attr(data-event-count);
+      display: inline-block;
+      border-radius: 5rem;
+      background-color: #999;
+      padding: 0.125rem 0.75rem;
+      text-align: center;
+      color: #1f2937;
     }
 
-    &::before {
+    &::after {
       content: "";
       display: inline-block;
-      border-radius: 100%;
-      height: 1em;
-      width: 1em;
-      margin-right: 0.5em;
-    }
-
-    .event--destination-blue::before {
-      background-color: #30b8f6;
-    }
-    .event--destination-red::before {
-      background-color: #661712;
-    }
-    .event--destination-dark::before {
-      background-color: #98a2b3;
-    }
-    .event--destination-purple::before {
-      background-color: #412476;
-    }
-    .event--destination-black::before {
-      background-color: black;
-    }
-    .event--destination-turquoise::before {
-      background-color: #0b7f86;
-    }
-    .event--destination-yellow::before {
-      background-color: #ffd760;
-    }
-    .event--destination-light::before {
-      background-color: var(--color-highlight);
-    }
-
-    .event--invalid::after {
-      content: "\0026d4\00fe0f";
-      float: right;
+      height: 1rem;
+      width: 1rem;
+      mask: url("lucide-static/icons/plus-circle.svg") no-repeat center;
+      mask-size: cover;
+      background-color: currentColor;
     }
   }
 
-  .event:last-child {
-    border-radius: 0 0 0.25rem 0.25rem;
+  &[open] > summary span::before {
+    background-color: #916ce7;
+    color: white;
+  }
+
+  &[open] > summary::after {
+    content: "";
+    mask-image: url("lucide-static/icons/minus-circle.svg");
+  }
+
+  ol {
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0;
+    border-radius: 0.5rem;
+    background-color: #191919;
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      transparent 1rem,
+      0%,
+      #404040 calc(1rem + 1px),
+      transparent 0
+    );
+  }
+
+  li {
+    display: flex;
+
+    a {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      padding: 0.625rem 0.75rem;
+      cursor: pointer;
+
+      span[data-timestamp]::after {
+        content: attr(data-timestamp);
+        display: block;
+        font-size: 0.75rem;
+        color: #999;
+        line-height: 1rem;
+      }
+
+      &.event--uncollected {
+        color: red;
+      }
+
+      &:hover,
+      &:active,
+      &.event--active {
+        background-color: #404040;
+      }
+
+      &.event--invalid::after {
+        content: "\0026d4\00fe0f";
+        float: right;
+      }
+
+      &::before {
+        content: "";
+        display: inline-block;
+        border-radius: 100%;
+        height: 0.5em;
+        width: 0.5em;
+        margin-right: 0.5em;
+      }
+    }
+
+    &.destination-blue a::before {
+      background-color: #30b8f6;
+    }
+    &.destination-red a::before {
+      background-color: #661712;
+    }
+    &.destination-dark a::before {
+      background-color: #98a2b3;
+    }
+    &.destination-purple a::before {
+      background-color: #412476;
+    }
+    &.destination-black a::before {
+      background-color: black;
+    }
+    &.destination-turquoise a::before {
+      background-color: #0b7f86;
+    }
+    &.destination-yellow a::before {
+      background-color: #ffd760;
+    }
+    &.destination-light a::before {
+      background-color: #ddd;
+    }
   }
 }
