@@ -156,6 +156,112 @@
   }
 }
 
+.event-payload {
+  display: flex;
+  flex-flow: column nowrap;
+  border-radius: 0.5rem;
+  border: 1px solid #232323;
+  background-color: #191919;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    padding-bottom: 0.75rem;
+    background-color: #101010;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+
+    line-height: 1.25rem;
+
+    > span {
+      color: #999999;
+      font-family: "Roboto", sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+
+      > span {
+        color: #e6e6e6;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+    }
+  }
+
+  h1 {
+    &::before {
+      content: "";
+      display: inline-block;
+      border-radius: 100%;
+      height: 0.5em;
+      width: 0.5em;
+      margin-right: 0.5em;
+    }
+
+    color: #e6e6e6;
+
+    font-size: 1.125rem;
+    font-family: "Roboto", sans-serif;
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  &.destination-blue h1::before {
+    background-color: #30b8f6;
+  }
+  &.destination-red h1::before {
+    background-color: #661712;
+  }
+  &.destination-dark h1::before {
+    background-color: #98a2b3;
+  }
+  &.destination-purple h1::before {
+    background-color: #412476;
+  }
+  &.destination-black h1::before {
+    background-color: black;
+  }
+  &.destination-turquoise h1::before {
+    background-color: #0b7f86;
+  }
+  &.destination-yellow h1::before {
+    background-color: #ffd760;
+  }
+  &.destination-light h1::before {
+    background-color: #ddd;
+  }
+
+  main {
+    display: flex;
+    margin: 0 2.5rem;
+
+    ul {
+      flex: 1;
+      list-style: none;
+      padding: 0;
+    }
+  }
+}
+
+.event-fieldgroup {
+  border-bottom: 1px solid #232323;
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    color: #999;
+    padding: 0.75rem 0;
+
+    font-family: "Roboto", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5rem;
+  }
+}
+
 .typeinfo {
   border-radius: 0.25rem;
   font-size: 0.875rem;

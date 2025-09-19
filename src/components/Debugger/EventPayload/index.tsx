@@ -1,27 +1,28 @@
 import { h, type FunctionComponent, Fragment, type VNode } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
-import { protocol } from "../../ts/protocol";
+import { protocol } from "../../../ts/protocol";
 import type {
   IBeacon,
   IBeaconDetails,
   IBeaconSummary,
   IRowSet,
   FieldDetail,
-} from "../../ts/types";
-import { b64d, nameType, copyToClipboard } from "../../ts/util";
+  PipelineInfo,
+} from "../../../ts/types";
+import { b64d, colorOf, copyToClipboard, nameType } from "../../../ts/util";
 import {
   type IgluUri,
   IgluSchema,
   ResolvedIgluSchema,
   Resolver,
-} from "../../ts/iglu";
+} from "../../../ts/iglu";
 
-import type { ModalSetter } from "../Modals";
+import type { ModalSetter } from "../../Modals";
 
-import { CopyMenu } from "./CopyMenu";
+import { CopyMenu } from "../CopyMenu";
 
-import "./Beacon.css";
+import "./EventPayload.css";
 
 type ProtocolField = (typeof protocol.paramMap)[keyof typeof protocol.paramMap];
 
@@ -35,7 +36,7 @@ function genClasses(finfo: ProtocolField): string {
   return classes.join(" ");
 }
 
-function parseBeacon({
+function destructureEvent({
   collector,
   method,
   payload,
@@ -80,7 +81,7 @@ function parseBeacon({
         }
       }
 
-      if (name === "User" && rows.length) {
+      if (name === "User") {
         rows.push([
           "Server Anonymization",
           serverAnonymous ? "Enabled" : "Disabled",
@@ -354,10 +355,10 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
   } else return <SDJValue obj={obj} resolver={resolver} />;
 };
 
-const RowSet: FunctionComponent<IRowSet> = ({ setName, children }) => (
-  <details class="rowset" open>
+const FieldGroup: FunctionComponent<IRowSet> = ({ setName, children }) => (
+  <details class="event-fieldgroup" open>
     <summary>{setName}</summary>
-    <table class="rowset__rows">{children}</table>
+    <table>{children}</table>
   </details>
 );
 
@@ -396,74 +397,137 @@ const printableValue = (val: string | undefined, finfo: ProtocolField): any => {
   }
 };
 
-const BeaconHeader: FunctionComponent<
+const EventSummary: FunctionComponent<
   Omit<IBeaconDetails, "data" | "payload"> & {
     resolver: Resolver;
   }
-> = ({ appId, collector, method, name, resolver, serverAnonymous, time }) => {
+> = ({
+  appId,
+  children,
+  collector,
+  method,
+  name,
+  resolver,
+  serverAnonymous,
+  time,
+}) => {
   const dt = new Date(time);
   const anonDesc = [
     "This event was sent in a request with the SP-Anonymous header.",
-    "The IP and Network User ID will not be included in the payload sent to the Enricher.",
+    "The detected IP and Network User ID will not be included in the payload processed by Enrich.",
   ].join("\n ");
 
   return (
-    <RowSet key="Core" setName="Core">
-      <tr>
-        <th>App</th>
-        <td>
-          <BeaconValue obj={appId} resolver={resolver} />
-          <LabelType val={appId} />
-        </td>
-      </tr>
-      <tr>
-        <th>Event</th>
-        <td>
-          <BeaconValue obj={name} resolver={resolver} />
-        </td>
-      </tr>
-      <tr>
-        <th>Time</th>
-        <td>
-          <time dateTime={dt.toISOString()} title={dt.toUTCString()}>
-            {dt.toLocaleString(undefined, {
-              dateStyle: "medium",
-              timeStyle: "full",
-            })}
-          </time>
-        </td>
-      </tr>
-      <tr>
-        <th>Collector</th>
-        <td>
-          <BeaconValue obj={collector} resolver={resolver} />
-        </td>
-      </tr>
-      <tr>
-        <th>Method</th>
-        <td>
-          <BeaconValue obj={method} resolver={resolver} />
-        </td>
-      </tr>
-      {serverAnonymous ? (
-        <tr title={anonDesc}>
-          <th>Server Anonymization</th>
-          <td>
-            <BeaconValue obj={serverAnonymous} resolver={resolver} />
-          </td>
-        </tr>
-      ) : null}
-    </RowSet>
+    <article class={`event-payload destination-${colorOf(collector + appId)}`}>
+      <header>
+        <h1>{name} Event</h1>
+        <span>
+          Method: <span>{method}</span>
+        </span>
+      </header>
+      <main>
+        <aside>
+          <dl>
+            <dt>Collector:</dt>
+            <dd>{collector}</dd>
+            <dt>Time:</dt>
+            <dd>
+              <time dateTime={dt.toISOString()} title={dt.toUTCString()}>
+                {dt.toLocaleString(undefined, {
+                  dateStyle: "medium",
+                  timeStyle: "medium",
+                })}
+              </time>
+            </dd>
+            <dt>App:</dt>
+            <dd>
+              <BeaconValue obj={appId} resolver={resolver} />
+              <LabelType val={appId} />
+            </dd>
+            {serverAnonymous && [
+              <dt title={anonDesc}>Server Anonymization</dt>,
+              <dd>
+                <BeaconValue obj={serverAnonymous} resolver={resolver} />
+              </dd>,
+            ]}
+          </dl>
+        </aside>
+        <ul>{children}</ul>
+      </main>
+    </article>
   );
 };
 
-export const Beacon: FunctionComponent<IBeacon> = ({
+const PipelineDetails: FunctionComponent<{
+  pipeline: PipelineInfo;
+  resolver: Resolver;
+  setModal: ModalSetter;
+}> = ({ pipeline, resolver, setModal }) => {
+  return (
+    <FieldGroup key="pipeline" setName="Pipeline Configuration">
+      {Object.entries({
+        "Pipeline Name": pipeline.domain,
+        Organization: pipeline.organizationName,
+        "Organization ID": pipeline.organization,
+        "Cloud Provider": pipeline.cloudProvider,
+        Type: pipeline.resource === "minis" ? "Mini" : "Full Pipeline",
+      }).map(([name, val]) => (
+        <tr>
+          <th>{name}</th>
+          <td>
+            <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
+            <LabelType val={val} />
+          </td>
+        </tr>
+      ))}
+      <tr>
+        <th>Enrichments</th>
+        <td>
+          <details>
+            {pipeline.enrichments
+              .sort((a, b) =>
+                a.enabled > b.enabled
+                  ? -1
+                  : a.enabled < b.enabled
+                    ? 1
+                    : a.filename < b.filename
+                      ? -1
+                      : 1,
+              )
+              .map((enr) => (
+                <BeaconValue
+                  obj={
+                    enr.content || {
+                      schema: `iglu:com.snowplowanalytics.snowplow/${enr.filename.replace(
+                        ".json",
+                        "",
+                      )}/jsonschema/1-0-0`,
+                      data: {
+                        name: enr.filename,
+                        enabled: enr.enabled,
+                        sensitive:
+                          "This configuration is unavailable as it may contain sensitive values.",
+                      },
+                    }
+                  }
+                  resolver={resolver}
+                  setModal={setModal}
+                />
+              ))}
+          </details>
+        </td>
+      </tr>
+    </FieldGroup>
+  );
+};
+
+export const EventPayload: FunctionComponent<IBeacon> = ({
   activeBeacon,
   pipelines,
   resolver,
   setModal,
 }) => {
-  const { collector, data, payload, ...info } = parseBeacon(activeBeacon);
+  const { collector, data, payload, ...info } = destructureEvent(activeBeacon);
 
   const pipeline = useMemo(
     () =>
@@ -475,88 +539,35 @@ export const Beacon: FunctionComponent<IBeacon> = ({
 
   return (
     <>
-      <BeaconHeader resolver={resolver} collector={collector} {...info} />
-      {pipeline ? (
-        <RowSet key="pipeline" setName="Pipeline Configuration">
-          {Object.entries({
-            "Pipeline Name": pipeline.domain,
-            Organization: pipeline.organizationName,
-            "Organization ID": pipeline.organization,
-            "Cloud Provider": pipeline.cloudProvider,
-            Type: pipeline.resource === "minis" ? "Mini" : "Full Pipeline",
-          }).map(([name, val]) => (
-            <tr>
-              <th>{name}</th>
-              <td>
-                <BeaconValue
-                  obj={val}
-                  resolver={resolver}
-                  setModal={setModal}
-                />
-                <LabelType val={val} />
-              </td>
-            </tr>
-          ))}
-          <tr>
-            <th>Enrichments</th>
-            <td>
-              <details>
-                {pipeline.enrichments
-                  .sort((a, b) =>
-                    a.enabled > b.enabled
-                      ? -1
-                      : a.enabled < b.enabled
-                        ? 1
-                        : a.filename < b.filename
-                          ? -1
-                          : 1,
-                  )
-                  .map((enr) => (
-                    <BeaconValue
-                      obj={
-                        enr.content || {
-                          schema: `iglu:com.snowplowanalytics.snowplow/${enr.filename.replace(
-                            ".json",
-                            "",
-                          )}/jsonschema/1-0-0`,
-                          data: {
-                            name: enr.filename,
-                            enabled: enr.enabled,
-                            sensitive:
-                              "This configuration is unavailable as it may contain sensitive values.",
-                          },
-                        }
-                      }
-                      resolver={resolver}
-                      setModal={setModal}
-                    />
-                  ))}
-              </details>
-            </td>
-          </tr>
-        </RowSet>
-      ) : undefined}
-      {data.map(([setName, rows]) => (
-        <RowSet key={setName} setName={setName}>
-          {rows.map(([name, val, classes]) =>
-            !/Custom Entity|(Unstructured|Self-Describing) Event/.test(name) ? (
-              <tr class={classes}>
-                <th>{name}</th>
-                <td>
-                  <BeaconValue
-                    obj={val}
-                    resolver={resolver}
-                    setModal={setModal}
-                  />
-                  <LabelType val={val} />
-                </td>
-              </tr>
-            ) : (
-              <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
-            ),
-          )}
-        </RowSet>
-      ))}
+      <EventSummary resolver={resolver} collector={collector} {...info}>
+        {pipeline && (
+          <PipelineDetails
+            key="pipeline"
+            {...{ pipeline, resolver, setModal }}
+          />
+        )}
+        {data.map(([setName, rows]) => (
+          <li>
+            <FieldGroup key={setName} setName={setName}>
+              {rows.map(([name, val, classes]) =>
+                !/Custom Entity|(Unstructured|Self-Describing|SD) Event/.test(
+                  name,
+                ) ? (
+                  <tr class={classes}>
+                    <th>{name}</th>
+                    <td>
+                      <BeaconValue obj={val} {...{ resolver, setModal }} />
+                      <LabelType val={val} />
+                    </td>
+                  </tr>
+                ) : (
+                  <BeaconValue obj={val} {...{ resolver, setModal }} />
+                ),
+              )}
+            </FieldGroup>
+          </li>
+        ))}
+      </EventSummary>
       <CopyMenu beacon={activeBeacon} />
     </>
   );

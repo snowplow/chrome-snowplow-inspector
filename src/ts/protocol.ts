@@ -40,8 +40,12 @@ namespace TrackingProtocol {
 
 export const groupPriorities: TrackingProtocol.FieldGroup[] = [
   {
-    name: "Event",
-    fields: ["se_ca", "se_ac", "se_la", "se_pr", "se_va", "ue_pr", "ue_px"],
+    name: "Self-Describing Event",
+    fields: ["ue_pr", "ue_px"],
+  },
+  {
+    name: "Structured Event",
+    fields: ["se_ca", "se_ac", "se_la", "se_pr", "se_va"],
   },
   {
     name: "Transaction",
@@ -69,7 +73,7 @@ export const groupPriorities: TrackingProtocol.FieldGroup[] = [
   { name: "Social", fields: ["sn", "sa", "st", "sp"] },
   { name: "Ping", fields: ["pp_mix", "pp_max", "pp_miy", "pp_may"] },
   {
-    name: "Beacon",
+    name: "Event",
     fields: [
       "evn",
       "e",

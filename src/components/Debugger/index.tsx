@@ -11,7 +11,7 @@ import { errorAnalytics } from "../../ts/analytics";
 import type { IBeaconSummary, IDebugger, PipelineInfo } from "../../ts/types";
 import { isSnowplow } from "../../ts/util";
 
-import { Beacon } from "./Beacon";
+import { EventPayload } from "./EventPayload";
 import { Timeline } from "./Timeline";
 
 import "./Debugger.css";
@@ -122,7 +122,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
       />
       <div class="debugger__display debugger--beacon">
         {active && (
-          <Beacon
+          <EventPayload
             activeBeacon={active}
             resolver={resolver}
             setModal={setModal}

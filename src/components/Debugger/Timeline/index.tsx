@@ -79,7 +79,7 @@ const nameEvent = (params: Map<string, string>): string => {
         }
       }
 
-      return sdeName;
+      return `SD Event: ${sdeName}`;
     case "pp":
     case "pv":
     case "ti":
