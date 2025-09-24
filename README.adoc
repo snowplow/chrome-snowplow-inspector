@@ -79,10 +79,28 @@ To stop streaming these events select 'Import' then 'Stop Ngrok Tunnel'.
 
 == Develop
 === Build
-Run `npm install` to install required dependencies and build the extension in the `dist/` directory.
 
-Instructions to install a local development version of the extension to test are over at the link:https://developer.chrome.com/extensions/getstarted#unpacked[extension development documentation].
+1. Fork/clone this repo (`git clone https://github.com/snowplow/chrome-snowplow-inspector.git`)
+2. Change to this directory (`cd chrome-snowplow-inspector`)
+3. Run `npm install` to install required dependencies and build the extension in the `dist/` directory
+4. Load the created `dist` directory as link:https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked[an unpacked extension]
+
+More detailed instructions to install a local development version of the extension to test are over at the link:https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked[extension development documentation].
 
 === Hack
-You can also use `npm start` to start rollup in watch mode to make editing easier; source changes should then be reflected in `dist/`.
-Some changes will automatically be reflected straight away, more intense changes will need to reopen DevTools to update correctly.
+Once the unpacked extension is loaded, you can use `npm start` to start the build in "watch mode" to make updates easier; source changes should then be reflected in `dist/` automatically.
+
+You will need to close/reopen DevTools to see your changes.
+
+If you intend to make a pull request, (thankyou!) please ensure `npm test` runs cleanly.
+This will check for type errors with the TypeScript compiler, and validate the code formatting.
+`npm run fmt` will reformat any changes to meet the formatting requirements.
+
+To do a build without watch mode, `npm install` will automatically do `npm run prepare` which does a normal build.
+
+Development versions of the extension use a staging environment of the Snowplow Console which most external contributors will not login information for.
+We are happy to help test your changes that interact with console APIs if required.
+
+=== Publishing
+- `npm run zip` will produce a .zip file ready for uploading to the link:https://chrome.google.com/webstore/devconsole/b79d3fcc-9e6c-4237-a25b-11c86912ec5b/maplkdomeamdlngconidoefjpogkmljm/edit[Chrome Web Store] Developer Dashboard
+- `npm run xpi-signed` will create a signed .xpi file for Firefox builds (this requires `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET` environment variables for signing; use just `npm run xpi` for an unsigned file)
