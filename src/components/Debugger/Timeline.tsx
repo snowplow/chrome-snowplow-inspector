@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "preact/hooks";
+import { RefreshCw, Download, Upload, Search } from "lucide-preact";
 
 import { endpointAnalytics, trackerAnalytics } from "../../ts/analytics";
 import { IgluSchema, IgluUri, Resolver } from "../../ts/iglu";
@@ -17,7 +18,6 @@ import { b64d, colorOf, hash, tryb64 } from "../../ts/util";
 
 import * as importers from "./importers";
 import * as exporters from "./exporters";
-import { TestSuites } from "./TestSuites";
 
 import "./Timeline.scss";
 
@@ -436,9 +436,8 @@ const extractRequests = (
 };
 
 export const Timeline: FunctionComponent<ITimeline> = ({
-  displayMode,
-  isActive,
-  requests,
+  active,
+  batches,
   resolver,
   setActive,
   setModal,
@@ -455,41 +454,32 @@ export const Timeline: FunctionComponent<ITimeline> = ({
     }
   }, [filterStr]);
 
-  const fallbackUrl = useMemo(() => getPageUrl(requests), [requests]);
-
-  const [first, setFirst] = useState<IBeaconSummary>();
-  const [hideSuites, setHideSuites] = useState(false);
-
-  useEffect(() => {
-    chrome.storage.sync.get({ hideTestSuites: false }, ({ hideTestSuites }) =>
-      setHideSuites(hideTestSuites),
-    );
-  }, []);
+  const fallbackUrl = useMemo(() => getPageUrl(batches), [batches]);
 
   const [validity, updateValidity] = useState(0);
 
-  const events = useMemo(
+  const batchSummaries = useMemo(
     () =>
-      requests.map((batch, i) =>
+      batches.map((batch, i) =>
         summariseBeacons(batch, i, resolver, filter, updateValidity),
       ),
-    [requests, resolver, filter, validity],
+    [batches, resolver, filter, validity],
   );
 
-  const beacons = events.map((summaries) => {
-    setFirst((prev) => prev || summaries[0]);
-    return summaries.map((summary): [URL | string | null, VNode] => [
+  const beacons = batchSummaries.map((summaries) =>
+    summaries.map((summary): [URL | string | null, VNode] => [
       summary.pageref || (summary.page ? new URL(summary.page) : fallbackUrl),
       <a
         class={[
           "event",
-          isActive(summary) ? "event--active" : "",
+          "flex items-center bg-[hsl(var(--card))] px-4 py-2 cursor-pointer transition-colors duration-200",
+          summary.id === active?.id ? "event--active bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))]" : "hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]",
           // Some race in Firefox where the response information isn't always populated
           summary.collectorStatus.code === 200 ||
           (summary.collectorStatus.code === 0 &&
             summary.collectorStatus.text !== "net::ERR_BLOCKED_BY_CLIENT")
             ? ""
-            : "event--uncollected",
+            : "event--uncollected text-red-500",
           `event--destination-${colorOf(summary.collector + summary.appId)}`,
           summary.validity === "Invalid"
             ? "event--invalid"
@@ -504,12 +494,12 @@ export const Timeline: FunctionComponent<ITimeline> = ({
           `Status: ${summary.collectorStatus.code} ${summary.collectorStatus.text}`,
           `Validity: ${summary.validity}`,
         ].join("\n")}
-        onClick={setActive.bind(null, { display: "beacon", item: summary })}
+        onClick={setActive.bind(null, summary)}
       >
         {summary.eventName}
       </a>,
-    ]);
-  });
+    ]),
+  );
 
   const byPage = beacons.reduce(
     (acc, batch) =>
@@ -539,9 +529,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       });
   }, [beacons.length]);
 
-  if (displayMode === "beacon" && first)
-    setActive((active) => active || { display: "beacon", item: first });
-
   const [streamLock, setStreamLock] = useState(-1);
   const [ngrokStreaming, setNgrokStreaming] = useState(false);
 
@@ -559,96 +546,171 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   useEffect(() => importHandler("ngrok"), [importHandler, ngrokStreaming]);
 
-  const importButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
-    useCallback(
-      ({ currentTarget }) => {
-        const { value } = currentTarget;
+  const importHandlers = useMemo<Record<importers.ImporterFormat, () => void>>(
+    () => ({
+      bad: importHandler.bind(null, "bad"),
+      ngrok: setNgrokStreaming.bind(null, (n) => !n),
+      har: importHandler.bind(null, "har"),
+      stream: importHandler.bind(null, "stream"),
+    }),
+    [importHandler],
+  );
 
-        currentTarget.selectedIndex = 0;
-        if (value === "ngrok") {
-          setNgrokStreaming((n) => !n);
-        } else {
-          importHandler(value as importers.ImporterFormat);
-        }
-      },
-      [importHandler],
-    );
-
-  const exportButtonHandler: h.JSX.GenericEventHandler<HTMLSelectElement> =
-    useCallback(
-      ({ currentTarget }) => {
-        const { value } = currentTarget;
-
-        currentTarget.selectedIndex = 0;
-        exporters.exportToFormat(
-          value as exporters.ExporterFormat,
-          requests,
-          events,
-        );
-      },
-      [requests, events],
-    );
+  const exportHandlers = useMemo<Record<exporters.ExporterFormat, () => void>>(
+    () => ({
+      csv: exporters.exportToFormat.bind(null, "csv", batches, batchSummaries),
+      har: exporters.exportToFormat.bind(null, "har", batches, batchSummaries),
+      json: exporters.exportToFormat.bind(
+        null,
+        "json",
+        batches,
+        batchSummaries,
+      ),
+    }),
+    [batches, batchSummaries],
+  );
 
   return (
-    <aside class="timeline">
-      <div class="timeline__controls">
-        <div>
+    <aside class="timeline m-0 px-4 py-2 sticky top-0 flex flex-col gap-2 overflow-x-clip overflow-y-auto resize-x">
+      <div class="timeline__controls flex flex-col gap-1">
+        <div class="flex items-center gap-2">
+          {/* Clear Events Button - Ghost Style */}
           <button
             type="button"
             onClick={clearRequests}
             disabled={!beacons.length}
+            class={`
+              inline-flex items-center justify-center p-0 rounded-sm
+              transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2
+              ${!beacons.length
+                ? 'text-[hsl(var(--muted-foreground))] cursor-not-allowed opacity-50'
+                : 'text-[hsl(var(--foreground))] hover:text-[hsl(var(--destructive))] hover:bg-[hsl(var(--accent))] hover:bg-opacity-50'
+              }
+            `}
+            style="width: 20px; height: 20px; min-height: 0; background-color: transparent; padding: 0; border: 0;"
+            title="Clear Events"
+            aria-label="Clear Events"
           >
-            Clear Events
+            <RefreshCw size={14} />
           </button>
-          <select class="button" onChange={importButtonHandler}>
-            <option selected hidden>
-              Import
-            </option>
-            {Object.entries(importers.formats).map(([key, label]) => (
-              <option value={key}>
-                {key == "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
-              </option>
-            ))}
-          </select>
-          <select
-            class="button"
-            disabled={!beacons.length}
-            onChange={exportButtonHandler}
-          >
-            <option selected hidden>
-              Export
-            </option>
-            {Object.entries(exporters.formats).map(([key, label]) => (
-              <option value={key}>{label}</option>
-            ))}
-          </select>
+
+          {/* Separator */}
+          <div class="h-4 w-px bg-[hsl(var(--border))]"></div>
+
+          {/* Import Events Dropdown - Ghost Style */}
+          
+            <button
+              type="button"
+              title="Import Events"
+              popovertarget="importevents-po"
+              class="inline-flex items-center justify-center p-0 rounded-sm text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--accent))] hover:bg-opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 transition-all duration-200"
+              style="width: 20px; height: 20px; min-height: 0; background-color: transparent; padding: 0; border: 0;"
+              aria-label="Import Events"
+            >
+              <Download size={14} />
+            </button>
+            <ul
+              id="importevents-po"
+              popover="auto"
+              class="absolute left-0 z-50 mt-1 w-48 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--popover))] text-[hsl(var(--popover-foreground))] shadow-md focus:outline-none"
+            >
+              {Object.entries(importers.formats).map(([key, label]) => (
+                <li
+                  key={key}
+                  value={key}
+                  onClick={importHandlers[key as importers.ImporterFormat]}
+                  role="button"
+                  tabindex={0}
+                  class="relative cursor-pointer select-none rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                >
+                  {key === "ngrok" && ngrokStreaming ? `Stop ${label}` : label}
+                </li>
+              ))}
+            </ul>
+          
+
+          {/* Export Events Dropdown - Ghost Style */}
+            <button
+              type="button"
+              title="Export Events"
+              popovertarget="exportevents-po"
+              disabled={!beacons.length}
+              class={`
+                inline-flex items-center justify-center p-0 rounded-sm
+                transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2
+                ${!beacons.length
+                  ? 'text-[hsl(var(--muted-foreground))] cursor-not-allowed opacity-50'
+                  : 'text-[hsl(var(--foreground))] hover:text-[hsl(var(--primary))] hover:bg-[hsl(var(--accent))] hover:bg-opacity-50'
+                }
+              `}
+              style="width: 20px; height: 20px; min-height: 0; background-color: transparent; padding: 0; border: 0;"
+              aria-label="Export Events"
+            >
+              <Upload size={14} />
+            </button>
+            <ul
+              id="exportevents-po"
+              popover="auto"
+              class="absolute left-0 z-50 mt-1 w-48 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--popover))] text-[hsl(var(--popover-foreground))] shadow-md focus:outline-none"
+            >
+              {Object.entries(exporters.formats).map(([key, label]) => (
+                <li
+                  key={key}
+                  value={key}
+                  onClick={exportHandlers[key as exporters.ExporterFormat]}
+                  role="button"
+                  tabindex={0}
+                  class="relative cursor-pointer select-none rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                >
+                  {label}
+                </li>
+              ))}
+            </ul>
+          
         </div>
-        <input
-          class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(" ")}
-          type="text"
-          placeholder="Start typing to filter events&hellip;"
-          onKeyUp={(e) => {
-            if (e.currentTarget instanceof HTMLInputElement) {
-              const val = e.currentTarget.value;
-              setFilterStr(val);
-            }
-          }}
-          value={filterStr}
-        />
+        <div class="relative flex items-center pr-2">
+          <div class="absolute left-3 flex items-center pointer-events-none">
+            <Search size={16} class="text-[hsl(var(--muted-foreground))]" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search Events"
+            class={`
+              w-full pl-10 pr-4 py-2 text-sm
+              bg-[hsl(var(--background))]
+              border border-[hsl(var(--border))]
+              text-[hsl(var(--foreground))]
+              placeholder:text-[hsl(var(--muted-foreground))]
+              rounded-md
+              focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] focus:ring-offset-2 focus:border-transparent
+              transition-all duration-200
+              ${filter
+                ? 'border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)]'
+                : filterStr && !filter
+                  ? 'border-[hsl(var(--destructive))] bg-[hsl(var(--destructive)/0.1)]'
+                  : ''
+              }
+            `}
+            onKeyUp={(e) => {
+              if (e.currentTarget instanceof HTMLInputElement) {
+                setFilterStr(e.currentTarget.value);
+              }
+            }}
+            value={filterStr}
+            aria-label="Search Events"
+          />
+        </div>
       </div>
-      <div class="timeline__events">
+      <div class="timeline__events flex flex-col flex-1 overflow-y-auto gap-2 w-full pr-1 -mr-4" style="scrollbar-gutter: stable;">
         {byPage.map(([pageName, beacons]) => (
-          <article class="event-group">
-            <h1 class="event-group__heading" title="Group Name">
+          <article class="event-group flex flex-col">
+            <h1 class="event-group__heading bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded-t-md m-0 px-4 py-2 text-base font-roboto font-semibold" title="Group Name">
               {pageName}
             </h1>
             {beacons}
           </article>
         ))}
       </div>
-      {hideSuites ? null : (
-        <TestSuites events={events} setActive={setActive} setModal={setModal} />
-      )}
     </aside>
   );
 };

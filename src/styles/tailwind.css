@@ -1,0 +1,347 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 223.8136 -172.5242% 100.0000%;
+    --foreground: 223.8136 0.0000% 3.9388%;
+    --card: 223.8136 -172.5242% 100.0000%;
+    --card-foreground: 223.8136 0.0000% 3.9388%;
+    --popover: 223.8136 -172.5242% 100.0000%;
+    --popover-foreground: 223.8136 0.0000% 3.9388%;
+    --primary: 223.8136 0.0000% 9.0527%;
+    --primary-foreground: 223.8136 0.0004% 98.0256%;
+    --secondary: 223.8136 0.0002% 96.0587%;
+    --secondary-foreground: 223.8136 0.0000% 9.0527%;
+    --muted: 223.8136 0.0002% 96.0587%;
+    --muted-foreground: 223.8136 0.0000% 45.1519%;
+    --accent: 223.8136 0.0002% 96.0587%;
+    --accent-foreground: 223.8136 0.0000% 9.0527%;
+    --destructive: 351.7303 123.6748% 40.5257%;
+    --destructive-foreground: 223.8136 -172.5242% 100.0000%;
+    --border: 223.8136 0.0001% 89.8161%;
+    --input: 223.8136 0.0001% 89.8161%;
+    --ring: 223.8136 0.0000% 63.0163%;
+    --chart-1: 211.7880 101.9718% 78.6759%;
+    --chart-2: 217.4076 91.3672% 59.5787%;
+    --chart-3: 221.4336 86.3731% 54.0624%;
+    --chart-4: 223.6587 78.7180% 47.8635%;
+    --chart-5: 226.5426 70.0108% 39.9224%;
+    --sidebar: 223.8136 0.0004% 98.0256%;
+    --sidebar-foreground: 223.8136 0.0000% 3.9388%;
+    --sidebar-primary: 223.8136 0.0000% 9.0527%;
+    --sidebar-primary-foreground: 223.8136 0.0004% 98.0256%;
+    --sidebar-accent: 223.8136 0.0002% 96.0587%;
+    --sidebar-accent-foreground: 223.8136 0.0000% 9.0527%;
+    --sidebar-border: 223.8136 0.0001% 89.8161%;
+    --sidebar-ring: 223.8136 0.0000% 63.0163%;
+    --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --radius: 0.625rem;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --tracking-normal: -0.025em;
+    --spacing: 0.25rem;
+  }
+  
+  .dark {
+    --background: 180 1.5873% 12.3529%;
+    --foreground: 0 0% 90.1961%;
+    --card: 0 0% 9.8039%;
+    --card-foreground: 0 0% 90.1961%;
+    --popover: 0 0% 6.2745%;
+    --popover-foreground: 0 0% 90.1961%;
+    --primary: 258.0488 71.9298% 66.4706%;
+    --primary-foreground: 0 0% 90.1961%;
+    --secondary: 0 0% 0%;
+    --secondary-foreground: 0 0% 90.1961%;
+    --muted: 240 2.2222% 17.6471%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 15.6863%;
+    --accent-foreground: 0 0% 60%;
+    --destructive: 358.7594 101.8439% 69.8357%;
+    --destructive-foreground: 0 0% 89.8039%;
+    --border: 0 0% 17.6471%;
+    --input: 0 0% 25.0980%;
+    --ring: 258.0488 71.9298% 66.4706%;
+    --chart-1: 262.1053 53.2710% 79.0196%;
+    --chart-2: 183.6000 84.2697% 34.9020%;
+    --chart-3: 40.1087 80% 54.9020%;
+    --chart-4: 339.7674 74.7826% 54.9020%;
+    --chart-5: 220.4494 70.0787% 50.1961%;
+    --sidebar: 0 0% 23.5294%;
+    --sidebar-foreground: 0 0% 90.1961%;
+    --sidebar-primary: 258.0488 71.9298% 66.4706%;
+    --sidebar-primary-foreground: 0 0% 90.1961%;
+    --sidebar-accent: 0 0% 15.6863%;
+    --sidebar-accent-foreground: 0 0% 60%;
+    --sidebar-border: 0 0% 17.6471%;
+    --sidebar-ring: 262.1053 53.2710% 79.0196%;
+    --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --radius: 0.625rem;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    background-color: hsl(var(--sidebar));
+    color: hsl(var(--foreground));
+    margin: 0;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    letter-spacing: var(--tracking-normal);
+    font-family: var(--font-sans);
+    display: flex;
+    flex-flow: row nowrap;
+    flex: 1;
+    align-items: stretch;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* Override problematic SCSS button styles and add Shadcn form styles */
+  button {
+    min-height: unset !important;
+  }
+
+  /* Form component styles using Shadcn variables */
+  input, textarea, select {
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    border-radius: calc(var(--radius) - 2px);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+
+  input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+  }
+
+  /* Button styles */
+  button:not(.ghost-button) {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: 1px solid hsl(var(--primary));
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  button:not(.ghost-button):hover:not(:disabled) {
+    background-color: hsl(var(--primary) / 0.9);
+  }
+
+  button:not(.ghost-button):disabled {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border-color: hsl(var(--muted));
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* Label styles */
+  label {
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  /* Additional utility styles */
+  a {
+    color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  code {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    padding: 0.125rem 0.375rem;
+    border-radius: calc(var(--radius) - 2px);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.875rem;
+  }
+
+  /* Table styles */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    text-align: left;
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0.5rem;
+  }
+
+  th {
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+  }
+
+  /* Details/Summary styles */
+  summary {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  summary:hover {
+    opacity: 0.8;
+  }
+
+  /* Scroll styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+
+  /* App container styles */
+  .app {
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex: 1;
+    margin: 0.25rem 0.25rem 0.25rem 0;
+    border-radius: 0.5rem;
+    background-color: hsl(var(--background));
+  }
+
+  /* Textarea specific styles */
+  textarea {
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+    min-height: 15em;
+    resize: vertical;
+  }
+
+  /* Popover styles */
+  ul[popover] {
+    position: relative;
+    inset: unset;
+    flex-flow: column nowrap;
+    justify-content: end;
+    margin: 0.04rem 1.04rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    padding: 0;
+    background-color: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+    list-style: none;
+    text-align: left;
+  }
+
+  ul[popover]:popover-open {
+    display: flex;
+  }
+
+  ul[popover] li {
+    display: flex;
+    padding: 0.375rem 0.75rem;
+    align-items: center;
+  }
+
+  ul[popover] li:first-child {
+    padding-top: 0.875rem;
+  }
+
+  ul[popover] li[role="button"] {
+    cursor: pointer;
+  }
+
+  ul[popover] li[role="button"]:hover {
+    background-color: hsl(var(--accent));
+  }
+
+  /* Input with icon styles */
+  label[title] {
+    display: flex;
+    margin: 0.5rem 0;
+    background-color: hsl(var(--muted));
+    cursor: text;
+    outline: 0;
+    opacity: 0.9;
+    border-radius: calc(var(--radius) - 2px);
+  }
+
+  label[title]:focus-within {
+    opacity: 1;
+  }
+
+  label[title] img {
+    border-radius: calc(var(--radius) - 2px) 0 0 calc(var(--radius) - 2px);
+    border: 1px solid hsl(var(--border));
+    border-right: 0;
+    padding: 0.6125rem 0.75rem;
+  }
+
+  label[title] input[type="text"] {
+    flex: 1;
+    background-color: inherit;
+    border-radius: 0 calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0;
+    border: 1px solid hsl(var(--border));
+    border-left: 0;
+    padding: 0.6125rem 0.75rem;
+    padding-left: 0;
+  }
+
+  label[title] input[type="text"]:focus {
+    outline: 0;
+  }
+}

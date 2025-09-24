@@ -3,9 +3,11 @@ import { basename, resolve as resolvePath } from "path";
 
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
 import html from "@rollup/plugin-html";
 import resolve from "@rollup/plugin-node-resolve";
 import styles from "@ironkinoko/rollup-plugin-styles";
+import postcss from "rollup-plugin-postcss";
 import terser from "@rollup/plugin-terser";
 import typescript from "@rollup/plugin-typescript";
 
@@ -33,6 +35,14 @@ export default Object.entries({
           input: [
             "manifest.json",
             "res/logo.svg",
+            "res/ban.svg",
+            "res/download.svg",
+            "res/list-tree.svg",
+            "res/log-out.svg",
+            "res/more-horizontal.svg",
+            "res/search.svg",
+            "res/upload.svg",
+            "res/devbar.png",
             "res/icon.png",
             "res/icon-16.png",
             "res/icon-48.png",
@@ -49,11 +59,21 @@ export default Object.entries({
         buffer: "",
       },
     }),
+    json(),
     typescript(),
+    // Process Tailwind CSS first
+    postcss({
+      extract: "tailwind.css",
+      minimize: !in_development,
+      sourceMap: in_development,
+      include: ["**/*.css"],
+    }),
+    // Keep existing Sass processing for gradual migration
     styles({
       mode: "extract",
       minimize: !in_development,
       sourceMap: in_development,
+      include: ["**/*.scss"],
     }),
     html({
       fileName,

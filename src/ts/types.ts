@@ -6,7 +6,11 @@ import { Resolver } from "./iglu";
 import { DestinationManager } from "./DestinationManager";
 import { ModalSetter } from "../components/Modals";
 
-export type Application = "debugger" | "schemaManager";
+export type Application =
+  | "debugger"
+  | "schemaManager"
+  | "attributes"
+  | "interventions";
 
 export type RegistryStatus = "OK" | "UNHEALTHY";
 
@@ -22,14 +26,15 @@ interface SyncOptions {
 }
 
 export interface IConsoleStatus {
-  resolver: Resolver;
-  setModal: ModalSetter;
+  login?: OAuthResult;
+  setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
 }
 
 export type ExtensionOptions = LocalOptions & SyncOptions;
 
 export type OAuthIdentity = {
   iss: string;
+  sid: string;
   name: string;
   sub: string;
   updated_at: string;
@@ -51,13 +56,33 @@ export type OAuthAccess = {
   };
 };
 
+export type OAuthResult = {
+  identity: OAuthIdentity;
+  access: OAuthAccess;
+  authentication: Partial<RequestInit>;
+  logout: () => Promise<string>;
+};
+
+export type Organization = {
+  id: string;
+  name: string;
+  domain: string;
+  tier: string;
+  tags: string[];
+  essoDomain?: string;
+  features: null | unknown;
+  featuresV2?: {
+    signals?: { enabled: boolean };
+  };
+};
+
 export interface IDebugger {
-  addRequests: (requests: Entry[]) => void;
-  clearRequests: () => void;
-  events: Entry[];
   destinationManager: DestinationManager;
+  requests: Entry[];
   resolver: Resolver;
+  setEventCount: Dispatch<StateUpdater<number | undefined>>;
   setModal: ModalSetter;
+  setRequests: Dispatch<StateUpdater<Entry[]>>;
 }
 
 export interface IPageRequests {
@@ -112,10 +137,11 @@ export interface IErrorMessageSet {
 
 export interface IToolbar {
   application: Application;
-  changeApp: Dispatch<StateUpdater<Application>>;
-  destinationManager: DestinationManager;
-  resolver: Resolver;
-  setModal: ModalSetter;
+  eventCount?: number;
+  login?: OAuthResult;
+  setApp: Dispatch<StateUpdater<Application>>;
+  setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
+  signalsInfo: Record<string, string>;
 }
 
 export interface IRowSet {
@@ -123,13 +149,12 @@ export interface IRowSet {
 }
 
 export interface ITimeline {
-  isActive: (beacon: IBeaconSummary) => boolean;
+  active: IBeaconSummary | undefined;
   addRequests: (requests: Entry[]) => void;
   clearRequests: () => void;
-  displayMode: DisplayItem["display"];
-  requests: Entry[];
+  batches: Entry[];
   resolver: Resolver;
-  setActive: Dispatch<StateUpdater<DisplayItem | undefined>>;
+  setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;
   setModal: ModalSetter;
 }
 
@@ -246,16 +271,6 @@ export type TestSuiteResult =
         passCauses: [TestSuiteCondition, string?][];
         failCauses: [TestSuiteCondition, string?][];
       };
-    };
-
-export type DisplayItem =
-  | {
-      display: "beacon";
-      item: IBeaconSummary;
-    }
-  | {
-      display: "testsuite";
-      item: TestSuiteResult;
     };
 
 export type NgrokEvent = {

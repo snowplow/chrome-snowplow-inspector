@@ -26,13 +26,13 @@
   "bugs": {
     "url": "https://github.com/snowplow/chrome-snowplow-inspector/issues"
   },
-  "homepage": "https://github.com/snowplow/chrome-snowplow-inspector#readme",
+  "homepage": "https://github.com/snowplow/chrome-snowplow-inspector",
   "dependencies": {
-    "@fontsource/roboto": "^5.0.0",
-    "@fontsource/rubik": "^5.0.0",
+    "@fontsource-variable/inter": "^5.2.8",
     "@snowplow/browser-tracker": "^4.3.1",
     "canonicalize": "^2.0.0",
     "jsonschema": "1.*",
+    "lucide-preact": "^0.544.0",
     "preact": "^10.25.4"
   },
   "devDependencies": {
@@ -40,6 +40,7 @@
     "@rollup/plugin-alias": "^5.0.0",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-html": "^2.0.0",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^12.1.2",
@@ -47,9 +48,13 @@
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/node": "*",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
     "prettier": "^3.0.2",
     "rollup": "^4.34.8",
+    "rollup-plugin-postcss": "^4.0.2",
     "sass": "^1.23.7",
+    "tailwindcss": "^3.4.17",
     "tslib": "*",
     "typescript": "^5.0.0"
   },

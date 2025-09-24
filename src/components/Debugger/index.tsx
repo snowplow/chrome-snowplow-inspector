@@ -1,30 +1,41 @@
 import { Entry } from "har-format";
 import { h, FunctionComponent } from "preact";
-import { useCallback, useEffect, useState } from "preact/hooks";
-
 import {
-  DisplayItem,
-  IBeaconSummary,
-  IDebugger,
-  PipelineInfo,
-} from "../../ts/types";
+  useCallback,
+  useEffect,
+  useErrorBoundary,
+  useState,
+} from "preact/hooks";
+
+import { errorAnalytics } from "../../ts/analytics";
+import { IBeaconSummary, IDebugger, PipelineInfo } from "../../ts/types";
 import { isSnowplow } from "../../ts/util";
 
 import { Beacon } from "./Beacon";
-import { TestReport } from "./TestReport";
 import { Timeline } from "./Timeline";
 
 import "./Debugger.scss";
 
+const isValidBatch = (req: Entry): boolean => {
+  if (req.serverIPAddress === "") return false;
+  if (req.request.method === "OPTIONS") return false;
+  if (req.response.statusText === "Service Worker Fallback Required")
+    return false;
+
+  return isSnowplow(req.request);
+};
+
 export const Debugger: FunctionComponent<IDebugger> = ({
-  addRequests,
-  clearRequests,
-  events,
   destinationManager,
+  requests,
   resolver,
+  setEventCount,
   setModal,
+  setRequests,
 }) => {
-  const [active, setActive] = useState<DisplayItem>();
+  performance.measure("startDebugger");
+  useErrorBoundary(errorAnalytics);
+  const [active, setActive] = useState<IBeaconSummary>();
   const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
 
   useEffect(
@@ -35,50 +46,55 @@ export const Debugger: FunctionComponent<IDebugger> = ({
     [],
   );
 
-  const isActive = useCallback(
-    (beacon: IBeaconSummary) => {
-      if (active && active.display === "beacon")
-        return active.item.id === beacon.id;
-      return false;
-    },
-    [active],
-  );
+  const addRequests = useCallback((reqs: Entry[]) => {
+    if (!reqs.length) return;
+
+    setRequests((events) => {
+      const merged = events.concat(reqs);
+
+      merged.sort((a, b) =>
+        a.startedDateTime === b.startedDateTime
+          ? 0
+          : a.startedDateTime < b.startedDateTime
+            ? -1
+            : 1,
+      );
+
+      return merged;
+    });
+  }, []);
+
+  const clearRequests = useCallback(() => setRequests([]), []);
 
   const handleNewRequests = useCallback(
-    (reqs: Entry[] | Entry) => {
-      const batch = Array.isArray(reqs) ? reqs : [reqs];
+    (...reqs: Entry[]) => {
+      const batches: Entry[] = [];
 
-      const validEntries: Entry[] = [];
-
-      batch.forEach((req) => {
-        if (req.serverIPAddress === "") return;
-        if (req.request.method === "OPTIONS") return;
-        if (req.response.statusText === "Service Worker Fallback Required")
-          return;
-
-        if (isSnowplow(req.request)) {
-          validEntries.push(req);
+      reqs.forEach((req) => {
+        if (isValidBatch(req)) {
+          batches.push(req);
           destinationManager.addPath(req.request.url);
         }
       });
 
-      addRequests(validEntries);
+      addRequests(batches);
     },
     [addRequests],
   );
 
   useEffect(() => {
     chrome.devtools.network.getHAR((harLog) => {
+      const buildKey = (e: Entry) =>
+        "".concat(
+          e.startedDateTime,
+          e.time as any,
+          e.request.url,
+          e._request_id as any,
+        );
+      const existing = new Set<string>(Array.from(requests, buildKey));
       handleNewRequests(
-        harLog.entries.filter(
-          (entry) =>
-            !events.find(
-              (event) =>
-                event.startedDateTime === entry.startedDateTime &&
-                event.time === entry.time &&
-                event.request.url === entry.request.url &&
-                event._request_id === entry._request_id,
-            ),
+        ...harLog.entries.filter(
+          (entry) => isValidBatch(entry) && !existing.has(buildKey(entry)),
         ),
       );
     });
@@ -93,33 +109,26 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   }, []);
 
   return (
-    <main class="app app--debugger debugger">
+    <main class="app app--debugger debugger overflow-y-auto overflow-x-hidden flex flex-1 my-1 mr-1 rounded-lg bg-[hsl(var(--background))] justify-around items-stretch">
       <Timeline
         setActive={setActive}
-        isActive={isActive}
-        displayMode={active ? active.display : "beacon"}
-        requests={events}
+        active={active}
+        batches={requests}
         resolver={resolver}
         setModal={setModal}
         addRequests={addRequests}
         clearRequests={clearRequests}
       />
-      {!active || active.display === "beacon" ? (
-        <div class="debugger__display debugger--beacon">
-          {active && active.item ? (
-            <Beacon
-              activeBeacon={active.item}
-              resolver={resolver}
-              setModal={setModal}
-              pipelines={pipelines}
-            />
-          ) : null}
-        </div>
-      ) : (
-        <div class="debugger__display debugger--testcase">
-          <TestReport activeSuite={active.item} setActive={setActive} />
-        </div>
-      )}
+      <div class="debugger__display debugger--beacon flex-[84] p-5 flex border-l border-[hsl(var(--border))] h-fit flex-col items-stretch gap-4">
+        {active && (
+          <Beacon
+            activeBeacon={active}
+            resolver={resolver}
+            setModal={setModal}
+            pipelines={pipelines}
+          />
+        )}
+      </div>
     </main>
   );
 };

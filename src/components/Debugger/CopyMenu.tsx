@@ -1,7 +1,6 @@
 import { h, FunctionComponent } from "preact";
 import { IBeaconSummary } from "../../ts/types";
 import { copyToClipboard, tryb64 } from "../../ts/util";
-import { unpackSDJ } from "./TestSuites";
 
 import "./CopyMenu.scss";
 
@@ -17,47 +16,6 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
     JSON.stringify(wrapPost(Object.fromEntries(payload.entries()))),
   "JSON (Pretty)": ({ payload }: IBeaconSummary) =>
     JSON.stringify(wrapPost(Object.fromEntries(payload.entries())), null, 4),
-  "Test Case Input": (beacon: IBeaconSummary) => {
-    const event = Object.fromEntries(beacon.payload.entries());
-
-    try {
-      if (event.ue_pr || event.ue_px) {
-        const extracted = JSON.parse(tryb64(event.ue_pr || event.ue_px));
-        if (
-          typeof extracted === "object" &&
-          "schema" in extracted &&
-          "data" in extracted &&
-          /^iglu:com.snowplowanalytics.snowplow\/unstruct_event\//.test(
-            extracted.schema,
-          )
-        )
-          Object.assign(event, {
-            unstruct: unpackSDJ([extracted.data]),
-          });
-      }
-
-      if (event.co || event.cx) {
-        const extracted = JSON.parse(tryb64(event.co || event.cx));
-        if (
-          typeof extracted === "object" &&
-          "schema" in extracted &&
-          "data" in extracted &&
-          /^iglu:com.snowplowanalytics.snowplow\/contexts\//.test(
-            extracted.schema,
-          )
-        )
-          Object.assign(event, {
-            context: unpackSDJ(extracted.data),
-          });
-      }
-    } catch (e) {}
-
-    return JSON.stringify(
-      [Object.assign({}, beacon, { payload: event })],
-      null,
-      4,
-    );
-  },
   "URL - Get": ({ collector, payload }: IBeaconSummary) => {
     const u = new URL(`https://${collector}/i`);
     payload.forEach((v, k) => u.searchParams.append(k, v));

@@ -4,16 +4,15 @@
 
   > .timeline {
     overflow-y: auto;
-    position: sticky;
-    top: 1.5rem;
-    margin: 1.5rem 0 1.5rem 1.5rem;
     resize: horizontal;
   }
 
   &__display {
     flex: 84;
-    margin: 1.5rem 1.5rem 1.5rem 0.5rem;
+    padding: 1.14283rem;
     display: flex;
+    border-left: 1px solid hsl(var(--border));
+    height: fit-content;
     flex-flow: column nowrap;
     align-items: stretch;
     gap: 1rem;

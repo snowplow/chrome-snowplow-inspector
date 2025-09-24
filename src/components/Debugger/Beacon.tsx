@@ -163,25 +163,27 @@ const Tabs = <T extends Record<string, () => VNode>>({
 
   return (
     <>
-      <form class="iglu__tabs-control" onChange={tabHandler}>
+      <form class="iglu__tabs-control flex bg-[hsl(var(--card))] mx-1 pt-1 px-1" onChange={tabHandler}>
         {Object.keys(options).map((tabName) => (
           <label
-            class={["tab", activeTab === tabName ? "tab--active" : ""].join(
-              " ",
-            )}
+            class={[
+              "tab cursor-pointer px-6 py-2 rounded-t border-b-2 border-transparent text-[hsl(var(--foreground))] hover:opacity-95 transition-opacity",
+              activeTab === tabName ? "tab--active border-current bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]" : ""
+            ].join(" ")}
           >
             <input
               type="radio"
               name={name}
               value={tabName}
               checked={activeTab === tabName}
+              class="hidden"
             />
             {tabName}
           </label>
         ))}
       </form>
       <div
-        class={["iglu__payload", "iglu__payload--" + activeTab.toString()].join(
+        class={["iglu__payload p-1 flex", "iglu__payload--" + activeTab.toString()].join(
           " ",
         )}
       >
@@ -262,7 +264,7 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   const tabs = {
     Data: () => (
       <>
-        <table class={Array.isArray(obj.data) ? "array" : "object"}>
+        <table class={`${Array.isArray(obj.data) ? "array" : "object"} bg-[hsl(var(--card))] w-full rounded-b`}>
           {children}
         </table>
         <LabelType val={obj.data} />
@@ -272,7 +274,12 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
       const jsonText = JSON.stringify(obj, null, 2);
       const lineCounter = jsonText.match(/\n/g) || [];
       return (
-        <textarea readOnly value={jsonText} rows={lineCounter.length + 1} />
+        <textarea
+          readOnly
+          value={jsonText}
+          rows={lineCounter.length + 1}
+          class="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))] rounded p-2 font-mono text-sm resize-none"
+        />
       );
     },
     Schema: () => {
@@ -281,24 +288,35 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
       const jsonText = JSON.stringify(resolved, null, 2);
       const lineCounter = jsonText.match(/\n/g) || [];
       return (
-        <textarea readOnly value={jsonText} rows={lineCounter.length + 1} />
+        <textarea
+          readOnly
+          value={jsonText}
+          rows={lineCounter.length + 1}
+          class="w-full bg-[hsl(var(--background))] text-[hsl(var(--foreground))] border border-[hsl(var(--border))] rounded p-2 font-mono text-sm resize-none"
+        />
       );
     },
     Errors: () => (
-      <ul>
+      <ul class="bg-[hsl(var(--card))] p-4 rounded text-[hsl(var(--foreground))] space-y-1">
         {(errorText || "No errors found").split("\n").map((text) => (
-          <li>{text}</li>
+          <li class="text-sm">{text}</li>
         ))}
       </ul>
     ),
   };
 
   return (
-    <details class={["iglu", "iglu--" + validity.toLowerCase()].join(" ")} open>
-      <summary>
-        {obj.schema}
+    <details class={["iglu bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded mb-2", "iglu--" + validity.toLowerCase()].join(" ")} open>
+      <summary class="flex items-center justify-between px-6 py-4">
+        <span>{obj.schema}</span>
         <abbr
-          class="iglu__validation"
+          class={`iglu__validation px-2 py-1 rounded text-sm font-roboto cursor-pointer select-none ${
+            validity === "Valid"
+              ? "bg-green-600"
+              : validity === "Invalid"
+                ? "bg-red-600"
+                : "bg-blue-500"
+          } text-white`}
           title={errorText}
           onClick={() => {
             if (errorText) {
@@ -355,9 +373,9 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
 };
 
 const RowSet: FunctionComponent<IRowSet> = ({ setName, children }) => (
-  <details class="rowset" open>
-    <summary>{setName}</summary>
-    <table class="rowset__rows">{children}</table>
+  <details class="rowset bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] rounded" open>
+    <summary class="font-rubik font-semibold text-xl leading-tight px-6 py-4">{setName}</summary>
+    <table class="rowset__rows w-full max-w-full px-12 py-6 bg-[hsl(var(--card))] rounded-b box-border text-[hsl(var(--muted-foreground))]">{children}</table>
   </details>
 );
 
