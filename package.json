@@ -39,14 +39,19 @@
   "devDependencies": {
     "@craftamap/esbuild-plugin-html": "^0.9.0",
     "@snowplow/signals-core": "^0.2.0",
+    "@tailwindcss/postcss": "^4.1.13",
     "@types/chrome": "*",
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
     "@types/node": "*",
+    "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.9",
+    "esbuild-postcss": "^0.0.4",
     "lucide-preact": "^0.544.0",
     "lucide-static": "^0.544.0",
+    "postcss": "^8.5.6",
     "prettier": "^3.0.2",
+    "tailwindcss": "^4.1.13",
     "typescript": "^5.0.0"
   }
 }
