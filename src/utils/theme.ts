@@ -6,7 +6,7 @@ export type Theme = 'light' | 'dark' | 'system';
 
 export class ThemeManager {
   private static instance: ThemeManager;
-  private currentTheme: Theme = 'dark'; // Default to dark for Chrome DevTools compatibility
+  private currentTheme: Theme = 'system'; // Default to system preferences
 
   public static getInstance(): ThemeManager {
     if (!ThemeManager.instance) {
@@ -20,9 +20,19 @@ export class ThemeManager {
   }
 
   private initializeTheme() {
-    // For Chrome extensions, default to dark theme
-    // Chrome DevTools are typically dark
-    this.setTheme('dark');
+    // Always clear any existing theme classes first
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+
+    // Check for stored preference first
+    const storedTheme = localStorage.getItem('snowplow-inspector-theme') as Theme;
+    if (storedTheme && ['light', 'dark', 'system'].includes(storedTheme)) {
+      this.setTheme(storedTheme);
+    } else {
+      // Clear any old stored preference and default to system preference
+      localStorage.removeItem('snowplow-inspector-theme');
+      this.setTheme('system');
+    }
   }
 
   public setTheme(theme: Theme) {
@@ -35,9 +45,12 @@ export class ThemeManager {
     if (theme === 'system') {
       // Detect system preference
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.add(isDark ? 'dark' : 'light');
+      const appliedTheme = isDark ? 'dark' : 'light';
+      root.classList.add(appliedTheme);
+      console.log(`Theme set to system: ${appliedTheme} (system prefers dark: ${isDark})`);
     } else {
       root.classList.add(theme);
+      console.log(`Theme set to: ${theme}`);
     }
 
     // Store preference
@@ -60,9 +73,17 @@ export class ThemeManager {
       if (this.currentTheme === 'system') {
         const root = document.documentElement;
         root.classList.remove('light', 'dark');
-        root.classList.add(e.matches ? 'dark' : 'light');
+        const appliedTheme = e.matches ? 'dark' : 'light';
+        root.classList.add(appliedTheme);
+        console.log(`System theme changed to: ${appliedTheme}`);
       }
     });
+  }
+
+  // Force reset to system theme (useful for debugging)
+  public resetToSystem() {
+    localStorage.removeItem('snowplow-inspector-theme');
+    this.setTheme('system');
   }
 }
 

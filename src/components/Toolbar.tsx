@@ -33,7 +33,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
       >
         <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
           application === "debugger"
-            ? "bg-[hsl(var(--card))]"
+            ? "bg-[hsl(var(--background))]"
             : "bg-transparent hover:bg-[hsl(var(--accent))]"
         }`}>
           <input
@@ -76,7 +76,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
         </label>
         <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
           application === "schemaManager"
-            ? "bg-[hsl(var(--card))]"
+            ? "bg-[hsl(var(--background))]"
             : "bg-transparent hover:bg-[hsl(var(--accent))]"
         }`}>
           <input
@@ -101,7 +101,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
         {enableSignals && (
           <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
             application === "attributes"
-              ? "bg-[hsl(var(--card))]"
+              ? "bg-[hsl(var(--background))]"
               : "bg-transparent hover:bg-[hsl(var(--accent))]"
           }`}>
             <input
@@ -127,7 +127,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
         {enableSignals && (
           <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
             application === "interventions"
-              ? "bg-[hsl(var(--card))]"
+              ? "bg-[hsl(var(--background))]"
               : "bg-transparent hover:bg-[hsl(var(--accent))]"
           }`}>
             <input

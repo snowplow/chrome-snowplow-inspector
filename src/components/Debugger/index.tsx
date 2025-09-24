@@ -109,7 +109,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   }, []);
 
   return (
-    <main class="app app--debugger debugger overflow-y-auto overflow-x-hidden flex flex-1 my-1 mr-1 rounded-lg bg-[hsl(var(--card))] justify-around items-stretch">
+    <main class="app app--debugger debugger overflow-y-auto overflow-x-hidden flex flex-1 my-1 mr-1 rounded-lg bg-[hsl(var(--background))] justify-around items-stretch">
       <Timeline
         setActive={setActive}
         active={active}
