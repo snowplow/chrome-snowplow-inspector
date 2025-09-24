@@ -88,7 +88,6 @@ export const TimelineChrome: FunctionComponent<{
     }),
     [batchRef, summariesRef],
   );
-  console.log("timeline", children);
   return (
     <aside class="timeline">
       <fieldset class="timeline__controls">

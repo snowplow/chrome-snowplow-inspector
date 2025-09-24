@@ -29,6 +29,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   destinationManager,
   requests,
   resolver,
+  setAttributeKeys,
   setEventCount,
   setModal,
   setRequests,
@@ -118,6 +119,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         setModal={setModal}
         addRequests={addRequests}
         clearRequests={clearRequests}
+        setAttributeKeys={setAttributeKeys}
         setEventCount={setEventCount}
       />
       <div class="debugger__display debugger--beacon">

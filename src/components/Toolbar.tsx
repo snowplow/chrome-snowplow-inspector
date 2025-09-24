@@ -8,11 +8,12 @@ import "./Toolbar.css";
 
 export const Toolbar: FunctionComponent<IToolbar> = ({
   application,
+  attributeCount,
   eventCount,
+  interventionCount,
   login,
   setApp,
   setLogin,
-  signalsInfo,
 }) => {
   const eventStatus =
     typeof eventCount == "number"
@@ -20,9 +21,18 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
         ? "active"
         : "inactive"
       : "";
-
-  const attributeStatus = "inactive";
-  const interventionStatus = "inactive";
+  const attributeStatus =
+    typeof attributeCount == "number"
+      ? attributeCount > 0
+        ? "active"
+        : "inactive"
+      : "";
+  const interventionStatus =
+    typeof interventionCount == "number"
+      ? interventionCount > 0
+        ? "active"
+        : "inactive"
+      : "";
 
   return (
     <header class="toolbar">
@@ -71,6 +81,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             <DatabaseZap />
           </span>
           <span>Attributes</span>
+          {attributeCount ? <span>{attributeCount}</span> : null}
         </label>
         <label>
           <input
@@ -83,6 +94,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             <GitBranchPlus />
           </span>
           <span>Interventions</span>
+          {interventionCount ? <span>{interventionCount}</span> : null}
         </label>
       </nav>
       <ConsoleStatus login={login} setLogin={setLogin} />

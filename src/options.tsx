@@ -5,14 +5,16 @@ import "./options.css";
 
 type StoredOptions = {
   enableTracking: boolean;
-  hideTestSuites: boolean;
+  signalsSandboxToken: string;
+  signalsSandboxUrl: string;
   tunnelAddress: string;
 };
 
 const Options = () => {
   const [options, setOptions] = useState<StoredOptions>({
     enableTracking: true,
-    hideTestSuites: false,
+    signalsSandboxToken: "",
+    signalsSandboxUrl: "",
     tunnelAddress: "http://localhost:4040/",
   });
   const [status, setStatus] = useState("");
@@ -59,12 +61,22 @@ const Options = () => {
         </label>
 
         <label>
+          Signals Sandbox URL
           <input
-            type="checkbox"
-            name="hideTestSuites"
-            checked={options.hideTestSuites}
+            type="text"
+            name="signalsSandboxUrl"
+            value={options.signalsSandboxUrl}
           />
-          Hide the Test Suites panel
+        </label>
+
+        <label>
+          Signals Sandbox Token
+          <input
+            type="text"
+            name="signalsSandboxToken"
+            value={options.signalsSandboxToken}
+            required={!!options.signalsSandboxUrl}
+          />
         </label>
 
         <label>

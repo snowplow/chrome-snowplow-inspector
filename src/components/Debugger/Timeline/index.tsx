@@ -1,9 +1,9 @@
 import type { Cookie, Entry } from "har-format";
 import { h, type FunctionComponent } from "preact";
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { endpointAnalytics, trackerAnalytics } from "../../../ts/analytics";
-import { protocol } from "../../../ts/protocol";
+import { esMap, protocol } from "../../../ts/protocol";
 import type { IBeaconSummary, ITimeline } from "../../../ts/types";
 import { b64d, colorOf, hash, tryb64 } from "../../../ts/util";
 
@@ -314,6 +314,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   batches,
   resolver,
   setActive,
+  setAttributeKeys,
   setEventCount,
   setModal,
   addRequests,
@@ -355,6 +356,31 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       ),
     [batchContents, filter],
   );
+
+  useEffect(() => {
+    setAttributeKeys((targets) => {
+      const result: typeof targets = {};
+      let dirty = false;
+
+      for (const [attributeKey, identifiers] of Object.entries(targets)) {
+        const payloadKey =
+          attributeKey in esMap
+            ? esMap[attributeKey as keyof typeof esMap]
+            : undefined;
+        if (!payloadKey) continue;
+
+        for (const { payload } of batchSummaries.flat()) {
+          const id = payload.get(payloadKey);
+          if (id != null) {
+            dirty = dirty || !identifiers.has(id);
+            identifiers.add(id);
+          }
+        }
+      }
+
+      return dirty ? result : targets;
+    });
+  }, [batchSummaries]);
 
   const pageGroups = useMemo(() => {
     const groups: [string, IBeaconSummary[]][] = [];

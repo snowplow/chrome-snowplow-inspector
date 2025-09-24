@@ -8,12 +8,11 @@ import {
   useState,
 } from "preact/hooks";
 
-import { consoleAnalytics } from "../ts/analytics";
-import { buildRegistry } from "../ts/iglu";
-import { apiFetch, doOAuthFlow, CONSOLE_API } from "../ts/oauth";
-import type { Application, OAuthResult, Organization } from "../ts/types";
+import { doOAuthFlow } from "../ts/oauth";
+import type { Application, OAuthResult } from "../ts/types";
 import { Resolver } from "../ts/iglu/Resolver";
 import { DestinationManager } from "../ts/DestinationManager";
+import { useSignals } from "../ts/useSignals";
 
 import {
   modals,
@@ -23,6 +22,7 @@ import {
 } from "./Modals";
 import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
+import { Attributes, Interventions } from "./Signals";
 import { Toolbar } from "./Toolbar";
 
 import "./SnowplowInspector.css";
@@ -31,67 +31,25 @@ export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
   const [activeModal, setActiveModal] = useState<Modal>();
   const [login, setLogin] = useState<OAuthResult>();
-  const [signalsInfo, setSignalsInfo] = useState<Record<string, string>>({});
   const modalOpts = useRef<ModalOptions>();
 
   const resolver = useMemo(() => new Resolver(), []);
   const destinationManager = useMemo(() => new DestinationManager(), []);
+
+  const [
+    signalsInfo,
+    signalsDefs,
+    attributeKeyIds,
+    setAttributeKeyIds,
+    interventions,
+  ] = useSignals(login, resolver);
+  console.log("signals", signalsInfo, signalsDefs, attributeKeyIds);
 
   useEffect(() => {
     doOAuthFlow(false)
       .then(setLogin)
       .finally(() => resolver.walk());
   }, [resolver]);
-
-  useEffect(() => {
-    if (!login) return;
-
-    apiFetch("organizations", login.authentication).then(
-      (organizations: Organization[]) => {
-        consoleAnalytics(
-          "Organization Discovery",
-          undefined,
-          undefined,
-          organizations.length,
-        );
-
-        const ds = organizations.map((org) =>
-          buildRegistry({
-            kind: "ds",
-            name: `${org.name} (Console)`,
-            organizationId: org.id,
-            useOAuth: true,
-            dsApiEndpoint: CONSOLE_API,
-          }),
-        );
-
-        Promise.all(
-          organizations.map<Promise<[string, string][]>>((org) => {
-            if (!org.featuresV2?.signals?.enabled) return Promise.resolve([]);
-
-            return apiFetch("signals/v1", login.authentication, org.id).then(
-              (configured: { config: { personalizationApiHost: string } }[]) =>
-                configured.map((signals) => [
-                  org.id,
-                  signals.config.personalizationApiHost,
-                ]),
-            );
-          }),
-        ).then((entries) =>
-          setSignalsInfo((signals) =>
-            Object.assign({}, signals, Object.fromEntries(entries.flat(1))),
-          ),
-        );
-
-        resolver.import(false, ...ds);
-        return resolver.walk();
-      },
-      () => {
-        consoleAnalytics("Organization Discovery Failure");
-        // TODO: display error?
-      },
-    );
-  }, [login, resolver, setSignalsInfo]);
 
   const setModal: ModalSetter = useCallback(
     (modalName, opts) => {
@@ -109,6 +67,8 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   const [requests, setRequests] = useState<Entry[]>([]);
   const [eventCount, setEventCount] = useState<number>();
+  const [attributeCount, setAttributeCount] = useState<number>();
+  const [interventionCount, setInterventionCount] = useState<number>();
 
   useEffect(() => {
     chrome.action?.setBadgeText({
@@ -123,11 +83,12 @@ export const SnowplowInspector: FunctionComponent = () => {
     <>
       <Toolbar
         application={application}
+        attributeCount={attributeCount}
         eventCount={eventCount}
+        interventionCount={interventionCount}
         login={login}
         setApp={setApplication}
         setLogin={setLogin}
-        signalsInfo={signalsInfo}
       />
       {application === "debugger" && (
         <Debugger
@@ -135,6 +96,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           destinationManager={destinationManager}
           requests={requests}
           resolver={resolver}
+          setAttributeKeys={setAttributeKeyIds}
           setEventCount={setEventCount}
           setModal={setModal}
           setRequests={setRequests}
@@ -144,14 +106,23 @@ export const SnowplowInspector: FunctionComponent = () => {
         <SchemaManager key="app" resolver={resolver} setModal={setModal} />
       )}
       {application === "attributes" && (
-        <main key="app" class="app app--attributes attributes">
-          <div>This is where attributes should display!</div>
-        </main>
+        <Attributes
+          key="app"
+          setAttributeCount={setAttributeCount}
+          login={login}
+          attributeKeyIds={attributeKeyIds}
+          signalsDefs={signalsDefs}
+          signalsInfo={signalsInfo}
+        />
       )}
       {application === "interventions" && (
-        <main key="app" class="app app--interventions interventions">
-          <div>This is where interventions should display!</div>
-        </main>
+        <Interventions
+          key="app"
+          setInterventionCount={setInterventionCount}
+          login={login}
+          signalsInfo={signalsInfo}
+          interventions={interventions}
+        />
       )}
       {Modal && <Modal key="modal" {...(modalOpts.current as any)} />}
     </>

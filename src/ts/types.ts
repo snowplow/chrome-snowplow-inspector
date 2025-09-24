@@ -80,6 +80,7 @@ export interface IDebugger {
   destinationManager: DestinationManager;
   requests: Entry[];
   resolver: Resolver;
+  setAttributeKeys: Dispatch<StateUpdater<Record<string, Set<string>>>>;
   setEventCount: Dispatch<StateUpdater<number | undefined>>;
   setModal: ModalSetter;
   setRequests: Dispatch<StateUpdater<Entry[]>>;
@@ -136,11 +137,12 @@ export interface IErrorMessageSet {
 
 export interface IToolbar {
   application: Application;
+  attributeCount?: number;
   eventCount?: number;
+  interventionCount?: number;
   login?: OAuthResult;
   setApp: Dispatch<StateUpdater<Application>>;
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
-  signalsInfo: Record<string, string>;
 }
 
 export interface IRowSet {
@@ -154,6 +156,7 @@ export interface ITimeline {
   batches: Entry[];
   resolver: Resolver;
   setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;
+  setAttributeKeys: Dispatch<StateUpdater<Record<string, Set<string>>>>;
   setModal: ModalSetter;
   setEventCount: Dispatch<StateUpdater<number | undefined>>;
 }
