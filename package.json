@@ -28,9 +28,7 @@
   },
   "homepage": "https://github.com/snowplow/chrome-snowplow-inspector",
   "dependencies": {
-    "@fontsource/inter": "^5.2.6",
-    "@fontsource/roboto": "^5.0.0",
-    "@fontsource/rubik": "^5.0.0",
+    "@fontsource-variable/inter": "^5.2.8",
     "@snowplow/browser-tracker": "^4.3.1",
     "canonicalize": "^2.0.0",
     "jsonschema": "1.*",

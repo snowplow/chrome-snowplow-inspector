@@ -4,46 +4,211 @@
 
 @layer base {
   :root {
+    /* shadcn/ui Light Theme Variables */
+    --background: 0 0% 100%;          /* white */
+    --foreground: 222.2 84% 4.9%;     /* near black text */
+
+    --card: 0 0% 100%;                /* white card bg */
+    --card-foreground: 222.2 84% 4.9%; /* dark text on cards */
+
+    --popover: 0 0% 100%;             /* white popover bg */
+    --popover-foreground: 222.2 84% 4.9%; /* dark popover text */
+
+    --primary: 199 89% 48%;           /* #0ea5e9 - Snowplow blue */
+    --primary-foreground: 0 0% 100%;  /* white text on primary */
+
+    --secondary: 210 40% 96%;         /* light gray secondary */
+    --secondary-foreground: 222.2 84% 4.9%; /* dark text on secondary */
+
+    --muted: 210 40% 96%;             /* light muted bg */
+    --muted-foreground: 215.4 16.3% 46.9%; /* muted text */
+
+    --accent: 210 40% 96%;            /* light accent */
+    --accent-foreground: 222.2 84% 4.9%; /* dark accent text */
+
+    --destructive: 0 84% 60%;         /* #ef4444 - red */
+    --destructive-foreground: 0 0% 100%; /* white text on destructive */
+
+    --border: 214.3 31.8% 91.4%;     /* light border */
+    --input: 214.3 31.8% 91.4%;      /* light input border */
+    --ring: 199 89% 48%;              /* focus ring - Snowplow blue */
+
+    --radius: 0.5rem;                 /* border radius */
+  }
+
+  .dark {
     /* shadcn/ui Dark Theme Variables - Chrome DevTools compatible */
-    --background: 210 40% 12%;      /* #1e1e1e - Chrome DevTools dark bg */
-    --foreground: 213 27% 84%;      /* #cccccc - Chrome DevTools text */
-    
-    --card: 215 25% 18%;            /* #2d2d30 - DevTools surface/card bg */
-    --card-foreground: 213 27% 84%; /* #cccccc - card text */
-    
-    --popover: 215 25% 18%;         /* #2d2d30 - popover bg */
+    --background: 210 40% 12%;        /* #1e1e1e - Chrome DevTools dark bg */
+    --foreground: 213 27% 84%;        /* #cccccc - Chrome DevTools text */
+
+    --card: 215 25% 18%;              /* #2d2d30 - DevTools surface/card bg */
+    --card-foreground: 213 27% 84%;   /* #cccccc - card text */
+
+    --popover: 215 25% 18%;           /* #2d2d30 - popover bg */
     --popover-foreground: 213 27% 84%; /* #cccccc - popover text */
-    
-    --primary: 199 89% 48%;         /* #0ea5e9 - Snowplow blue */
-    --primary-foreground: 0 0% 100%; /* white - primary button text */
-    
-    --secondary: 213 12% 25%;       /* #3e3e42 - DevTools borders/secondary */
+
+    --primary: 199 89% 48%;           /* #0ea5e9 - Snowplow blue */
+    --primary-foreground: 0 0% 100%;  /* white - primary button text */
+
+    --secondary: 213 12% 25%;         /* #3e3e42 - DevTools borders/secondary */
     --secondary-foreground: 213 27% 84%; /* #cccccc - secondary text */
-    
-    --muted: 213 12% 25%;           /* #3e3e42 - muted backgrounds */
-    --muted-foreground: 220 9% 60%; /* #999999 - muted text */
-    
-    --accent: 213 12% 25%;          /* #3e3e42 - accent color */
+
+    --muted: 213 12% 25%;             /* #3e3e42 - muted backgrounds */
+    --muted-foreground: 220 9% 60%;   /* #999999 - muted text */
+
+    --accent: 213 12% 25%;            /* #3e3e42 - accent color */
     --accent-foreground: 213 27% 84%; /* #cccccc - accent text */
-    
-    --destructive: 0 84% 60%;       /* #ef4444 - error/destructive */
+
+    --destructive: 0 84% 60%;         /* #ef4444 - error/destructive */
     --destructive-foreground: 0 0% 100%; /* white - destructive text */
-    
-    --border: 213 12% 25%;          /* #3e3e42 - border color */
-    --input: 213 12% 25%;           /* #3e3e42 - input border */
-    --ring: 199 89% 48%;            /* #0ea5e9 - focus ring */
-    
-    --radius: 0.5rem;               /* border radius */
+
+    --border: 213 12% 25%;            /* #3e3e42 - border color */
+    --input: 213 12% 25%;             /* #3e3e42 - input border */
+    --ring: 199 89% 48%;              /* #0ea5e9 - focus ring */
   }
 
   * {
     box-sizing: border-box;
   }
-  
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     margin: 0;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* Override problematic SCSS button styles and add Shadcn form styles */
+  button {
+    min-height: unset !important;
+  }
+
+  /* Form component styles using Shadcn variables */
+  input, textarea, select {
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    border-radius: calc(var(--radius) - 2px);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+
+  input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    background-color: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+  }
+
+  /* Button styles */
+  button:not(.ghost-button) {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: 1px solid hsl(var(--primary));
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  button:not(.ghost-button):hover:not(:disabled) {
+    background-color: hsl(var(--primary) / 0.9);
+  }
+
+  button:not(.ghost-button):disabled {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border-color: hsl(var(--muted));
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* Label styles */
+  label {
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  /* Additional utility styles */
+  a {
+    color: hsl(var(--primary));
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  code {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    padding: 0.125rem 0.375rem;
+    border-radius: calc(var(--radius) - 2px);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.875rem;
+  }
+
+  /* Table styles */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    text-align: left;
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0.5rem;
+  }
+
+  th {
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+  }
+
+  /* Details/Summary styles */
+  summary {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  summary:hover {
+    opacity: 0.8;
+  }
+
+  /* Scroll styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
   }
 }

@@ -21,6 +21,8 @@ import { SchemaManager } from "./SchemaManager";
 import { Toolbar } from "./Toolbar";
 
 import "./SnowplowInspector.scss";
+import "../styles/tailwind.css";
+import { themeManager } from "../utils/theme";
 
 export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
@@ -36,6 +38,10 @@ export const SnowplowInspector: FunctionComponent = () => {
   const destinationManager = useMemo(() => new DestinationManager(), []);
 
   useEffect(() => {
+    // Initialize theme system
+    themeManager.setTheme('dark'); // Default to dark for Chrome DevTools compatibility
+    themeManager.watchSystemTheme();
+
     // Only attempt OAuth flow if Chrome identity API is available
     // (it's not available in DevTools context)
     if (chrome?.identity) {

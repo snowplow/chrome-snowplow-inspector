@@ -23,5 +23,6 @@
       "react-dom": ["./node_modules/preact/compat/"]
     }
   },
-  "include": ["src/*"]
+  "include": ["src/*"],
+  "exclude": ["src/uri.js"]
 }

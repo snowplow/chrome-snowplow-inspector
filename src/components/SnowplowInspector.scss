@@ -1,7 +1,3 @@
-@use "~@fontsource/rubik/latin-400" as *;
-@use "~@fontsource/roboto/latin-400" as *;
-@use "~@fontsource/roboto/latin-500" as *;
-
 * {
   box-sizing: inherit;
   font-family: inherit;
@@ -78,7 +74,7 @@ body {
   flex: 1;
   align-items: stretch;
   background-color: var(--color-background);
-  font-family: "Roboto", sans-serif;
+  font-family: "Inter Variable", sans-serif;
   margin: 0;
   font-size: 1rem;
   line-height: 1.5;
@@ -103,7 +99,7 @@ input[type="file"].button:before {
   text-decoration: none;
   text-align: center;
   font-size: 0.875em;
-  font-family: "Roboto", sans-serif;
+  font-family: "Inter Variable", sans-serif;
   font-weight: 500;
   user-select: none;
 }

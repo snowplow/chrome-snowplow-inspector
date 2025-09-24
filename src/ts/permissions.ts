@@ -7,21 +7,46 @@ export const immediatelyRequest = (batch: string[]) => {
   const distinct = batch.filter((e, i, a) => a.indexOf(e) === i);
 
   return new Promise<void>((fulfil, fail) => {
-    chrome.tabs
-      ? chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) =>
-          chrome.windows.update(
-            tab.windowId,
-            {
-              drawAttention: true,
-              focused: true,
-            },
-            () =>
-              chrome.permissions.request({ origins: distinct }, (granted) =>
-                granted ? fulfil() : fail(),
-              ),
-          ),
-        )
-      : fail(distinct);
+    try {
+      if (!chrome?.runtime?.id) {
+        console.warn('Extension context invalidated. Please reload the extension.');
+        return fail(new Error('Extension context invalidated'));
+      }
+
+      chrome.tabs
+        ? chrome.tabs.get(chrome.devtools.inspectedWindow.tabId, (tab) => {
+            if (chrome.runtime.lastError) {
+              console.error('Chrome tabs error:', chrome.runtime.lastError);
+              return fail(new Error(chrome.runtime.lastError.message));
+            }
+
+            chrome.windows.update(
+              tab.windowId,
+              {
+                drawAttention: true,
+                focused: true,
+              },
+              () => {
+                if (chrome.runtime.lastError) {
+                  console.error('Chrome windows error:', chrome.runtime.lastError);
+                  return fail(new Error(chrome.runtime.lastError.message));
+                }
+
+                chrome.permissions.request({ origins: distinct }, (granted) => {
+                  if (chrome.runtime.lastError) {
+                    console.error('Chrome permissions error:', chrome.runtime.lastError);
+                    return fail(new Error(chrome.runtime.lastError.message));
+                  }
+                  granted ? fulfil() : fail(new Error('Permission denied'));
+                });
+              },
+            );
+          })
+        : fail(new Error('Chrome tabs API not available'));
+    } catch (error) {
+      console.error('Extension context error:', error);
+      fail(error);
+    }
   });
 };
 
@@ -48,14 +73,28 @@ export const request = (...origins: string[]): Promise<void> => {
   );
 
   if (missing.length) {
-    const p = new Promise<void>((fulfil, fail) =>
-      chrome.permissions
-        ? chrome.permissions.contains({ origins: missing }, (granted) => {
-            if (granted) fulfil();
-            else fail(missing);
-          })
-        : fail(missing),
-    ).catch(nextGesture);
+    const p = new Promise<void>((fulfil, fail) => {
+      try {
+        if (!chrome?.runtime?.id) {
+          console.warn('Extension context invalidated. Please reload the extension.');
+          return fail(new Error('Extension context invalidated'));
+        }
+
+        chrome.permissions
+          ? chrome.permissions.contains({ origins: missing }, (granted) => {
+              if (chrome.runtime.lastError) {
+                console.error('Chrome permissions error:', chrome.runtime.lastError);
+                return fail(new Error(chrome.runtime.lastError.message));
+              }
+              if (granted) fulfil();
+              else fail(missing);
+            })
+          : fail(new Error('Chrome permissions API not available'));
+      } catch (error) {
+        console.error('Extension context error:', error);
+        fail(error);
+      }
+    }).catch(nextGesture);
 
     missing.forEach((origin) => pending.set(origin, p));
   }

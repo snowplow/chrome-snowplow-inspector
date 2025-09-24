@@ -1,6 +1,7 @@
 import { h, render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
+import "./styles/fonts.scss";
 import "./options.scss";
 
 type StoredOptions = {

@@ -109,7 +109,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   }, []);
 
   return (
-    <main class="app app--debugger debugger">
+    <main class="app app--debugger debugger overflow-y-auto overflow-x-hidden flex flex-1 my-1 mr-1 rounded-lg bg-[hsl(var(--card))] justify-around items-stretch">
       <Timeline
         setActive={setActive}
         active={active}
@@ -119,7 +119,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         addRequests={addRequests}
         clearRequests={clearRequests}
       />
-      <div class="debugger__display debugger--beacon">
+      <div class="debugger__display debugger--beacon flex-[84] p-5 flex border-l border-[hsl(var(--border))] h-fit flex-col items-stretch gap-4">
         {active && (
           <Beacon
             activeBeacon={active}

@@ -1,9 +1,8 @@
 import { h, FunctionComponent } from "preact";
+import { ListTree, Pyramid, DatabaseZap, GitBranchPlus } from "lucide-preact";
 
 import { Application, IToolbar } from "../ts/types";
 import { ConsoleStatus } from "./ConsoleStatus";
-
-import "./Toolbar.scss";
 
 export const Toolbar: FunctionComponent<IToolbar> = ({
   application,
@@ -22,9 +21,9 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
 
   const enableSignals = Object.values(signalsInfo).some(Boolean);
   return (
-    <header class="toolbar">
+    <header class="toolbar flex flex-col items-stretch justify-between">
       <nav
-        class="toolbar__tabs"
+        class="toolbar__tabs flex-1 flex flex-col items-stretch pt-4 pl-1 gap-1"
         onChange={(e) => {
           if (e.target instanceof HTMLInputElement) {
             e.stopPropagation();
@@ -32,48 +31,123 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
           }
         }}
       >
-        <label>
+        <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
+          application === "debugger"
+            ? "bg-[hsl(var(--card))]"
+            : "bg-transparent hover:bg-[hsl(var(--accent))]"
+        }`}>
           <input
             type="radio"
             name="application"
             value="debugger"
             checked={application === "debugger"}
+            class="hidden"
           />
-          <span class={status}>
-            <img alt="" src="list-tree.svg" />
-          </span>
-          <span>Events</span>
-          {eventCount ? <span>{eventCount}</span> : null}
+          <div class="relative">
+            <ListTree
+              size={16}
+              class={application === "debugger"
+                ? "text-[hsl(var(--muted-foreground))]"
+                : "text-[hsl(var(--foreground))]"
+              }
+            />
+            {status && (
+              <span
+                class={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-transparent ${
+                  status === 'active'
+                    ? 'border-purple-500'
+                    : status === 'inactive'
+                      ? 'border-red-500'
+                      : ''
+                }`}
+              />
+            )}
+          </div>
+          <span class={application === "debugger"
+            ? "text-[hsl(var(--muted-foreground))]"
+            : "text-[hsl(var(--foreground))]"
+          }>Events</span>
+          {eventCount ? (
+            <span class={application === "debugger"
+              ? "text-[hsl(var(--muted-foreground))]"
+              : "text-[hsl(var(--foreground))]"
+            }>{eventCount}</span>
+          ) : null}
         </label>
-        <label>
+        <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
+          application === "schemaManager"
+            ? "bg-[hsl(var(--card))]"
+            : "bg-transparent hover:bg-[hsl(var(--accent))]"
+        }`}>
           <input
             type="radio"
             name="application"
             value="schemaManager"
             checked={application === "schemaManager"}
+            class="hidden"
           />
-          Data Structures
+          <Pyramid
+            size={16}
+            class={application === "schemaManager"
+              ? "text-[hsl(var(--muted-foreground))]"
+              : "text-[hsl(var(--foreground))]"
+            }
+          />
+          <span class={application === "schemaManager"
+            ? "text-[hsl(var(--muted-foreground))]"
+            : "text-[hsl(var(--foreground))]"
+          }>Data Structures</span>
         </label>
         {enableSignals && (
-          <label>
+          <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
+            application === "attributes"
+              ? "bg-[hsl(var(--card))]"
+              : "bg-transparent hover:bg-[hsl(var(--accent))]"
+          }`}>
             <input
               type="radio"
               name="application"
               value="attributes"
               checked={application === "attributes"}
+              class="hidden"
             />
-            Attributes
+            <DatabaseZap
+              size={16}
+              class={application === "attributes"
+                ? "text-[hsl(var(--muted-foreground))]"
+                : "text-[hsl(var(--foreground))]"
+              }
+            />
+            <span class={application === "attributes"
+              ? "text-[hsl(var(--muted-foreground))]"
+              : "text-[hsl(var(--foreground))]"
+            }>Attributes</span>
           </label>
         )}
         {enableSignals && (
-          <label>
+          <label class={`flex flex-col justify-center items-center rounded-l cursor-pointer select-none px-6 py-8 ml-1 text-center transition-colors duration-200 ${
+            application === "interventions"
+              ? "bg-[hsl(var(--card))]"
+              : "bg-transparent hover:bg-[hsl(var(--accent))]"
+          }`}>
             <input
               type="radio"
               name="application"
               value="interventions"
               checked={application === "interventions"}
+              class="hidden"
             />
-            Interventions
+            <GitBranchPlus
+              size={16}
+              class={application === "interventions"
+                ? "text-[hsl(var(--muted-foreground))]"
+                : "text-[hsl(var(--foreground))]"
+              }
+            />
+            <span class={application === "interventions"
+              ? "text-[hsl(var(--muted-foreground))]"
+              : "text-[hsl(var(--foreground))]"
+            }>Signals</span>
           </label>
         )}
       </nav>

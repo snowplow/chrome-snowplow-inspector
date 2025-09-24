@@ -48,31 +48,31 @@ export const BaseModal: FunctionComponent<{
 
   return (
     <div
-      className="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
+      class="modal-backdrop fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
       role="dialog"
       aria-modal="true"
       aria-labelledby={`${formId}-title`}
     >
       <div
         ref={dialogRef}
-        className="bg-card border border-border rounded-lg shadow-xl min-w-[320px] max-w-[90vw] max-h-[90vh] overflow-hidden"
+        class="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg shadow-xl min-w-[320px] max-w-[90vw] max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-4 duration-200"
         tabIndex={-1}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 
+        <div class="flex items-center justify-between p-6 border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]">
+          <h2
             id={`${formId}-title`}
-            className="text-lg font-semibold leading-none tracking-tight text-card-foreground"
+            class="text-lg font-semibold leading-none tracking-tight"
           >
             {title}
           </h2>
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            class="inline-flex items-center justify-center rounded-md p-2 text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2"
             aria-label="Close modal"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -81,9 +81,9 @@ export const BaseModal: FunctionComponent<{
             </svg>
           </button>
         </div>
-        
+
         {/* Modal Content */}
-        <div className="p-6">
+        <div class="p-6 bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]">
           <form method="dialog" onSubmit={onSubmit} onChange={onChange} id={formId}>
             {children}
           </form>

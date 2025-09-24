@@ -5,6 +5,7 @@ import { homepage } from "../package.json";
 import { doOAuthFlow } from "./ts/oauth";
 import type { OAuthIdentity } from "./ts/types";
 
+import "./styles/fonts.scss";
 import "./popup.scss";
 
 const Shortcut = () => {
