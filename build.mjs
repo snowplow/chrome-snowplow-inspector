@@ -3,11 +3,13 @@ import { join } from "node:path";
 
 import { context } from "esbuild";
 import { htmlPlugin } from "@craftamap/esbuild-plugin-html";
+import postcssPlugin from "esbuild-postcss";
 
 import manifest from "./manifest.json" with { type: "json" };
 import pkg from "./package.json" with { type: "json" };
 
-const watch = process.env.npm_lifecycle_event === "start";
+const watch = process.env.npm_lifecycle_event === "start"
+console.log(watch ? "Watching..." : "Building...");
 const outdir = "dist";
 const title = "Snowplow Inspector";
 
@@ -17,6 +19,7 @@ const ctx = await context({
     "src/devtools.ts",
     "src/options.tsx",
     "src/popup.tsx",
+    "src/styles/tailwind.css",
     { in: "LICENSE.md", out: "LICENSE" },
     { in: "res/devbar.png", out: "assets/devbar" },
     { in: "res/icon-16.png", out: "assets/icon-16" },
@@ -41,6 +44,7 @@ const ctx = await context({
     "@res": "./res",
   },
   plugins: [
+    postcssPlugin(),
     {
       name: "manifest",
       setup(build) {

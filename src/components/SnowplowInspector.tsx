@@ -26,6 +26,7 @@ import { Attributes, Interventions } from "./Signals";
 import { Toolbar } from "./Toolbar";
 
 import "./SnowplowInspector.css";
+import "../styles/tailwind.css";
 
 export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
