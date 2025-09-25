@@ -1,6 +1,8 @@
 .attributes,
 .interventions {
   > aside {
+    position: sticky;
+    top: 0;
     border-right: 1px solid #3c3c3c;
     margin-left: 1.5rem;
     padding: 1.5rem;
@@ -10,6 +12,7 @@
 
     display: flex;
     flex-flow: column nowrap;
+    justify-content: center;
     align-items: start;
 
     color: #999;
@@ -128,6 +131,7 @@
     }
 
     td > span {
+      padding: 0.25rem;
       border-radius: 0.25rem;
       background-color: black;
     }

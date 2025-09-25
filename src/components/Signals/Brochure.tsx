@@ -53,7 +53,7 @@ export const Brochure: FunctionComponent<{
         ) : (
           <a onClick={loginHandler}>Log in to enable Signals</a>
         )}
-        <a href="" target="_blank">
+        <a href="https://docs.snowplow.io/tutorials/" target="_blank">
           View a tutorial
         </a>
       </div>

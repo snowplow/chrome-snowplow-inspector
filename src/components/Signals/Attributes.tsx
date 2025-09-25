@@ -60,14 +60,14 @@ const AttributeGroupData: FunctionComponent<{
           identifier,
         })
         .then(
-          (attributes) => {
+          (attributeValues) => {
             if (!cancelled)
               setValues((current) => {
                 const updated = [...current];
                 updated[i] = {
                   attributeKey: attribute_key.name,
                   identifier,
-                  ...attributes,
+                  ...attributeValues,
                 };
                 return updated;
               });
@@ -93,6 +93,11 @@ const AttributeGroupData: FunctionComponent<{
 
   if (typeof filter === "string") filter = filter.toLowerCase();
 
+  const [definitionSelection, setDefinitionSelection] = useState<string>();
+  const showDef =
+    definitionSelection &&
+    attributes.find((att) => att.name === definitionSelection);
+
   return (
     <details open>
       <summary>
@@ -103,6 +108,9 @@ const AttributeGroupData: FunctionComponent<{
           {batch_source == null ? "Stream" : "Batch"}
         </span>
       </summary>
+      {showDef ? (
+        <textarea readOnly value={JSON.stringify(showDef, null, 2)} />
+      ) : null}
       {values.map((result, i) => {
         if (!result) return;
         const { attributeKey, identifier, ...attributes } = result;
@@ -127,7 +135,6 @@ const AttributeGroupData: FunctionComponent<{
                 filter.test(String(value))
               );
             }
-            return true;
           },
         );
 
@@ -142,7 +149,14 @@ const AttributeGroupData: FunctionComponent<{
               </td>
             </tr>
             {filtered.map(([attribute, value]) => (
-              <tr key={attribute}>
+              <tr
+                key={attribute}
+                onClick={() =>
+                  setDefinitionSelection((current) =>
+                    current === attribute ? undefined : attribute,
+                  )
+                }
+              >
                 <th>{attribute}</th>
                 <td>
                   <span>{String(value)}</span>

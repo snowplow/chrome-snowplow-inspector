@@ -33,8 +33,10 @@ const InterventionsUI: FunctionComponent<{
         <ul>
           {interventions.map((intervention, i) => (
             <li>
-              <span>{intervention.name}</span>
-              <span>{dt.format(intervention.received)}</span>
+              <button type="button" onClick={() => setActive(intervention)}>
+                <span>{intervention.name}</span>
+                <span>{dt.format(intervention.received)}</span>
+              </button>
             </li>
           ))}
         </ul>
@@ -49,9 +51,43 @@ const InterventionsUI: FunctionComponent<{
       </a>
     </aside>,
     <article>
-      {interventions.map((data) => (
-        <textarea readOnly value={JSON.stringify(data, null, 2)} />
-      ))}
+      {active && (
+        <div>
+          <h1>{active.name}</h1>
+          <h2>Intervention details</h2>
+          <table>
+            <tr>
+              <th>Intervention ID</th>
+              <td>{active.intervention_id}</td>
+            </tr>
+            <tr>
+              <th>Intervention name</th>
+              <td>{active.name}</td>
+            </tr>
+            <tr>
+              <th>Version</th>
+              <td>v{active.version}</td>
+            </tr>
+            <tr>
+              <th>Target attribute key</th>
+              <td>{active.target_attribute_key.name}</td>
+            </tr>
+            <tr>
+              <th>Target attribute key identifier</th>
+              <td>{active.target_attribute_key.id}</td>
+            </tr>
+          </table>
+          <h2>Associated attributes</h2>
+          <table>
+            {Object.entries(active.attributes).map(([attribute, value]) => (
+              <tr key={attribute}>
+                <th>{attribute}</th>
+                <td>{value}</td>
+              </tr>
+            ))}
+          </table>
+        </div>
+      )}
     </article>,
   ];
 };
