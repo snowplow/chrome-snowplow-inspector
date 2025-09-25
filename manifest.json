@@ -1,5 +1,6 @@
 {
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi7NHRZtbiF7wsd/zWAmOCDVJPFzu5c8Apvy5GM6Z+3ANlf1Th2KYW9KylCrY7rW1XLoys1ZH0uq+PXBd2nB+j4BAyrjFN6bj/tiDW8C18X9VS4To8Q1MM5aXy7IzjvM5HcppVqzT7wrSXL2upFJTQG17/gZVaUDrdRkNr1qHQ5V+Ms4C7EAyg3JCHHP6hRbItcbkKOAQwI6g/goG4Z69aoKTpUuoxPGJlGSIu5MVQhkEDlj+AvQVaiBd0B8WHJOPWc/nxhCXgwSmdgmUG5ISOxWCNf+7up2dRbQCworme41V1Fm8iJWrxLtXlgtM2Ozaj3GJNlVa9/XkshVCdZvLpQIDAQAB",
   "browser_specific_settings": {
     "gecko": {
       "id": "{4166b542-f87d-4dbc-a6b1-34cb31a5b04e}"

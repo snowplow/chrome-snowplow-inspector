@@ -52,7 +52,7 @@ const ctx = await context({
             name: title,
             version,
           });
-          if (watch && "key" in manifest) delete manifest["key"];
+          if (!watch && "key" in manifest) delete manifest["key"];
           await writeFile(
             join(outdir, "manifest.json"),
             JSON.stringify(m, null, 2),
