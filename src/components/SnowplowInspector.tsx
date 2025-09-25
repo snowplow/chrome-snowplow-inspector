@@ -109,6 +109,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           key="app"
           setAttributeCount={setAttributeCount}
           login={login}
+          setLogin={setLogin}
           attributeKeyIds={attributeKeyIds}
           signalsDefs={signalsDefs}
           signalsInfo={signalsInfo}
@@ -119,6 +120,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           key="app"
           setInterventionCount={setInterventionCount}
           login={login}
+          setLogin={setLogin}
           signalsInfo={signalsInfo}
           interventions={interventions}
         />

@@ -226,10 +226,11 @@ const AttributesUI: FunctionComponent<{
 export const Attributes: FunctionComponent<{
   login?: OAuthResult;
   setAttributeCount: Dispatch<StateUpdater<number | undefined>>;
+  setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   attributeKeyIds: Record<string, Set<string>>;
   signalsDefs: ResourceDefinitions[];
   signalsInfo: Record<string, string[]>;
-}> = ({ attributeKeyIds, login, signalsDefs, signalsInfo }) => {
+}> = ({ attributeKeyIds, login, setLogin, signalsDefs, signalsInfo }) => {
   const signalsAvailable = Object.keys(signalsInfo).length > 0;
   return (
     <main key="app" class="app app--attributes attributes">
@@ -239,7 +240,7 @@ export const Attributes: FunctionComponent<{
           signalsDefs={signalsDefs}
         />
       ) : (
-        <Brochure login={login} />
+        <Brochure login={login} setLogin={setLogin} />
       )}
     </main>
   );

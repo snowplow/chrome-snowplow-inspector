@@ -59,16 +59,17 @@ const InterventionsUI: FunctionComponent<{
 export const Interventions: FunctionComponent<{
   login?: OAuthResult;
   interventions: ReceivedIntervention[];
+  setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   setInterventionCount: Dispatch<StateUpdater<number | undefined>>;
   signalsInfo: Record<string, string[]>;
-}> = ({ interventions, login, signalsInfo }) => {
+}> = ({ interventions, login, setLogin, signalsInfo }) => {
   const signalsAvailable = Object.keys(signalsInfo).length > 0;
   return (
     <main key="app" class="app app--interventions interventions">
       {signalsAvailable ? (
         <InterventionsUI interventions={interventions} />
       ) : (
-        <Brochure login={login} />
+        <Brochure login={login} setLogin={setLogin} />
       )}
     </main>
   );

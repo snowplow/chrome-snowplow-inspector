@@ -1,11 +1,31 @@
 import { h, type FunctionComponent } from "preact";
+import type { Dispatch, StateUpdater } from "preact/hooks";
 import type { OAuthResult } from "../../ts/types";
+
+import { consoleAnalytics } from "../../ts/analytics";
+import { doOAuthFlow } from "../../ts/oauth";
 
 import logo from "@res/logo.svg";
 
-export const Brochure: FunctionComponent<{ login?: OAuthResult }> = ({
-  login,
-}) => {
+export const Brochure: FunctionComponent<{
+  login?: OAuthResult;
+  setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
+}> = ({ login, setLogin }) => {
+  const loginHandler = (e: Event) => {
+    e.preventDefault();
+    consoleAnalytics("Auth Flow Start");
+    doOAuthFlow(true).then(
+      (response) => {
+        consoleAnalytics("Auth Flow Complete");
+        setLogin(response);
+      },
+      (e: Error) => {
+        consoleAnalytics("Auth Flow Error", String(e));
+        // TODO: display error information
+      },
+    );
+  };
+
   return (
     <article class="brochure">
       <div>
@@ -31,9 +51,7 @@ export const Brochure: FunctionComponent<{ login?: OAuthResult }> = ({
             Get a Demo
           </a>
         ) : (
-          <a href="" target="_blank">
-            Log in to enable Signals
-          </a>
+          <a onClick={loginHandler}>Log in to enable Signals</a>
         )}
         <a href="" target="_blank">
           View a tutorial
