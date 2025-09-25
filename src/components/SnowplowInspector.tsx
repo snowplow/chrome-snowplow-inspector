@@ -43,7 +43,6 @@ export const SnowplowInspector: FunctionComponent = () => {
     setAttributeKeyIds,
     interventions,
   ] = useSignals(login, resolver);
-  console.log("signals", signalsInfo, signalsDefs, attributeKeyIds);
 
   useEffect(() => {
     doOAuthFlow(false)

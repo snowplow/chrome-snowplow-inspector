@@ -31,7 +31,7 @@ export const useSignals = (
   }[],
   Record<string, Set<string>>,
   Dispatch<StateUpdater<Record<string, Set<string>>>>,
-  InterventionInstance[],
+  (InterventionInstance & { received: Date })[],
 ] => {
   const [signalsInstalls, setSignalsInstalls] = useState<
     Record<string, string[]>
@@ -39,9 +39,9 @@ export const useSignals = (
   const [attributeKeyIds, setAttributeKeyIds] = useState<
     Record<string, Set<string>>
   >({});
-  const [interventions, setInterventions] = useState<InterventionInstance[]>(
-    [],
-  );
+  const [interventions, setInterventions] = useState<
+    (InterventionInstance & { received: Date })[]
+  >([]);
   const [signalsDefs, setSignalsDefs] = useState<
     {
       client: SignalsClient;
@@ -225,7 +225,10 @@ export const useSignals = (
         const params = new URLSearchParams(sub);
         const es = new EventSource(`${endpoint}?${params.toString()}`);
         es.addEventListener("message", (ev: MessageEvent<string>) => {
-          setInterventions((existing) => [...existing, JSON.parse(ev.data)]);
+          setInterventions((existing) => [
+            ...existing,
+            Object.assign(JSON.parse(ev.data), { received: new Date() }),
+          ]);
         });
         eventSources.push(es);
       }

@@ -53,7 +53,7 @@ export type AttributeGroup = {
     name: string;
   };
   ttl: string;
-  batch_source: null;
+  batch_source: string | null;
   online: boolean;
   offline: boolean;
   description: string | null;
@@ -94,3 +94,5 @@ export type InterventionInstance = {
     id: string;
   };
 };
+
+export type ReceivedIntervention = InterventionInstance & { received: Date };

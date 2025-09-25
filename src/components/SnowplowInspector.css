@@ -1,6 +1,7 @@
 @import url("@fontsource/rubik/latin-400");
 @import url("@fontsource/roboto/latin-400");
 @import url("@fontsource/roboto/latin-500");
+@import url("@fontsource/inter/latin-700");
 
 * {
   box-sizing: inherit;
@@ -176,30 +177,6 @@ select.button > option {
 
 select:active option[disabled] {
   display: none;
-}
-
-details {
-  > summary {
-    list-style: none;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-
-    &::before {
-      content: none;
-    }
-  }
-
-  & > summary::after {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' stroke-width='2' stroke='white' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M15 6l-6 6l6 6' /%3E%3C/svg%3E%0A");
-    order: 1;
-    height: 1.5em;
-  }
-
-  &[open] > summary::after {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' stroke-width='2' stroke='white' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M6 9l6 6l6 -6' /%3E%3C/svg%3E%0A");
-  }
 }
 
 .app {

@@ -16,21 +16,39 @@ import {
 } from "./SignalsClient";
 
 import logo from "@res/logo.svg";
+import { Search } from "lucide-preact";
+
+type ResourceDefinitions = {
+  client: SignalsClient;
+  keys: AttributeKey[];
+  groups: AttributeGroup[];
+};
 
 const AttributeGroupData: FunctionComponent<{
   client: SignalsClient;
+  filter?: string | RegExp;
   group: AttributeGroup;
   identifiers: Record<string, Set<string>>;
 }> = ({
   client,
-  group: { name, version, attributes, attribute_key },
+  filter,
+  group: { name, version, attributes, attribute_key, batch_source },
   identifiers,
 }) => {
-  const [values, setValues] = useState<Record<string, unknown>[]>([]);
+  const [values, setValues] = useState<
+    (
+      | {
+          attributeKey: string;
+          identifier: string;
+          [attribute: string]: unknown;
+        }
+      | undefined
+    )[]
+  >([]);
 
   useEffect(() => {
-    const ids = [...(identifiers[attribute_key.name] ?? [])];
     let cancelled = false;
+    const ids = [...(identifiers[attribute_key.name] ?? [])];
 
     ids.map((identifier, i) => {
       client
@@ -41,18 +59,31 @@ const AttributeGroupData: FunctionComponent<{
           attribute_key: attribute_key.name,
           identifier,
         })
-        .then((attributes) => {
-          if (!cancelled)
+        .then(
+          (attributes) => {
+            if (!cancelled)
+              setValues((current) => {
+                const updated = [...current];
+                updated[i] = {
+                  attributeKey: attribute_key.name,
+                  identifier,
+                  ...attributes,
+                };
+                return updated;
+              });
+          },
+          (err) => {
             setValues((current) => {
               const updated = [...current];
               updated[i] = {
                 attributeKey: attribute_key.name,
                 identifier,
-                ...attributes,
+                error: String(err),
               };
               return updated;
             });
-        });
+          },
+        );
 
       return () => {
         cancelled = true;
@@ -60,46 +91,99 @@ const AttributeGroupData: FunctionComponent<{
     });
   }, [identifiers]);
 
+  if (typeof filter === "string") filter = filter.toLowerCase();
+
   return (
-    <details key={`${name}_${version}`}>
+    <details open>
       <summary>
-        {name} (v{version})
+        <span class="groupname">{name}</span>
+        <span class="groupinstance">{client.baseUrl}</span>
+        <span class="groupversion">{`v${version}`}</span>
+        <span class="groupsource">
+          {batch_source == null ? "Stream" : "Batch"}
+        </span>
       </summary>
-      {values.map(
-        (attributes) =>
-          attributes && (
-            <textarea readOnly value={JSON.stringify(attributes, null, 2)} />
-          ),
-      )}
+      {values.map((result, i) => {
+        if (!result) return;
+        const { attributeKey, identifier, ...attributes } = result;
+        const filtered = Object.entries(attributes).filter(
+          ([attribute, value]) => {
+            if (!filter) return true;
+
+            if (typeof filter === "string") {
+              return (
+                name.toLowerCase().includes(filter) ||
+                attributeKey.toLowerCase().includes(filter) ||
+                identifier.toLowerCase().includes(filter) ||
+                attribute.toLowerCase().includes(filter) ||
+                String(value).toLowerCase().includes(filter)
+              );
+            } else {
+              return (
+                filter.test(name) ||
+                filter.test(attributeKey) ||
+                filter.test(identifier) ||
+                filter.test(attribute) ||
+                filter.test(String(value))
+              );
+            }
+            return true;
+          },
+        );
+
+        if (!filtered.length) return null;
+
+        return (
+          <table key={identifier}>
+            <tr key="!attributekey">
+              <th>{attributeKey}</th>
+              <td>
+                <span>{identifier}</span>
+              </td>
+            </tr>
+            {filtered.map(([attribute, value]) => (
+              <tr key={attribute}>
+                <th>{attribute}</th>
+                <td>
+                  <span>{String(value)}</span>
+                </td>
+              </tr>
+            ))}
+          </table>
+        );
+      })}
     </details>
   );
 };
 
-const SignalsData: FunctionComponent<{
+const MultiInstanceData: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
-  groups: AttributeGroup[];
-  client: SignalsClient;
-}> = ({ attributeKeyIds, client, groups }) => (
-  <details>
-    <summary>{client.baseUrl}</summary>
-    {groups.map((g) => (
+  definitions: ResourceDefinitions[];
+  filter?: string | RegExp;
+}> = ({ attributeKeyIds, definitions, filter }) =>
+  definitions.map(({ client, groups }) =>
+    groups.map((g) => (
       <AttributeGroupData
+        key={`${client.baseUrl}.${g.name}.${g.version}`}
         client={client}
+        filter={filter}
         group={g}
         identifiers={attributeKeyIds}
       />
-    ))}
-  </details>
-);
+    )),
+  );
 
 const AttributesUI: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
-  signalsDefs: {
-    client: SignalsClient;
-    keys: AttributeKey[];
-    groups: AttributeGroup[];
-  }[];
+  signalsDefs: ResourceDefinitions[];
 }> = ({ attributeKeyIds, signalsDefs }) => {
+  const [filter, setFilter] = useState<string>();
+
+  let pattern: undefined | string | RegExp = filter;
+  try {
+    pattern = pattern && new RegExp(pattern, "i");
+  } catch (_) {}
+
   return [
     <aside>
       <img alt="Snowplow logo" src={logo} />
@@ -115,10 +199,26 @@ const AttributesUI: FunctionComponent<{
       </a>
     </aside>,
     <article>
-      {signalsDefs.map(
-        (data, i) =>
-          data && <SignalsData attributeKeyIds={attributeKeyIds} {...data} />,
-      )}
+      <label title="Search Behaviors Attributes">
+        <span>
+          <Search />
+        </span>
+        <input
+          type="text"
+          placeholder="Search Behaviors Attributes"
+          onKeyUp={(e) => {
+            if (e.currentTarget instanceof HTMLInputElement) {
+              setFilter(e.currentTarget.value);
+            }
+          }}
+          value={filter}
+        />
+      </label>
+      <MultiInstanceData
+        attributeKeyIds={attributeKeyIds}
+        definitions={signalsDefs}
+        filter={pattern}
+      />
     </article>,
   ];
 };
@@ -127,11 +227,7 @@ export const Attributes: FunctionComponent<{
   login?: OAuthResult;
   setAttributeCount: Dispatch<StateUpdater<number | undefined>>;
   attributeKeyIds: Record<string, Set<string>>;
-  signalsDefs: {
-    client: SignalsClient;
-    keys: AttributeKey[];
-    groups: AttributeGroup[];
-  }[];
+  signalsDefs: ResourceDefinitions[];
   signalsInfo: Record<string, string[]>;
 }> = ({ attributeKeyIds, login, signalsDefs, signalsInfo }) => {
   const signalsAvailable = Object.keys(signalsInfo).length > 0;

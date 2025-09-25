@@ -359,7 +359,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
   useEffect(() => {
     setAttributeKeys((targets) => {
-      const result: typeof targets = {};
       let dirty = false;
 
       for (const [attributeKey, identifiers] of Object.entries(targets)) {
@@ -378,7 +377,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
         }
       }
 
-      return dirty ? result : targets;
+      return dirty ? { ...targets } : targets;
     });
   }, [batchSummaries]);
 
