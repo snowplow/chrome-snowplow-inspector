@@ -20,12 +20,7 @@ export const RegistryList: FunctionComponent<{
   selectedRegistries,
 }) => (
   <div class="registry_list">
-    <ResolverListing
-      resolver={resolver}
-      selected={selectedRegistries}
-      selectRegistries={filterRegistries}
-    />
-    <menu>
+    <menu className="mb-2">
       <button onClick={() => (filterRegistries([]), clearSearch())}>
         Clear Filters
       </button>
@@ -95,5 +90,10 @@ export const RegistryList: FunctionComponent<{
         Schemas...
       </button>
     </menu>
+    <ResolverListing
+      resolver={resolver}
+      selected={selectedRegistries}
+      selectRegistries={filterRegistries}
+    />
   </div>
 );

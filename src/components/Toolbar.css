@@ -38,30 +38,6 @@
         width: 0.875rem;
       }
 
-      input[value="debugger"] + span {
-        &::before,
-        &::after {
-          content: "";
-          display: inline-block;
-          position: relative;
-          top: -0.65rem;
-          border-radius: 100%;
-          border: 0.3rem solid transparent;
-        }
-
-        &.active::before {
-          left: 0.4rem;
-          border-color: #916ce7;
-        }
-        &.inactive::before {
-          left: 0.4rem;
-          border-color: #c62a1f;
-        }
-
-        &::after {
-          right: 0.4rem;
-        }
-      }
     }
   }
 
