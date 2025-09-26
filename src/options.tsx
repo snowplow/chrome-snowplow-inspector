@@ -76,7 +76,8 @@ const Options = () => {
           } else {
             setOptions((options) => ({
               ...options,
-              [target.name]: target.checked ?? target.value,
+              [target.name]:
+                target.type === "checkbox" ? target.checked : target.value,
             }));
           }
         }
@@ -111,6 +112,8 @@ const Options = () => {
               <input
                 type="text"
                 name="signalsSandboxUrl"
+                pattern="^[^/:]+(:[0-9]+)?$"
+                placeholder="00000000-0000-0000-0000-000000000000.svc.snplow.net"
                 value={options.signalsSandboxUrl}
               />
             </label>
@@ -120,6 +123,8 @@ const Options = () => {
               <input
                 type="text"
                 name="signalsSandboxToken"
+                pattern={UUID_PATTERN}
+                placeholder={SAMPLE_UUID}
                 value={options.signalsSandboxToken}
                 required={!!options.signalsSandboxUrl}
               />

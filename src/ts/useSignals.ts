@@ -165,7 +165,7 @@ export const useSignals = (
     for (const [org, endpoints] of Object.entries(signalsInstalls)) {
       if (org === "sandbox") {
         const endpoint = new URL(`https://${endpoints[0]!}/`);
-        origins.push(endpoint.origin);
+        origins.push(endpoint.origin + "/*");
         clientParams.push([
           {
             baseUrl: endpoint.origin,
@@ -209,17 +209,30 @@ export const useSignals = (
     setSignalsDefs([]);
     for (const client of apiClients) {
       const opts = client._getFetchOptions({ method: "GET" });
-      Object.assign(opts.headers, login?.authentication.headers);
+      if (client.sandboxToken) {
+        Object.assign(opts.headers, {
+          Authorization: `Bearer ${client.sandboxToken}`,
+        });
+      } else {
+        // TODO: can we force the creds to update if apiKey is defined?
+        Object.assign(opts.headers, login?.authentication.headers);
+      }
       Promise.all([
         client
           .fetch(`${client.baseUrl}/api/v1/registry/attribute_keys/`, opts)
-          .then((resp): Promise<AttributeKey[]> => resp.json()),
+          .then(
+            (resp): Promise<AttributeKey[]> => resp.json(),
+            () => [],
+          ),
         client
           .fetch(
             `${client.baseUrl}/api/v1/registry/attribute_groups/?applied=true`,
             opts,
           )
-          .then((resp): Promise<AttributeGroup[]> => resp.json()),
+          .then(
+            (resp): Promise<AttributeGroup[]> => resp.json(),
+            () => [],
+          ),
       ]).then(([keys, groups]) => {
         setAttributeKeyIds((existing) => {
           const updated = { ...existing };
