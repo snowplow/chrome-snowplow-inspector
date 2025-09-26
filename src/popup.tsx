@@ -92,7 +92,7 @@ const Popup = () => (
       <p class="muted">
         Open Dev Tools (<Shortcut />) and switch to the &ldquo;Snowplow&rdquo;
         debugger tab.
-        <img src="devbar.png" alt="Screenshot showing Snowplow tab" />
+        <img src="assets/devbar.png" alt="Screenshot showing Snowplow tab" />
       </p>
       <h2>What's new?</h2>
       <p>
