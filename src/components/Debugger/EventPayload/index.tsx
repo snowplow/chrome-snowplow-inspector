@@ -18,6 +18,7 @@ import {
   Resolver,
 } from "../../../ts/iglu";
 
+import { JsonViewer } from "../../JSONViewer";
 import type { ModalSetter } from "../../Modals";
 
 import { CopyMenu } from "../CopyMenu";
@@ -269,21 +270,11 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
         <LabelType val={obj.data} />
       </>
     ),
-    JSON: () => {
-      const jsonText = JSON.stringify(obj, null, 2);
-      const lineCounter = jsonText.match(/\n/g) || [];
-      return (
-        <textarea readOnly value={jsonText} rows={lineCounter.length + 1} />
-      );
-    },
+    JSON: () => <JsonViewer data={obj} />,
     Schema: () => {
       const resolved =
         schema instanceof ResolvedIgluSchema ? schema.data : schema || {};
-      const jsonText = JSON.stringify(resolved, null, 2);
-      const lineCounter = jsonText.match(/\n/g) || [];
-      return (
-        <textarea readOnly value={jsonText} rows={lineCounter.length + 1} />
-      );
+      return <JsonViewer data={resolved} />;
     },
     Errors: () => (
       <ul>

@@ -15,6 +15,8 @@ import {
   type AttributeKey,
 } from "./SignalsClient";
 
+import { JsonViewer } from "../JSONViewer";
+
 import logo from "@res/logo.svg";
 import { Search } from "lucide-preact";
 
@@ -108,10 +110,8 @@ const AttributeGroupData: FunctionComponent<{
           {batch_source == null ? "Stream" : "Batch"}
         </span>
       </summary>
-      {showDef ? (
-        <textarea readOnly value={JSON.stringify(showDef, null, 2)} />
-      ) : null}
-      {values.map((result, i) => {
+      {showDef ? <JsonViewer data={showDef} /> : null}
+      {values.map((result) => {
         if (!result) return;
         const { attributeKey, identifier, ...attributes } = result;
         const filtered = Object.entries(attributes).filter(

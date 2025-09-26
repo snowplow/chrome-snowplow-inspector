@@ -90,7 +90,8 @@
       line-height: normal;
     }
 
-    button, .button {
+    button,
+    .button {
       color: white;
       background-color: #916ce7;
       border-radius: 0.25rem;
