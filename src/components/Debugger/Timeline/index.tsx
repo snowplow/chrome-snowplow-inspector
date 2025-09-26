@@ -368,11 +368,13 @@ export const Timeline: FunctionComponent<ITimeline> = ({
             : undefined;
         if (!payloadKey) continue;
 
-        for (const { payload } of batchSummaries.flat()) {
-          const id = payload.get(payloadKey);
-          if (id != null) {
-            dirty = dirty || !identifiers.has(id);
-            identifiers.add(id);
+        for (const batch of batchSummaries) {
+          for (const { payload } of batch) {
+            const id = payload.get(payloadKey);
+            if (id != null) {
+              dirty = dirty || !identifiers.has(id);
+              identifiers.add(id);
+            }
           }
         }
       }

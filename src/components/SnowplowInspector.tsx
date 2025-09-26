@@ -93,6 +93,7 @@ export const SnowplowInspector: FunctionComponent = () => {
       {application === "debugger" && (
         <Debugger
           key="app"
+          attributeKeys={attributeKeyIds}
           destinationManager={destinationManager}
           requests={requests}
           resolver={resolver}

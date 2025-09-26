@@ -9,6 +9,7 @@ import { consoleAnalytics } from "./analytics";
 import { buildRegistry } from "./iglu";
 import { apiFetch, CONSOLE_API } from "./oauth";
 import type { OAuthResult, Organization } from "./types";
+import type { StoredOptions } from "../options";
 
 import { request as requestPerms } from "./permissions";
 import type { Resolver } from "./iglu";
@@ -36,6 +37,9 @@ export const useSignals = (
   const [signalsInstalls, setSignalsInstalls] = useState<
     Record<string, string[]>
   >({});
+  const [signalsApiKeys, setSignalsApiKeys] = useState<
+    Record<string, { apiKey: string; apiKeyId: string }>
+  >({});
   const [attributeKeyIds, setAttributeKeyIds] = useState<
     Record<string, Set<string>>
   >({});
@@ -51,17 +55,36 @@ export const useSignals = (
   >([]);
 
   useEffect(() => {
-    chrome.storage.sync.get(
+    chrome.storage.sync.get<StoredOptions>(
       {
+        signalsApiKeys: [],
         signalsSandboxToken: "",
         signalsSandboxUrl: "",
       },
-      ({ signalsSandboxUrl, signalsSandboxToken }) => {
+      ({ signalsApiKeys, signalsSandboxUrl, signalsSandboxToken }) => {
         if (signalsSandboxUrl && signalsSandboxToken) {
           setSignalsInstalls((signals) =>
             Object.assign({}, signals, {
               sandbox: [`Bearer:${signalsSandboxToken}@${signalsSandboxUrl}`],
             }),
+          );
+        }
+
+        if (signalsApiKeys.length) {
+          setSignalsApiKeys((apiKeys) =>
+            Object.assign(
+              {},
+              apiKeys,
+              Object.fromEntries(
+                signalsApiKeys.map(({ org, apiKey, apiKeyId }) => [
+                  org,
+                  {
+                    apiKey,
+                    apiKeyId,
+                  },
+                ]),
+              ),
+            ),
           );
         }
       },
@@ -98,6 +121,10 @@ export const useSignals = (
                   org.id,
                   signals.config.personalizationApiHost,
                 ]),
+              (err) => {
+                console.error(err);
+                return [];
+              },
             ),
           ),
         ).then((entries) =>
@@ -149,12 +176,22 @@ export const useSignals = (
         for (const endpoint of endpoints) {
           const origin = `https://${endpoint}/`;
           origins.push(origin);
+
+          // default to limited-functionality oauth credentials
+          let apiKey = "",
+            apiKeyId = "";
+          // if we have defined an API key for this org, use it
+          if (org in signalsApiKeys) {
+            apiKey = signalsApiKeys[org].apiKey;
+            apiKeyId = signalsApiKeys[org].apiKeyId;
+          }
+
           clientParams.push([
             {
               baseUrl: origin,
               organizationId: org,
-              apiKey: "",
-              apiKeyId: "",
+              apiKey,
+              apiKeyId,
               login,
             },
           ]);
@@ -164,10 +201,9 @@ export const useSignals = (
 
     if (origins.length)
       requestPerms(...origins).then(() => {
-        console.log("got permission for origins", origins, clientParams);
         setApiClients(clientParams.map((p) => new SignalsClient(...p)));
       });
-  }, [signalsInstalls]);
+  }, [signalsInstalls, signalsApiKeys]);
 
   useEffect(() => {
     setSignalsDefs([]);

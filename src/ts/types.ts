@@ -77,6 +77,7 @@ export type Organization = {
 };
 
 export interface IDebugger {
+  attributeKeys: Record<string, Set<string>>;
   destinationManager: DestinationManager;
   requests: Entry[];
   resolver: Resolver;
@@ -156,6 +157,7 @@ export interface ITimeline {
   batches: Entry[];
   resolver: Resolver;
   setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;
+  attributeKeys: Record<string, Set<string>>;
   setAttributeKeys: Dispatch<StateUpdater<Record<string, Set<string>>>>;
   setModal: ModalSetter;
   setEventCount: Dispatch<StateUpdater<number | undefined>>;

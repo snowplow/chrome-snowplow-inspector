@@ -33,6 +33,9 @@ const ctx = await context({
   sourcemap: watch && "inline",
   outdir,
   assetNames: "assets/[name]-[hash]",
+  define: {
+    "process.env.BDP_NEXT": "false", // signals-core presumes node-like environment
+  },
   loader: {
     ".svg": "file",
     ".png": "copy",

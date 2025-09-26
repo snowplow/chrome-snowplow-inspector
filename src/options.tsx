@@ -3,18 +3,24 @@ import { useEffect, useState } from "preact/hooks";
 
 import "./options.css";
 
-type StoredOptions = {
+export type StoredOptions = {
   enableTracking: boolean;
   signalsSandboxToken: string;
   signalsSandboxUrl: string;
+  signalsApiKeys: { org: string; apiKey: string; apiKeyId: string }[];
   tunnelAddress: string;
 };
+
+const SAMPLE_UUID = "00000000-0000-0000-0000-000000000000";
+const UUID_PATTERN =
+  "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$";
 
 const Options = () => {
   const [options, setOptions] = useState<StoredOptions>({
     enableTracking: true,
     signalsSandboxToken: "",
     signalsSandboxUrl: "",
+    signalsApiKeys: [],
     tunnelAddress: "http://localhost:4040/",
   });
   const [status, setStatus] = useState("");
@@ -32,19 +38,47 @@ const Options = () => {
 
   const handler = (e: Event) => {
     e.preventDefault();
-    chrome.storage.sync.set(options, () => {
-      setStatus("Preferences Saved");
-    });
+    if (
+      e.currentTarget instanceof HTMLFormElement &&
+      e.currentTarget.reportValidity()
+    ) {
+      const validated = {
+        ...options,
+        signalsApiKeys: options.signalsApiKeys.filter(
+          ({ org, apiKey, apiKeyId }) => !!(org && apiKey && apiKeyId),
+        ),
+      };
+      chrome.storage.sync.set(validated, () => {
+        setStatus("Preferences Saved");
+      });
+    }
   };
 
   return (
     <form
       onChange={({ target }) => {
         if (target instanceof HTMLInputElement) {
-          setOptions((options) => ({
-            ...options,
-            [target.name]: target.checked ?? target.value,
-          }));
+          const apiKeyIndex = parseInt(target.dataset.apiKeyIndex || "", 10);
+          if (!Number.isNaN(apiKeyIndex)) {
+            const info = options.signalsApiKeys[apiKeyIndex] ?? {
+              org: "",
+              apiKey: "",
+              apiKeyId: "",
+            };
+            info[target.name as keyof typeof info] = target.value;
+            const signalsApiKeys = [...options.signalsApiKeys];
+            signalsApiKeys[apiKeyIndex] = info;
+
+            setOptions((options) => ({
+              ...options,
+              signalsApiKeys,
+            }));
+          } else {
+            setOptions((options) => ({
+              ...options,
+              [target.name]: target.checked ?? target.value,
+            }));
+          }
         }
       }}
       onSubmit={handler}
@@ -61,25 +95,6 @@ const Options = () => {
         </label>
 
         <label>
-          Signals Sandbox URL
-          <input
-            type="text"
-            name="signalsSandboxUrl"
-            value={options.signalsSandboxUrl}
-          />
-        </label>
-
-        <label>
-          Signals Sandbox Token
-          <input
-            type="text"
-            name="signalsSandboxToken"
-            value={options.signalsSandboxToken}
-            required={!!options.signalsSandboxUrl}
-          />
-        </label>
-
-        <label>
           Ngrok tunnel address
           <input
             type="text"
@@ -87,6 +102,83 @@ const Options = () => {
             value={options.tunnelAddress}
           />
         </label>
+        <fieldset>
+          <legend>Signals</legend>
+          <fieldset>
+            <legend>Sandbox</legend>
+            <label>
+              Signals Sandbox URL
+              <input
+                type="text"
+                name="signalsSandboxUrl"
+                value={options.signalsSandboxUrl}
+              />
+            </label>
+
+            <label>
+              Signals Sandbox Token
+              <input
+                type="text"
+                name="signalsSandboxToken"
+                value={options.signalsSandboxToken}
+                required={!!options.signalsSandboxUrl}
+              />
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>API Keys</legend>
+            {options.signalsApiKeys
+              .concat({ org: "", apiKey: "", apiKeyId: "" })
+              .map(({ org, apiKey, apiKeyId }, i) => (
+                <fieldset>
+                  <label>
+                    Organization ID
+                    <input
+                      type="text"
+                      name="org"
+                      data-api-key-index={i}
+                      pattern={UUID_PATTERN}
+                      placeholder={SAMPLE_UUID}
+                      value={org}
+                      required={!!(org || apiKey || apiKeyId)}
+                    />
+                  </label>
+                  {/^[0-9a-f-]{36}$/i.test(org) && !(apiKey && apiKeyId) ? (
+                    <a
+                      href={`https://console.snowplowanalytics.com/${org}/credentials`}
+                      target="_blank"
+                    >
+                      Generate an API key pair
+                    </a>
+                  ) : null}
+                  <label>
+                    API Key ID
+                    <input
+                      type="text"
+                      name="apiKeyId"
+                      data-api-key-index={i}
+                      pattern={UUID_PATTERN}
+                      placeholder={SAMPLE_UUID}
+                      value={apiKeyId}
+                      required={!!(org || apiKey || apiKeyId)}
+                    />
+                  </label>
+                  <label>
+                    API Key
+                    <input
+                      type="text"
+                      name="apiKey"
+                      data-api-key-index={i}
+                      pattern={UUID_PATTERN}
+                      placeholder={SAMPLE_UUID}
+                      value={apiKey}
+                      required={!!(org || apiKey || apiKeyId)}
+                    />
+                  </label>
+                </fieldset>
+              ))}
+          </fieldset>
+        </fieldset>
 
         {status ? <p>{status}</p> : <button>Save</button>}
       </fieldset>

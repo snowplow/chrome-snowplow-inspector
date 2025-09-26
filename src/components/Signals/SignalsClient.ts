@@ -19,7 +19,7 @@ export class SignalsClient extends SignalsCore {
   }) {
     super(params);
 
-    if (login) {
+    if (login && "apiKey" in params && !params.apiKey) {
       const headers = login.authentication.headers!;
       const authHeader =
         "Authorization" in headers ? headers["Authorization"] : undefined;

@@ -142,12 +142,6 @@ const AttributeGroupData: FunctionComponent<{
 
         return (
           <table key={identifier}>
-            <tr key="!attributekey">
-              <th>{attributeKey}</th>
-              <td>
-                <span>{identifier}</span>
-              </td>
-            </tr>
             {filtered.map(([attribute, value]) => (
               <tr
                 key={attribute}
@@ -159,7 +153,17 @@ const AttributeGroupData: FunctionComponent<{
               >
                 <th>{attribute}</th>
                 <td>
-                  <span>{String(value)}</span>
+                  {attribute !== "error" ||
+                  !/\[Signals\] 401/.test(String(value)) ? (
+                    <span>{String(value)}</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => chrome.runtime.openOptionsPage()}
+                    >
+                      API key required to access attribute values
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

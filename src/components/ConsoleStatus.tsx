@@ -1,5 +1,5 @@
 import { h, type FunctionComponent } from "preact";
-import { LogOut } from "lucide-preact";
+import { Building2, LogOut, Settings } from "lucide-preact";
 
 import { consoleAnalytics, landingUrl } from "../ts/analytics";
 import { doOAuthFlow } from "../ts/oauth";
@@ -74,7 +74,16 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
               {user?.name}
             </li>
             <li title={`Organization ID: ${user?.organization.id}`}>
+              <Building2 />
               {user?.organization.name}
+            </li>
+            <li
+              onClick={() => chrome.runtime.openOptionsPage()}
+              role="button"
+              tabIndex={0}
+            >
+              <Settings />
+              Options
             </li>
             <li
               title={`Last Login: ${identity?.updated_at}`}

@@ -26,6 +26,7 @@ const isValidBatch = (req: Entry): boolean => {
 };
 
 export const Debugger: FunctionComponent<IDebugger> = ({
+  attributeKeys,
   destinationManager,
   requests,
   resolver,
@@ -119,6 +120,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         setModal={setModal}
         addRequests={addRequests}
         clearRequests={clearRequests}
+        attributeKeys={attributeKeys}
         setAttributeKeys={setAttributeKeys}
         setEventCount={setEventCount}
       />
