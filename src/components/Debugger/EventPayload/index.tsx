@@ -10,7 +10,7 @@ import type {
   FieldDetail,
   PipelineInfo,
 } from "../../../ts/types";
-import { b64d, colorOf, copyToClipboard, nameType } from "../../../ts/util";
+import { b64d, colorOf, copyToClipboard, nameType, capitalizeFirst } from "../../../ts/util";
 import {
   type IgluUri,
   IgluSchema,
@@ -249,11 +249,11 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
     children.push(
       ...Object.entries(obj.data).map(([p, val]) => (
         <tr>
-          <th>{p}</th>
-          <td>
+          {Array.isArray(obj.data) ? null : <dt>{p}</dt>}
+          <dd>
             <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
             {isSDJ(val) ? null : <LabelType val={val} />}
-          </td>
+          </dd>
         </tr>
       )),
     );
@@ -264,10 +264,10 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   const tabs = {
     Data: () => (
       <>
+        {/* <LabelType val={obj.data} /> */}
         <table class={Array.isArray(obj.data) ? "array" : "object"}>
           {children}
         </table>
-        <LabelType val={obj.data} />
       </>
     ),
     JSON: () => <JsonViewer data={obj} />,
@@ -288,20 +288,35 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   return (
     <details class={["iglu", "iglu--" + validity.toLowerCase()].join(" ")} open>
       <summary>
-        {obj.schema}
-        <abbr
-          class="iglu__validation"
-          title={errorText}
-          onClick={() => {
-            if (errorText) {
-              copyToClipboard(errorText);
-            }
-          }}
-        >
-          {validity}
-        </abbr>
+        <div style={{ width: "100%" }}>
+          <div class="iglu__status">
+            <div>
+            <div class="label__type">
+              {capitalizeFirst(nameType(obj.data))}
+            </div>
+            </div>
+            <div>
+              <abbr
+              class="iglu__validation"
+              title={errorText}
+              onClick={() => {
+                if (errorText) {
+                  copyToClipboard(errorText);
+                }
+              }}
+            >
+              {validity}
+            </abbr>
+            </div>
+          </div>
+          <div class="schema__name">
+            {obj.schema}
+          </div>
+        </div>
       </summary>
+      <div class="iglu__content">
       <Tabs defaultTab="Data" options={tabs} name="format" />
+      </div>
     </details>
   );
 };
@@ -334,7 +349,7 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
       <table class={Array.isArray(obj) ? "array" : "object"}>
         {Object.entries(obj).map(([p, val]) => (
           <tr>
-            <th>{p}</th>
+            {Array.isArray(obj) ? null : <th>{p}</th>}
             <td>
               <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
               <LabelType val={val} />
@@ -348,8 +363,12 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
 
 const FieldGroup: FunctionComponent<IRowSet> = ({ setName, children }) => (
   <details class="event-fieldgroup" open>
-    <summary>{setName}</summary>
-    <table>{children}</table>
+    <summary class="title">
+      <span>{setName}</span>
+    </summary>
+    <dl>
+      <div class="">{children}</div>
+    </dl>
   </details>
 );
 
@@ -417,8 +436,8 @@ const EventSummary: FunctionComponent<
         </span>
       </header>
       <main>
-        <aside>
-          <dl>
+        <div>
+          <dl class="event-generic-summary">
             <dt>Collector:</dt>
             <dd>{collector}</dd>
             <dt>Time:</dt>
@@ -433,7 +452,8 @@ const EventSummary: FunctionComponent<
             <dt>App:</dt>
             <dd>
               <BeaconValue obj={appId} resolver={resolver} />
-              <LabelType val={appId} />
+              {/* Commented for now as it seems to clutter the UI */}
+              {/* <LabelType val={appId} /> */}
             </dd>
             {serverAnonymous && [
               <dt title={anonDesc}>Server Anonymization</dt>,
@@ -442,7 +462,7 @@ const EventSummary: FunctionComponent<
               </dd>,
             ]}
           </dl>
-        </aside>
+        </div>
         <ul>{children}</ul>
       </main>
     </article>
@@ -544,14 +564,16 @@ export const EventPayload: FunctionComponent<IBeacon> = ({
                 !/Custom Entity|(Unstructured|Self-Describing|SD) Event/.test(
                   name,
                 ) ? (
-                  <tr class={classes}>
-                    <th>{name}</th>
-                    <td>
+                  // <tr class={classes}>
+                  <>
+                    <dt>{name}</dt>
+                    <dd>
                       <BeaconValue obj={val} {...{ resolver, setModal }} />
-                      <LabelType val={val} />
-                    </td>
-                  </tr>
+                      {/* <LabelType val={val} /> */}
+                    </dd>
+                  </>
                 ) : (
+                  // </tr>
                   <BeaconValue obj={val} {...{ resolver, setModal }} />
                 ),
               )}

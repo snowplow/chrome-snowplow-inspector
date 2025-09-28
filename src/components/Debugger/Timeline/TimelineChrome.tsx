@@ -89,14 +89,21 @@ export const TimelineChrome: FunctionComponent<{
     [batchRef, summariesRef],
   );
   return (
-    <aside class="timeline">
+    <aside class="timeline min-w-[250px]">
       <fieldset class="timeline__controls">
         <legend>Event List Actions</legend>
         <div>
-          <button type="button" onClick={clearRequests} title="Clear Events">
+          <button
+            class="icon_button"
+            type="button"
+            onClick={clearRequests}
+            title="Clear Events"
+          >
             <Ban />
           </button>
+          <div class="vertical_divider"></div>
           <button
+            class="icon_button"
             type="button"
             title="Import Events"
             popovertarget="importevents-po"
@@ -119,6 +126,7 @@ export const TimelineChrome: FunctionComponent<{
             type="button"
             title="Export Events"
             popovertarget="exportevents-po"
+            class="icon_button"
           >
             <Upload />
           </button>
@@ -137,7 +145,7 @@ export const TimelineChrome: FunctionComponent<{
         </div>
         <label title="Search Events">
           <span>
-            <Search />
+            <Search class="search_icon" />
           </span>
           <input
             class={[filter ? "valid" : filterStr ? "invalid" : "valid"].join(

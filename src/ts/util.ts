@@ -892,7 +892,13 @@ const parseNgrokRequests = (data: {
   return { entries };
 };
 
+function capitalizeFirst(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export {
+  capitalizeFirst,
   badToRequests,
   b64d,
   chunkEach,

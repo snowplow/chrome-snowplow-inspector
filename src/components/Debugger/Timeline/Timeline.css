@@ -9,9 +9,6 @@
   overflow-block: auto;
 
   position: sticky;
-  top: 1.5rem;
-
-  margin: 1.5rem 0 1.5rem 1.5rem;
 }
 
 .timeline__controls {
@@ -30,14 +27,33 @@
     white-space: nowrap;
   }
 
-  svg {
-    height: 1rem;
-    width: 1rem;
+  label[title] {
+    margin: 0.25rem 0;
   }
 
+  svg {
+    height: 16px;
+    width: 16px;
+    color: #999999;
+  }
+
+  svg.search_icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .icon_button {
+    background: none;
+    padding: 0px 8px;
+  }
+
+  .vertical_divider {
+    border-left: 1px solid #2d2d2d;
+    height: 24px;
+    margin: 0 8px;
+  }
   > div {
     display: flex;
-    gap: 0.25rem;
   }
 }
 
@@ -52,7 +68,6 @@
   flex: 1;
   gap: 0.5rem;
 
-  overflow-y: auto;
   scrollbar-width: thin;
 }
 
@@ -64,6 +79,7 @@
 
   > summary {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     color: #999;
     padding: 0.5rem 0;
@@ -96,12 +112,17 @@
     }
   }
 
+  &[open] > summary span {
+    color: white;
+  }
+
   &[open] > summary span::before {
     background-color: #916ce7;
     color: white;
   }
 
   &[open] > summary::after {
+    color: white;
     content: "";
     mask-image: url("lucide-static/icons/minus-circle.svg");
   }

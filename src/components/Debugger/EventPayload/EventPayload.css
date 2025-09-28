@@ -49,6 +49,93 @@
   }
 }
 
+details.iglu {
+
+  &[open] > summary .label__type::before {
+    display: inline-block;
+    content: "";
+    height: 1rem;
+    width: 1rem;
+    mask: url("lucide-static/icons/chevron-up.svg") no-repeat center;
+    mask-size: cover;
+    background-color: currentColor;
+    margin-right: 0.25rem;
+  }
+
+  > .iglu__content {
+      padding-left: 1rem;
+      border-left: 1px solid #404040;
+      margin-left: 7px;
+      padding-top: 16px;
+  }
+
+  summary {
+    align-items: baseline;
+    padding-bottom: 0px;
+
+    .schema__name{
+      padding-left: 10px;
+      margin-left: 7px;
+      border-left: 1px solid #404040;
+      color: #999999;
+      font-size: 12px;
+    }
+
+    .iglu__status{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .label__type{
+      font-weight: bold;
+      font-size: 18px;
+      color: #E6E6E6;
+      display: flex;
+      align-items: center;
+    }
+  }  
+}
+
+.iglu {
+  summary > span {
+    font-size: 12px;
+  }
+
+  .iglu__validation {
+    color: #173518;
+    background-color: #aadaab;
+    font-weight: 400;
+    padding: 0.125rem 0.75rem;
+    border-radius: 5rem;
+    line-height: 1.25rem;
+    font-size: 0.875rem;
+    font-family: "Roboto";
+    order: 1;
+    user-select: none;
+  }
+
+  .iglu--valid {
+    .iglu__validation {
+      color: #173518;
+      background-color: #aadaab;
+    }
+  }
+
+  .iglu--unrecognised {
+    .iglu__validation {
+      background-color: #03a9f4;
+    }
+  }
+
+  .iglu--invalid {
+    .iglu__validation {
+      color: #4f110c;
+      background-color: #f2b0ab;
+    }
+  }
+}
+
 .rowset .iglu {
   background-color: var(--color-contrast);
   color: var(--color-text-contrast);
@@ -63,35 +150,6 @@
 
   th {
     padding: 0 1.5rem;
-  }
-
-  .iglu__validation {
-    color: var(--color-text-contrast);
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.25rem;
-    line-height: 1.25rem;
-    font-size: 0.875rem;
-    font-family: "Roboto";
-    order: 1;
-    user-select: none;
-  }
-
-  .iglu--valid {
-    .iglu__validation {
-      background-color: #039855;
-    }
-  }
-
-  .iglu--unrecognised {
-    .iglu__validation {
-      background-color: #03a9f4;
-    }
-  }
-
-  .iglu--invalid {
-    .iglu__validation {
-      background-color: #dd3327;
-    }
   }
 
   .iglu__payload {
@@ -172,6 +230,7 @@
     background-color: #101010;
     border-top-left-radius: 0.5rem;
     border-top-right-radius: 0.5rem;
+    margin-bottom: 16px;
 
     line-height: 1.25rem;
 
@@ -233,8 +292,31 @@
   }
 
   main {
-    display: flex;
     margin: 0 2.5rem;
+    padding-bottom: 56px;
+
+    dl.event-generic-summary,
+    .event-fieldgroup dl {
+      dt {
+        font-weight: 400;
+        font-size: 14px;
+        color: #999999;
+      }
+      dl {
+        font-size: 14px;
+        color: white;
+        font-weight: bold;
+      }
+
+      dd {
+        margin-bottom: 16px;
+      }
+
+      > detail {
+        padding-left: 1rem;
+        border-left: 1px solid var(--color-highlight);
+      }
+    }
 
     ul {
       flex: 1;
@@ -247,11 +329,53 @@
 .event-fieldgroup {
   border-bottom: 1px solid #232323;
 
+  summary.title span {
+    font-size: 16px;
+  }
+
+  > summary.title::before {
+    content: none;
+  }
+
+  > summary.title::after {
+    display: inline-block;
+    content: "";
+    height: 1rem;
+    width: 1rem;
+    mask: url("lucide-static/icons/chevron-down.svg") no-repeat center;
+    mask-size: cover;
+    background-color: currentColor;
+    margin-right: 0.25rem;
+  }
+
+  summary .label__type::before {
+    display: inline-block;
+    content: "";
+    height: 1rem;
+    width: 1rem;
+    mask: url("lucide-static/icons/chevron-down.svg") no-repeat center;
+    mask-size: cover;
+    background-color: currentColor;
+    margin-right: 0.25rem;
+  }
+
+  &[open] span {
+    font-size: 12px;
+  }
+
+  &[open] > summary::after {
+    mask: url("lucide-static/icons/chevron-up.svg") no-repeat center;
+    mask-size: cover;
+    color: white;
+  }
+
+  summary.title {
+    justify-content: space-between;
+  }
+
   summary {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-
     color: #999;
     padding: 0.75rem 0;
 
@@ -260,17 +384,66 @@
     font-weight: 700;
     line-height: 1.5rem;
   }
+
+  .iglu__tabs-control {
+    display: flex;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 4px;
+    gap: 2px;
+    width: fit-content;
+    margin-bottom: 6px;
+  }
+
+  .tab {
+    position: relative;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    min-width: 80px;
+  }
+
+  .tab input[type="radio"] {
+    display: none;
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 16px;
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+    background-color: transparent;
+    transition: all 0.2s ease;
+  }
+
+  .tab:hover {
+    color: #bbb;
+  }
+
+  .tab--active {
+    background-color: #000;
+    color: white;
+  }
+
+  .tab--active:hover {
+    color: white;
+  }
 }
 
 .typeinfo {
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  justify-self: end;
-  align-self: stretch;
-  word-break: keep-all;
-  min-width: 4rem;
-  padding: 0;
-  height: unset;
+  font-weight: 400;
+  border-radius: 5rem;
+  line-height: 1.25rem;
+  font-size: 12px;
+  font-family: "Roboto";
+  margin-left: 5px;
+  padding: 0 8px;
 
   &:enabled:hover {
     color: white !important;
