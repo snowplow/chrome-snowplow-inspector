@@ -205,20 +205,7 @@ const AttributesUI: FunctionComponent<{
     pattern = pattern && new RegExp(pattern, "i");
   } catch (_) {}
 
-  return [
-    <aside>
-      <img alt="Snowplow logo" src={logo} />
-      <h1>Signals Behavioral Attributes</h1>
-      <p>
-        Behavioral attributes are indicators derived from your online
-        activities, reflecting how you interact with content and services. These
-        signals can be tailored to meet your specific business needs, allowing
-        for a personalized approach to user engagement.
-      </p>
-      <a target="_blank" href="https://docs.snowplow.io/docs/signals">
-        Learn more
-      </a>
-    </aside>,
+  return (
     <article>
       <label title="Search Behaviors Attributes">
         <span>
@@ -240,8 +227,8 @@ const AttributesUI: FunctionComponent<{
         definitions={signalsDefs}
         filter={pattern}
       />
-    </article>,
-  ];
+    </article>
+  );
 };
 
 export const Attributes: FunctionComponent<{
