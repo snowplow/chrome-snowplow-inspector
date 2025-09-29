@@ -18,7 +18,7 @@
     align-items: start;
     gap: 0.5rem;
 
-    color: #999;
+    color: var(--muted-foreground);
 
     h1 {
       font-family: "Roboto", sans-serif;
@@ -26,7 +26,7 @@
       font-style: normal;
       font-weight: 700;
       line-height: 1.25rem;
-      color: #e6e6e6;
+      color: var(--foreground);
     }
 
     hgroup p {
@@ -64,12 +64,12 @@
 
       width: 100%;
       padding: 1.25rem;
-      background-color: #191919;
-      border: 1px solid #232323;
+      background-color: var(--card);
+      border: 1px solid var(--border);
       border-radius: 0.5rem;
 
       figcaption {
-        color: #e6e6e6;
+        color: var(--foreground);
         font-family: "Roboto", sans-serif;
         font-size: 1rem;
         font-style: normal;
@@ -82,7 +82,7 @@
         padding: 0.5rem 0;
         margin: 0;
         border-radius: 0.5rem;
-        background-color: #191919;
+        background-color: var(--card);
         background-image: linear-gradient(
           to right,
           transparent,
@@ -98,7 +98,7 @@
         align-items: center;
 
         cursor: pointer;
-        color: #999;
+        color: var(--muted-foreground);
 
         padding: 1rem 0.5rem;
         border-radius: 0.25rem;
@@ -154,8 +154,8 @@
       display: flex;
       flex-flow: column nowrap;
       border-radius: 0.5rem;
-      border: 1px solid #232323;
-      background-color: #191919;
+      border: 1px solid var(--border);
+      background-color: var(--card);
 
       padding: 0.75rem 0.5rem;
 
@@ -170,15 +170,15 @@
       margin-bottom: 1rem;
 
       h1 {
-        background-color: #101010;
+        background-color: var(--popover);
         padding: 1rem 1.5rem 0.75rem;
-        border: 1px solid #232323;
+        border: 1px solid var(--border);
         border-radius: 0.5rem 0.5rem 0 0;
       }
 
       h2 {
         margin: 1.5rem 1.5rem 1rem;
-        color: #999;
+        color: var(--muted-foreground);
       }
 
       table {
@@ -188,8 +188,8 @@
 
       td > span {
         color: white;
-        background-color: black;
-        border: 1px solid #232323;
+        background-color: var(--secondary);
+        border: 1px solid var(--border);
         border-radius: 0.25rem;
       }
     }
@@ -219,7 +219,7 @@
       }
 
       span {
-        background-color: black;
+        background-color: var(--secondary);
         font-size: 0.875rem;
         padding: 0.25rem 0.5rem;
         color: white;
@@ -236,14 +236,14 @@
     }
 
     table {
-      color: #e6e6e6;
+      color: var(--foreground);
       margin: 1rem 1.25rem;
       width: calc(100% - 2.5rem);
     }
 
     tr:hover {
       cursor: pointer;
-      background-color: #282828;
+      background-color: var(--accent);
     }
 
     th {
@@ -263,7 +263,7 @@
     td > span {
       padding: 0.25rem;
       border-radius: 0.25rem;
-      background-color: black;
+      background-color: var(--secondary);
     }
   }
 
@@ -273,7 +273,7 @@
     align-items: center;
 
     h1 {
-      color: #e6e6e6;
+      color: var(--foreground);
       margin: 0.5rem 0;
       font-family: "Inter", sans-serif;
       font-size: 2.5rem;
@@ -283,7 +283,7 @@
     }
 
     p {
-      color: #999;
+      color: var(--muted-foreground);
     }
 
     > div {
@@ -305,11 +305,11 @@
       display: inline-block;
       width: 10rem;
       padding: 0.25rem 1rem;
-      background-color: black;
+      background-color: var(--secondary);
       border-radius: 0.25rem;
-      border: 1px solid #232323;
+      border: 1px solid var(--border);
       margin: 1.5rem 0;
-      color: #e6e6e6;
+      color: var(--foreground);
 
       text-align: center;
       font-family: "Roboto", sans-serif;
