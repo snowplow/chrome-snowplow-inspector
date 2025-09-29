@@ -8,30 +8,38 @@ import {
   useMemo,
   useState,
 } from "preact/hooks";
-import { Ban, Download, Upload, Search } from "lucide-preact";
+import { Ban, Download, Ellipsis, Upload, Search } from "lucide-preact";
 
-import type { IBeaconSummary, ITimeline } from "../../../ts/types";
+import type { DestinationManager } from "../../../ts/DestinationManager";
+import type { Application, IBeaconSummary, ITimeline } from "../../../ts/types";
 
 import * as importers from "../importers";
 import * as exporters from "../exporters";
+import { CopyMenu } from "./CopyMenu";
 
 export const TimelineChrome: FunctionComponent<{
+  active?: IBeaconSummary;
   addRequests: (requests: Entry[]) => void;
   batchRef: RefObject<Entry[]>;
   clearRequests: () => void;
+  destinationManager: DestinationManager;
   filter: RegExp | undefined;
   filterStr: string;
   setFilterStr: Dispatch<StateUpdater<string>>;
+  setApp: Dispatch<StateUpdater<Application>>;
   setModal: ITimeline["setModal"];
   summariesRef: RefObject<IBeaconSummary[][]>;
 }> = ({
+  active,
   addRequests,
   batchRef,
   children,
   clearRequests,
+  destinationManager,
   filter,
   filterStr,
   setFilterStr,
+  setApp,
   setModal,
   summariesRef,
 }) => {
@@ -141,6 +149,31 @@ export const TimelineChrome: FunctionComponent<{
                 {label}
               </li>
             ))}
+          </ul>
+          <button
+            type="button"
+            title="More Options"
+            popovertarget="moreoptions-po"
+            class="icon_button"
+          >
+            <Ellipsis />
+          </button>
+          <ul id="moreoptions-po" popover="auto">
+            <li
+              onClick={() => setApp("schemaManager")}
+              role="button"
+              tabindex={0}
+            >
+              Manage Schemas
+            </li>
+            <li
+              onClick={() => setModal("destination", { destinationManager })}
+              role="button"
+              tabindex={0}
+            >
+              Change Destination
+            </li>
+            {active && <CopyMenu beacon={active} />}
           </ul>
         </div>
         <label title="Search Events">

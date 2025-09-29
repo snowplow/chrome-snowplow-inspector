@@ -4,11 +4,14 @@
   gap: 0.5rem;
 
   resize: horizontal;
-  scrollbar-gutter: stable;
   overflow-inline: clip;
   overflow-block: auto;
 
   position: sticky;
+  top: 0;
+
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
 }
 
 .timeline__controls {
@@ -45,6 +48,10 @@
   .icon_button {
     background: none;
     padding: 0px 8px;
+
+    &:last-of-type {
+      margin-left: auto;
+    }
   }
 
   .vertical_divider {
@@ -67,8 +74,6 @@
   justify-content: start;
   flex: 1;
   gap: 0.5rem;
-
-  scrollbar-width: thin;
 }
 
 .event-group {
@@ -211,4 +216,12 @@
       background-color: #ddd;
     }
   }
+}
+
+#clipboard {
+  width: 1px;
+  height: 1px;
+  flex: 0;
+  position: fixed;
+  left: -10000px;
 }

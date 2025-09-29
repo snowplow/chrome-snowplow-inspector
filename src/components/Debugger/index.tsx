@@ -30,6 +30,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   destinationManager,
   requests,
   resolver,
+  setApp,
   setAttributeKeys,
   setEventCount,
   setModal,
@@ -117,6 +118,8 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         setActive={setActive}
         batches={requests}
         resolver={resolver}
+        destinationManager={destinationManager}
+        setApp={setApp}
         setModal={setModal}
         addRequests={addRequests}
         clearRequests={clearRequests}

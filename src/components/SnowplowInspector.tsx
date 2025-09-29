@@ -97,6 +97,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           destinationManager={destinationManager}
           requests={requests}
           resolver={resolver}
+          setApp={setApplication}
           setAttributeKeys={setAttributeKeyIds}
           setEventCount={setEventCount}
           setModal={setModal}

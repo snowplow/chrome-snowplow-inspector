@@ -1,8 +1,6 @@
 import { h, type FunctionComponent } from "preact";
-import type { IBeaconSummary } from "../../ts/types";
-import { copyToClipboard, tryb64 } from "../../ts/util";
-
-import "./CopyMenu.css";
+import type { IBeaconSummary } from "../../../ts/types";
+import { copyToClipboard, tryb64 } from "../../../ts/util";
 
 const wrapPost = (data: object) => {
   return {
@@ -35,7 +33,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
       "--compressed",
       ua && `-A ${JSON.stringify(ua)}`,
       // shell will merge the consecutive strings
-      lang && `-H "Accept-Language: "${JSON.stringify(lang)}`,
+      lang && `-H "Accept-Language: ${JSON.stringify(lang)}`,
       `-H "Content-Type: application/json; charset=UTF-8"`,
       // double stringify to escape quotes properly
       `--data-raw ${JSON.stringify(JSON.stringify(wrapPost(data)))}`,
@@ -71,23 +69,25 @@ const checks: Record<string, (beacon: IBeaconSummary) => boolean> = {
 
 export const CopyMenu: FunctionComponent<{
   beacon: IBeaconSummary;
-}> = ({ beacon }) => (
-  <select
-    class="copy-menu button"
-    onChange={(e) => {
-      const { currentTarget } = e;
-      const { value } = currentTarget;
-
-      currentTarget.selectedIndex = 0;
-      copyToClipboard(formatters[value](beacon));
-    }}
-  >
-    <option selected hidden>
-      {"\u29c9\ufe0f"} Copy as...
-    </option>
-    {Object.keys(formatters).map((format) => {
+}> = ({ beacon }) =>
+  [
+    <li>
+      <hr />
+    </li>,
+  ].concat(
+    Object.entries(formatters).flatMap(([format, formatter]) => {
       const eligible = !checks[format] || checks[format](beacon);
-      return eligible ? <option>{format}</option> : null;
-    })}
-  </select>
-);
+      return eligible
+        ? [
+            <li
+              title={`Copy current event as ${format}`}
+              onClick={() => copyToClipboard(formatter(beacon))}
+              role="button"
+              tabindex={0}
+            >
+              {format}
+            </li>,
+          ]
+        : [];
+    }),
+  );

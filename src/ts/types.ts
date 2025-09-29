@@ -81,6 +81,7 @@ export interface IDebugger {
   destinationManager: DestinationManager;
   requests: Entry[];
   resolver: Resolver;
+  setApp: Dispatch<StateUpdater<Application>>;
   setAttributeKeys: Dispatch<StateUpdater<Record<string, Set<string>>>>;
   setEventCount: Dispatch<StateUpdater<number | undefined>>;
   setModal: ModalSetter;
@@ -155,10 +156,12 @@ export interface ITimeline {
   addRequests: (requests: Entry[]) => void;
   clearRequests: () => void;
   batches: Entry[];
+  destinationManager: DestinationManager;
   resolver: Resolver;
   setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;
   attributeKeys: Record<string, Set<string>>;
   setAttributeKeys: Dispatch<StateUpdater<Record<string, Set<string>>>>;
+  setApp: Dispatch<StateUpdater<Application>>;
   setModal: ModalSetter;
   setEventCount: Dispatch<StateUpdater<number | undefined>>;
 }

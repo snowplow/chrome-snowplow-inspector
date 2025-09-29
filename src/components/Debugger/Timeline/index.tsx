@@ -312,8 +312,10 @@ const extractBatchContents = (
 export const Timeline: FunctionComponent<ITimeline> = ({
   active,
   batches,
+  destinationManager,
   resolver,
   setActive,
+  setApp,
   setAttributeKeys,
   setEventCount,
   setModal,
@@ -415,12 +417,15 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   return (
     <TimelineChrome
       addRequests={addRequests}
+      active={active}
       batchRef={batchRef}
       summariesRef={summariesRef}
       clearRequests={clearRequests}
+      destinationManager={destinationManager}
       filter={filter}
       filterStr={filterStr}
       setFilterStr={setFilterStr}
+      setApp={setApp}
       setModal={setModal}
     >
       <ol class="timeline__events">

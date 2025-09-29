@@ -10,7 +10,13 @@ import type {
   FieldDetail,
   PipelineInfo,
 } from "../../../ts/types";
-import { b64d, colorOf, copyToClipboard, nameType, capitalizeFirst } from "../../../ts/util";
+import {
+  b64d,
+  colorOf,
+  copyToClipboard,
+  nameType,
+  capitalizeFirst,
+} from "../../../ts/util";
 import {
   type IgluUri,
   IgluSchema,
@@ -20,8 +26,6 @@ import {
 
 import { JsonViewer } from "../../JSONViewer";
 import type { ModalSetter } from "../../Modals";
-
-import { CopyMenu } from "../CopyMenu";
 
 import "./EventPayload.css";
 
@@ -549,39 +553,33 @@ export const EventPayload: FunctionComponent<IBeacon> = ({
   );
 
   return (
-    <>
-      <EventSummary resolver={resolver} collector={collector} {...info}>
-        {pipeline && (
-          <PipelineDetails
-            key="pipeline"
-            {...{ pipeline, resolver, setModal }}
-          />
-        )}
-        {data.map(([setName, rows]) => (
-          <li>
-            <FieldGroup key={setName} setName={setName}>
-              {rows.map(([name, val, classes]) =>
-                !/Custom Entity|(Unstructured|Self-Describing|SD) Event/.test(
-                  name,
-                ) ? (
-                  // <tr class={classes}>
-                  <>
-                    <dt>{name}</dt>
-                    <dd>
-                      <BeaconValue obj={val} {...{ resolver, setModal }} />
-                      {/* <LabelType val={val} /> */}
-                    </dd>
-                  </>
-                ) : (
-                  // </tr>
-                  <BeaconValue obj={val} {...{ resolver, setModal }} />
-                ),
-              )}
-            </FieldGroup>
-          </li>
-        ))}
-      </EventSummary>
-      <CopyMenu beacon={activeBeacon} />
-    </>
+    <EventSummary resolver={resolver} collector={collector} {...info}>
+      {pipeline && (
+        <PipelineDetails key="pipeline" {...{ pipeline, resolver, setModal }} />
+      )}
+      {data.map(([setName, rows]) => (
+        <li>
+          <FieldGroup key={setName} setName={setName}>
+            {rows.map(([name, val, classes]) =>
+              !/Custom Entity|(Unstructured|Self-Describing|SD) Event/.test(
+                name,
+              ) ? (
+                // <tr class={classes}>
+                <>
+                  <dt>{name}</dt>
+                  <dd>
+                    <BeaconValue obj={val} {...{ resolver, setModal }} />
+                    {/* <LabelType val={val} /> */}
+                  </dd>
+                </>
+              ) : (
+                // </tr>
+                <BeaconValue obj={val} {...{ resolver, setModal }} />
+              ),
+            )}
+          </FieldGroup>
+        </li>
+      ))}
+    </EventSummary>
   );
 };

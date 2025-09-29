@@ -1,5 +1,5 @@
 import { h, type FunctionComponent } from "preact";
-import { Box, DatabaseZap, GitBranchPlus, ListTree } from "lucide-preact";
+import { DatabaseZap, GitBranchPlus, ListTree } from "lucide-preact";
 
 import type { Application, IToolbar } from "../ts/types";
 import { ConsoleStatus } from "./ConsoleStatus";
@@ -57,18 +57,6 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
           </span>
           <span>Events</span>
           {eventCount ? <span>{eventCount}</span> : null}
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="application"
-            value="schemaManager"
-            checked={application === "schemaManager"}
-          />
-          <span>
-            <Box />
-          </span>
-          <span>Data Structures</span>
         </label>
         <label>
           <input
