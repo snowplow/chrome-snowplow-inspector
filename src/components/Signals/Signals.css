@@ -3,31 +3,46 @@
   > aside {
     position: sticky;
     top: 0;
+
+    max-width: 20rem;
+    padding: 1.5rem;
     border-right: 1px solid #3c3c3c;
     margin-left: 1.5rem;
-    padding: 1.5rem;
+
     resize: horizontal;
     overflow-block: auto;
-    max-width: 20rem;
 
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
     align-items: start;
+    gap: 0.5rem;
 
     color: #999;
 
     h1 {
       font-family: "Roboto", sans-serif;
-      font-size: 1.5rem;
+      font-size: 1.125rem;
       font-style: normal;
       font-weight: 700;
-      line-height: 1.75rem;
+      line-height: 1.25rem;
       color: #e6e6e6;
+    }
+
+    hgroup p {
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.5rem;
     }
 
     img {
       width: 2rem;
+      float: left;
+      margin-right: 0.625rem;
+    }
+
+    > p {
+      margin: 0 2rem;
     }
 
     a {
@@ -38,7 +53,91 @@
       padding: 0.25rem 1rem;
       text-align: center;
       text-decoration: none;
-      margin: 2rem 0;
+      margin: 2rem;
+    }
+
+    figure {
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: stretch;
+      gap: 1rem;
+
+      width: 100%;
+      padding: 1.25rem;
+      background-color: #191919;
+      border: 1px solid #232323;
+      border-radius: 0.5rem;
+
+      figcaption {
+        color: #e6e6e6;
+        font-family: "Roboto", sans-serif;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 1.5rem;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0.5rem 0;
+        margin: 0;
+        border-radius: 0.5rem;
+        background-color: #191919;
+        background-image: linear-gradient(
+          to right,
+          transparent,
+          transparent 1.25rem,
+          0%,
+          #404040 calc(1.25rem + 1px),
+          transparent 0
+        );
+      }
+
+      li {
+        display: flex;
+        align-items: center;
+
+        cursor: pointer;
+        color: #999;
+
+        padding: 1rem 0.5rem;
+        border-radius: 0.25rem;
+
+        font-family: "Roboto", sans-serif;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.5rem;
+
+        &.active,
+        &:hover {
+          background-color: #404040;
+          color: white;
+        }
+
+        &::before {
+          display: inline-block;
+          content: "";
+          height: 1.5rem;
+          width: 1.5rem;
+          mask: url("lucide-static/icons/zap.svg") no-repeat center;
+          mask-size: cover;
+          background-color: currentColor;
+          margin-right: 1rem;
+        }
+
+        [data-received] {
+          display: flex;
+          flex-flow: column nowrap;
+
+          &::after {
+            content: attr(data-received);
+            font-size: 0.75rem;
+            font-weight: 400;
+            line-height: 1rem;
+          }
+        }
+      }
     }
   }
 
@@ -48,8 +147,10 @@
     display: flex;
     flex-flow: column nowrap;
     gap: 0.75rem;
+    overflow-block: auto;
 
-    details {
+    details,
+    & > div {
       display: flex;
       flex-flow: column nowrap;
       border-radius: 0.5rem;
@@ -61,6 +162,35 @@
       &[open] > summary::before {
         mask: url("lucide-static/icons/chevron-down.svg") no-repeat center;
         mask-size: cover;
+      }
+    }
+
+    > div {
+      padding: 0;
+      margin-bottom: 1rem;
+
+      h1 {
+        background-color: #101010;
+        padding: 1rem 1.5rem 0.75rem;
+        border: 1px solid #232323;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+
+      h2 {
+        margin: 1.5rem 1.5rem 1rem;
+        color: #999;
+      }
+
+      table {
+        margin: 0 2.75rem;
+        width: calc(100% - 5.5rem);
+      }
+
+      td > span {
+        color: white;
+        background-color: black;
+        border: 1px solid #232323;
+        border-radius: 0.25rem;
       }
     }
 

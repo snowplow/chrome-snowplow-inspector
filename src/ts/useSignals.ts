@@ -17,6 +17,7 @@ import {
   SignalsClient,
   type AttributeGroup,
   type AttributeKey,
+  type InterventionDefinition,
   type InterventionInstance,
 } from "../components/Signals/SignalsClient";
 
@@ -25,11 +26,15 @@ export const useSignals = (
   resolver: Resolver,
 ): [
   Record<string, string[]>,
-  {
-    client: SignalsClient;
-    keys: AttributeKey[];
-    groups: AttributeGroup[];
-  }[],
+  (
+    | {
+        client: SignalsClient;
+        keys: AttributeKey[];
+        groups: AttributeGroup[];
+        interventions: InterventionDefinition[];
+      }
+    | undefined
+  )[],
   Record<string, Set<string>>,
   Dispatch<StateUpdater<Record<string, Set<string>>>>,
   (InterventionInstance & { received: Date })[],
@@ -47,11 +52,15 @@ export const useSignals = (
     (InterventionInstance & { received: Date })[]
   >([]);
   const [signalsDefs, setSignalsDefs] = useState<
-    {
-      client: SignalsClient;
-      keys: AttributeKey[];
-      groups: AttributeGroup[];
-    }[]
+    (
+      | {
+          client: SignalsClient;
+          keys: AttributeKey[];
+          groups: AttributeGroup[];
+          interventions: InterventionDefinition[];
+        }
+      | undefined
+    )[]
   >([]);
 
   useEffect(() => {
@@ -233,7 +242,13 @@ export const useSignals = (
             (resp): Promise<AttributeGroup[]> => resp.json(),
             () => [],
           ),
-      ]).then(([keys, groups]) => {
+        client
+          .fetch(`${client.baseUrl}/api/v1/registry/interventions/`, opts)
+          .then(
+            (resp): Promise<InterventionDefinition[]> => resp.json(),
+            () => [],
+          ),
+      ]).then(([keys, groups, interventions]) => {
         setAttributeKeyIds((existing) => {
           const updated = { ...existing };
           let dirty = false;
@@ -249,7 +264,12 @@ export const useSignals = (
         });
         setSignalsDefs((existing) => {
           const updated = [...existing];
-          updated[apiClients.indexOf(client)] = { client, keys, groups };
+          updated[apiClients.indexOf(client)] = {
+            client,
+            keys,
+            groups,
+            interventions,
+          };
           return updated;
         });
       });

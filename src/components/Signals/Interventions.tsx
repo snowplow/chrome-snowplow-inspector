@@ -2,10 +2,15 @@ import { h, type FunctionComponent } from "preact";
 import type { OAuthResult } from "../../ts/types";
 import { useState, type Dispatch, type StateUpdater } from "preact/hooks";
 
+import { JsonViewer } from "../JSONViewer";
+
 import { Brochure } from "./Brochure";
+import type {
+  InterventionDefinition,
+  ReceivedIntervention,
+} from "./SignalsClient";
 
 import logo from "@res/logo.svg";
-import type { ReceivedIntervention } from "./SignalsClient";
 
 const dt = Intl.DateTimeFormat(undefined, {
   month: "short",
@@ -13,33 +18,57 @@ const dt = Intl.DateTimeFormat(undefined, {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
-  timeZoneName: "short",
   hour12: false,
 });
 
+const InterventionDefinitionDisplay: FunctionComponent<{
+  definition?: InterventionDefinition;
+}> = ({ definition }) => {
+  if (!definition) return null;
+
+  return (
+    <details open={false}>
+      <summary>Intervention definition</summary>
+
+      <JsonViewer data={definition} />
+    </details>
+  );
+};
+
 const InterventionsUI: FunctionComponent<{
   interventions: ReceivedIntervention[];
-}> = ({ interventions }) => {
+  definitions: InterventionDefinition[];
+}> = ({ definitions, interventions }) => {
   const [active, setActive] = useState<ReceivedIntervention>();
   return [
     <aside>
-      <img alt="Snowplow logo" src={logo} />
-      <h1>Signals Interventions</h1>
-      <p>
-        Utilize Behavioral attributes and AI to dynamically guide users based on
-        their actions.
-      </p>
+      <hgroup>
+        <img alt="Snowplow logo" src={logo} />
+        <h1>Interventions Signals</h1>
+        <p>
+          Utilize Behavioral attributes and AI to dynamically guide users based
+          on their actions.
+        </p>
+      </hgroup>
       {interventions.length ? (
-        <ul>
-          {interventions.map((intervention, i) => (
-            <li>
-              <button type="button" onClick={() => setActive(intervention)}>
-                <span>{intervention.name}</span>
-                <span>{dt.format(intervention.received)}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <figure>
+          <figcaption>Intervention Order</figcaption>
+          <ul>
+            {interventions.map((intervention, i) => (
+              <li
+                key={i}
+                class={intervention === active ? "active" : ""}
+                onClick={() => setActive(intervention)}
+                role="button"
+                tabindex={0}
+              >
+                <span data-received={dt.format(intervention.received)}>
+                  {intervention.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </figure>
       ) : null}
       <p>
         By analyzing online behaviors, we can tailor interactions to enhance
@@ -58,23 +87,33 @@ const InterventionsUI: FunctionComponent<{
           <table>
             <tr>
               <th>Intervention ID</th>
-              <td>{active.intervention_id}</td>
+              <td>
+                <span>{active.intervention_id}</span>
+              </td>
             </tr>
             <tr>
               <th>Intervention name</th>
-              <td>{active.name}</td>
+              <td>
+                <span>{active.name}</span>
+              </td>
             </tr>
             <tr>
               <th>Version</th>
-              <td>v{active.version}</td>
+              <td>
+                <span>v{active.version}</span>
+              </td>
             </tr>
             <tr>
               <th>Target attribute key</th>
-              <td>{active.target_attribute_key.name}</td>
+              <td>
+                <span>{active.target_attribute_key.name}</span>
+              </td>
             </tr>
             <tr>
-              <th>Target attribute key identifier</th>
-              <td>{active.target_attribute_key.id}</td>
+              <th>Attribute key value</th>
+              <td>
+                <span>{active.target_attribute_key.id}</span>
+              </td>
             </tr>
           </table>
           <h2>Associated attributes</h2>
@@ -82,10 +121,19 @@ const InterventionsUI: FunctionComponent<{
             {Object.entries(active.attributes).map(([attribute, value]) => (
               <tr key={attribute}>
                 <th>{attribute}</th>
-                <td>{value}</td>
+                <td>
+                  <span>{value}</span>
+                </td>
               </tr>
             ))}
           </table>
+
+          <InterventionDefinitionDisplay
+            definition={definitions.find(
+              ({ name, version }) =>
+                name === active.name && version === active.version,
+            )}
+          />
         </div>
       )}
     </article>,
@@ -97,13 +145,19 @@ export const Interventions: FunctionComponent<{
   interventions: ReceivedIntervention[];
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   setInterventionCount: Dispatch<StateUpdater<number | undefined>>;
+  signalsDefs: ({ interventions: InterventionDefinition[] } | undefined)[];
   signalsInfo: Record<string, string[]>;
-}> = ({ interventions, login, setLogin, signalsInfo }) => {
+}> = ({ interventions, login, setLogin, signalsDefs, signalsInfo }) => {
   const signalsAvailable = Object.keys(signalsInfo).length > 0;
   return (
     <main key="app" class="app app--interventions interventions">
       {signalsAvailable ? (
-        <InterventionsUI interventions={interventions} />
+        <InterventionsUI
+          interventions={interventions}
+          definitions={signalsDefs.flatMap(
+            ({ interventions } = { interventions: [] }) => interventions,
+          )}
+        />
       ) : (
         <Brochure login={login} setLogin={setLogin} />
       )}

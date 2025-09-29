@@ -124,6 +124,7 @@ export const SnowplowInspector: FunctionComponent = () => {
           setInterventionCount={setInterventionCount}
           login={login}
           setLogin={setLogin}
+          signalsDefs={signalsDefs}
           signalsInfo={signalsInfo}
           interventions={interventions}
         />

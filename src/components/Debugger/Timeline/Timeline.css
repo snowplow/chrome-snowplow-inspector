@@ -88,6 +88,7 @@
     justify-content: space-between;
     color: #999;
     padding: 0.5rem 0;
+    cursor: pointer;
 
     span {
       display: flex;
@@ -155,8 +156,11 @@
       display: flex;
       align-items: center;
       flex: 1;
-      padding: 0.625rem 0.75rem;
       cursor: pointer;
+
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.25rem;
+      margin: 0.1rem 0.4rem;
 
       span[data-timestamp]::after {
         content: attr(data-timestamp);

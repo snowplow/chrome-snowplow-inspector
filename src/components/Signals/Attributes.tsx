@@ -17,14 +17,15 @@ import {
 
 import { JsonViewer } from "../JSONViewer";
 
-import logo from "@res/logo.svg";
 import { Search } from "lucide-preact";
 
-type ResourceDefinitions = {
-  client: SignalsClient;
-  keys: AttributeKey[];
-  groups: AttributeGroup[];
-};
+type ResourceDefinitions =
+  | {
+      client: SignalsClient | null;
+      keys: AttributeKey[];
+      groups: AttributeGroup[];
+    }
+  | undefined;
 
 const AttributeGroupData: FunctionComponent<{
   client: SignalsClient;
@@ -179,16 +180,18 @@ const MultiInstanceData: FunctionComponent<{
   definitions: ResourceDefinitions[];
   filter?: string | RegExp;
 }> = ({ attributeKeyIds, definitions, filter }) =>
-  definitions.map(({ client, groups }) =>
-    groups.map((g) => (
-      <AttributeGroupData
-        key={`${client.baseUrl}.${g.name}.${g.version}`}
-        client={client}
-        filter={filter}
-        group={g}
-        identifiers={attributeKeyIds}
-      />
-    )),
+  definitions.map(
+    ({ client, groups } = { client: null, groups: [], keys: [] }) =>
+      client &&
+      groups.map((g) => (
+        <AttributeGroupData
+          key={`${client.baseUrl}.${g.name}.${g.version}`}
+          client={client}
+          filter={filter}
+          group={g}
+          identifiers={attributeKeyIds}
+        />
+      )),
   );
 
 const AttributesUI: FunctionComponent<{

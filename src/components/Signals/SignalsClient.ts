@@ -95,4 +95,39 @@ export type InterventionInstance = {
   };
 };
 
+export type Criterion = {
+  attribute: string;
+  operator:
+    | "="
+    | "!="
+    | "<"
+    | ">"
+    | "<="
+    | ">="
+    | "like"
+    | "not like"
+    | "rlike"
+    | "not rlike"
+    | "in"
+    | "not in"
+    | "is null"
+    | "is not null";
+  value: unknown;
+};
+export type Criteria =
+  | Criterion
+  | { all: Criteria[] }
+  | { any: Criteria[] }
+  | { none: Criteria[] };
+
+export type InterventionDefinition = {
+  name: string;
+  version: number;
+  description?: string;
+  owner?: string;
+  is_published: boolean;
+  target_attribute_keys: { name: string }[];
+  criteria: Criteria;
+};
+
 export type ReceivedIntervention = InterventionInstance & { received: Date };
