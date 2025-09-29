@@ -295,31 +295,29 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
         <div style={{ width: "100%" }}>
           <div class="iglu__status">
             <div>
-            <div class="label__type">
-              {capitalizeFirst(nameType(obj.data))}
-            </div>
+              <div class="label__type">
+                {capitalizeFirst(nameType(obj.data))}
+              </div>
             </div>
             <div>
               <abbr
-              class="iglu__validation"
-              title={errorText}
-              onClick={() => {
-                if (errorText) {
-                  copyToClipboard(errorText);
-                }
-              }}
-            >
-              {validity}
-            </abbr>
+                class="iglu__validation"
+                title={errorText}
+                onClick={() => {
+                  if (errorText) {
+                    copyToClipboard(errorText);
+                  }
+                }}
+              >
+                {validity}
+              </abbr>
             </div>
           </div>
-          <div class="schema__name">
-            {obj.schema}
-          </div>
+          <div class="schema__name">{obj.schema}</div>
         </div>
       </summary>
       <div class="iglu__content">
-      <Tabs defaultTab="Data" options={tabs} name="format" />
+        <Tabs defaultTab="Data" options={tabs} name="format" />
       </div>
     </details>
   );

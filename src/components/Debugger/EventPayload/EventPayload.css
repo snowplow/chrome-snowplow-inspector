@@ -50,7 +50,6 @@
 }
 
 details.iglu {
-
   &[open] > summary .label__type::before {
     display: inline-block;
     content: "";
@@ -63,17 +62,17 @@ details.iglu {
   }
 
   > .iglu__content {
-      padding-left: 1rem;
-      border-left: 1px solid #404040;
-      margin-left: 7px;
-      padding-top: 16px;
+    padding-left: 1rem;
+    border-left: 1px solid #404040;
+    margin-left: 7px;
+    padding-top: 16px;
   }
 
   summary {
     align-items: baseline;
     padding-bottom: 0px;
 
-    .schema__name{
+    .schema__name {
       padding-left: 10px;
       margin-left: 7px;
       border-left: 1px solid #404040;
@@ -81,20 +80,20 @@ details.iglu {
       font-size: 12px;
     }
 
-    .iglu__status{
+    .iglu__status {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .label__type{
+    .label__type {
       font-weight: bold;
       font-size: 18px;
-      color: #E6E6E6;
+      color: #e6e6e6;
       display: flex;
       align-items: center;
     }
-  }  
+  }
 }
 
 .iglu {
