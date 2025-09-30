@@ -95,47 +95,37 @@ const Options = () => {
           Send anonymous usage information
         </label>
 
-        <label>
-          Ngrok tunnel address
-          <input
-            type="text"
-            name="tunnelAddress"
-            value={options.tunnelAddress}
-          />
-        </label>
         <fieldset>
           <legend>Signals</legend>
-          <fieldset>
-            <legend>Sandbox</legend>
-            <label>
-              Signals Sandbox URL
-              <input
-                type="text"
-                name="signalsSandboxUrl"
-                pattern="^[^/:]+(:[0-9]+)?$"
-                placeholder="00000000-0000-0000-0000-000000000000.svc.snplow.net"
-                value={options.signalsSandboxUrl}
-              />
-            </label>
-
-            <label>
-              Signals Sandbox Token
-              <input
-                type="text"
-                name="signalsSandboxToken"
-                pattern={UUID_PATTERN}
-                placeholder={SAMPLE_UUID}
-                value={options.signalsSandboxToken}
-                required={!!options.signalsSandboxUrl}
-              />
-            </label>
-          </fieldset>
+          <p>
+            For security reasons, only{" "}
+            <abbr title="Machine to Machine">M2M</abbr>
+            access tokens can access the attribute data stored in your Signals
+            instance - <em>not</em> the access token provided when you log into
+            Console. M2M tokens are obtained using API keys{" "}
+            <a
+              href="https://console.snowplowanalytics.com/credentials"
+              target="_blank"
+            >
+              generated in Console
+            </a>
+            . Here you can define API keys to use for each Organization ID you
+            want to access Attributes data for.
+          </p>
+          <p>
+            <a href="https://snowplow.io/signals" target="_blank">
+              Find out more about Signals
+            </a>
+            , or{" "}
+            <a href="https://docs.snowplow.io/docs/signals" target="_blank">
+              view the documentation.
+            </a>
+          </p>
           <fieldset>
             <legend>API Keys</legend>
-            {options.signalsApiKeys
-              .concat({ org: "", apiKey: "", apiKeyId: "" })
-              .map(({ org, apiKey, apiKeyId }, i) => (
-                <fieldset>
+            <div>
+              {options.signalsApiKeys.map(({ org, apiKey, apiKeyId }, i) => (
+                <fieldset key={i}>
                   <label>
                     Organization ID
                     <input
@@ -182,10 +172,66 @@ const Options = () => {
                   </label>
                 </fieldset>
               ))}
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setOptions(({ signalsApiKeys, ...opts }) => ({
+                  ...opts,
+                  signalsApiKeys: signalsApiKeys.concat({
+                    org: "",
+                    apiKey: "",
+                    apiKeyId: "",
+                  }),
+                }))
+              }
+            >
+              Add new organization
+            </button>
           </fieldset>
         </fieldset>
+        <details>
+          <summary>Advanced...</summary>
+          <label>
+            Ngrok tunnel address
+            <input
+              type="text"
+              name="tunnelAddress"
+              value={options.tunnelAddress}
+            />
+          </label>
+          <fieldset>
+            <legend>Signals Sandbox</legend>
+            <p>
+              If you're still trialing Signals, you can enter details of your
+              sandbox environment here.
+            </p>
+            <label>
+              Signals Sandbox URL
+              <input
+                type="text"
+                name="signalsSandboxUrl"
+                pattern="^[^/:]+(:[0-9]+)?$"
+                placeholder="00000000-0000-0000-0000-000000000000.svc.snplow.net"
+                value={options.signalsSandboxUrl}
+              />
+            </label>
 
-        {status ? <p>{status}</p> : <button>Save</button>}
+            <label>
+              Signals Sandbox Token
+              <input
+                type="text"
+                name="signalsSandboxToken"
+                pattern={UUID_PATTERN}
+                placeholder={SAMPLE_UUID}
+                value={options.signalsSandboxToken}
+                required={!!options.signalsSandboxUrl}
+              />
+            </label>
+          </fieldset>
+        </details>
+
+        {status ? <p class="status">{status}</p> : <button>Save</button>}
       </fieldset>
     </form>
   );
