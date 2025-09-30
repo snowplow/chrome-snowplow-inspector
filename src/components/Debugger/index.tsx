@@ -40,6 +40,9 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   useErrorBoundary(errorAnalytics);
   const [active, setActive] = useState<IBeaconSummary>();
   const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
+  const [listenerStatus, setListenerStatus] = useState<
+    "waiting" | "importing" | "active"
+  >("waiting");
 
   useEffect(
     () =>
@@ -51,6 +54,8 @@ export const Debugger: FunctionComponent<IDebugger> = ({
 
   const addRequests = useCallback((reqs: Entry[]) => {
     if (!reqs.length) return;
+
+    setListenerStatus("active");
 
     setRequests((events) => {
       const merged = events.concat(reqs);
@@ -86,6 +91,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   );
 
   useEffect(() => {
+    setListenerStatus("importing");
     chrome.devtools.network.getHAR((harLog) => {
       const buildKey = (e: Entry) =>
         "".concat(
@@ -95,6 +101,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
           e._request_id as any,
         );
       const existing = new Set<string>(Array.from(requests, buildKey));
+      setListenerStatus("waiting");
       handleNewRequests(
         ...harLog.entries.filter(
           (entry) => isValidBatch(entry) && !existing.has(buildKey(entry)),
@@ -128,13 +135,19 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         setEventCount={setEventCount}
       />
       <div class="debugger__display debugger--beacon">
-        {active && (
+        {active ? (
           <EventPayload
             activeBeacon={active}
             resolver={resolver}
             setModal={setModal}
             pipelines={pipelines}
           />
+        ) : (
+          <p class="fallback">
+            {listenerStatus === "importing"
+              ? "Importing earlier requests from Network panel"
+              : "Waiting for new requests..."}
+          </p>
         )}
       </div>
     </main>

@@ -13,13 +13,14 @@
     gap: 0.25rem;
 
     padding: 0 0 0 0.25rem;
+    /* offset by parent padding-left */
     background-image: linear-gradient(
       to right,
       transparent,
       transparent calc(50% + 0.25rem - 2px),
       0%,
       var(--accent) calc(50% + 0.25rem),
-      /* offset by parent padding-left */ transparent 0
+      transparent 0
     );
     margin-top: 1rem;
 
@@ -80,7 +81,9 @@
         background-color: var(--surface-1);
         border-radius: 100%;
         aspect-ratio: 1;
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       svg {

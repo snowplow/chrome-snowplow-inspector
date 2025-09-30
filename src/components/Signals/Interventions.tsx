@@ -118,14 +118,16 @@ const InterventionsUI: FunctionComponent<{
           </table>
           <h2>Associated attributes</h2>
           <table>
-            {Object.entries(active.attributes).map(([attribute, value]) => (
-              <tr key={attribute}>
-                <th>{attribute}</th>
-                <td>
-                  <span>{value}</span>
-                </td>
-              </tr>
-            ))}
+            {Object.entries(active.attributes ?? {}).map(
+              ([attribute, value]) => (
+                <tr key={attribute}>
+                  <th>{attribute}</th>
+                  <td>
+                    <span>{value}</span>
+                  </td>
+                </tr>
+              ),
+            )}
           </table>
 
           <InterventionDefinitionDisplay

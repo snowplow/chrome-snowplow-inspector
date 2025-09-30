@@ -88,7 +88,7 @@ export type InterventionInstance = {
   intervention_id: string;
   name: string;
   version: number;
-  attributes: Record<string, string>;
+  attributes?: Record<string, string>;
   target_attribute_key: {
     name: string;
     id: string;

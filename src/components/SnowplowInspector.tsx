@@ -70,6 +70,8 @@ export const SnowplowInspector: FunctionComponent = () => {
   const [attributeCount, setAttributeCount] = useState<number>();
   const [interventionCount, setInterventionCount] = useState<number>();
 
+  setInterventionCount(interventions.length || undefined);
+
   useEffect(() => {
     chrome.action?.setBadgeText({
       tabId: chrome.devtools.inspectedWindow.tabId,
