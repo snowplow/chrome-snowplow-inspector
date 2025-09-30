@@ -37,7 +37,7 @@
   svg {
     height: 16px;
     width: 16px;
-    color: #999999;
+    color: var(--muted-foreground);
   }
 
   svg.search_icon {
@@ -80,13 +80,12 @@
   display: flex;
   flex-flow: column nowrap;
   border-radius: 0.5rem;
-  background: linear-gradient();
 
   > summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    color: #999;
+    color: var(--muted-foreground);
     padding: 0.5rem 0;
     cursor: pointer;
 
@@ -101,7 +100,7 @@
       content: attr(data-event-count);
       display: inline-block;
       border-radius: 5rem;
-      background-color: #999;
+      background-color: var(--muted-foreground);
       padding: 0.125rem 0.75rem;
       text-align: center;
       color: #1f2937;
@@ -119,16 +118,16 @@
   }
 
   &[open] > summary span {
-    color: white;
+    color: var(--color-text-contrast);
   }
 
   &[open] > summary span::before {
     background-color: #916ce7;
-    color: white;
+    color: var(--color-text-contrast);
   }
 
   &[open] > summary::after {
-    color: white;
+    color: var(--color-text-contrast);
     content: "";
     mask-image: url("lucide-static/icons/minus-circle.svg");
   }
@@ -138,13 +137,13 @@
     padding: 0.5rem 0;
     margin: 0;
     border-radius: 0.5rem;
-    background-color: #191919;
+    background-color: var(--card);
     background-image: linear-gradient(
       to right,
       transparent,
-      transparent 1rem,
+      transparent 1.35rem,
       0%,
-      #404040 calc(1rem + 1px),
+      #404040 calc(1.35rem + 1px),
       transparent 0
     );
   }
@@ -166,7 +165,7 @@
         content: attr(data-timestamp);
         display: block;
         font-size: 0.75rem;
-        color: #999;
+        color: var(--muted-foreground);
         line-height: 1rem;
       }
 
