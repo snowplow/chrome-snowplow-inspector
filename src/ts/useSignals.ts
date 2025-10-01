@@ -64,40 +64,51 @@ export const useSignals = (
   >([]);
 
   useEffect(() => {
-    chrome.storage.sync.get<StoredOptions>(
-      {
-        signalsApiKeys: [],
-        signalsSandboxToken: "",
-        signalsSandboxUrl: "",
-      },
-      ({ signalsApiKeys, signalsSandboxUrl, signalsSandboxToken }) => {
-        if (signalsSandboxUrl && signalsSandboxToken) {
-          setSignalsInstalls((signals) =>
-            Object.assign({}, signals, {
-              sandbox: [`Bearer:${signalsSandboxToken}@${signalsSandboxUrl}`],
-            }),
-          );
-        }
+    const updateOptions = (
+      _: any,
+      namespace: string,
+    ) =>
+      namespace === "sync" &&
+      chrome.storage.sync.get<StoredOptions>(
+        {
+          signalsApiKeys: [],
+          signalsSandboxToken: "",
+          signalsSandboxUrl: "",
+        },
+        ({ signalsApiKeys, signalsSandboxUrl, signalsSandboxToken }) => {
+          setSignalsInstalls((signals) => {
+            const updated = { ...signals };
+            if (signalsSandboxUrl && signalsSandboxToken) {
+              updated["sandbox"] = [
+                `Bearer:${signalsSandboxToken}@${signalsSandboxUrl}`,
+              ];
+            } else {
+              delete updated["sandbox"];
+            }
 
-        if (signalsApiKeys.length) {
-          setSignalsApiKeys((apiKeys) =>
-            Object.assign(
-              {},
-              apiKeys,
-              Object.fromEntries(
-                signalsApiKeys.map(({ org, apiKey, apiKeyId }) => [
-                  org,
-                  {
-                    apiKey,
-                    apiKeyId,
-                  },
-                ]),
-              ),
+            return updated;
+          });
+
+          setSignalsApiKeys(
+            Object.fromEntries(
+              signalsApiKeys.map(({ org, apiKey, apiKeyId }) => [
+                org,
+                {
+                  apiKey,
+                  apiKeyId,
+                },
+              ]),
             ),
           );
-        }
-      },
-    );
+        },
+      );
+
+    chrome.storage.onChanged.addListener(updateOptions);
+    updateOptions(null, "sync");
+
+    return () => {
+      chrome.storage.onChanged.removeListener(updateOptions);
+    };
   }, []);
 
   useEffect(() => {
