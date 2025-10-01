@@ -134,19 +134,23 @@ const AttributeGroupData: FunctionComponent<{
       <summary>
         <span class="groupname">{name}</span>
         {includeInstance && <span class="groupinstance">{client.baseUrl}</span>}
-        <select
-          class="groupversion"
-          disabled={groups.length < 2}
-          onChange={({ currentTarget }) =>
-            setVersion(parseInt(currentTarget.value, 10))
-          }
-        >
-          {groups.map((ag) => (
-            <option value={ag.version} selected={ag.version === version}>
-              v{ag.version}
-            </option>
-          ))}
-        </select>
+        {groups.length > 1 ? (
+          <select
+            class="groupversion"
+            disabled={groups.length < 2}
+            onChange={({ currentTarget }) =>
+              setVersion(parseInt(currentTarget.value, 10))
+            }
+          >
+            {groups.map((ag) => (
+              <option value={ag.version} selected={ag.version === version}>
+                v{ag.version}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span class="groupversion">v{version}</span>
+        )}
         <span class="groupsource">{source}</span>
       </summary>
       {showDef ? <JsonViewer data={showDef} /> : null}
@@ -268,6 +272,21 @@ const AttributesUI: FunctionComponent<{
   return (
     <article>
       <div class="attribute-group-controls">
+        <label title="Search Behaviors Attributes">
+          <span>
+            <Search />
+          </span>
+          <input
+            type="text"
+            placeholder="Search Behaviors Attributes"
+            onKeyUp={(e) => {
+              if (e.currentTarget instanceof HTMLInputElement) {
+                setFilter(e.currentTarget.value);
+              }
+            }}
+            value={filter}
+          />
+        </label>
         <label title="Filter sources">
           <select
             onChange={({ currentTarget }) =>
@@ -289,21 +308,6 @@ const AttributesUI: FunctionComponent<{
           </select>
         </label>
       </div>
-      <label title="Search Behaviors Attributes">
-        <span>
-          <Search />
-        </span>
-        <input
-          type="text"
-          placeholder="Search Behaviors Attributes"
-          onKeyUp={(e) => {
-            if (e.currentTarget instanceof HTMLInputElement) {
-              setFilter(e.currentTarget.value);
-            }
-          }}
-          value={filter}
-        />
-      </label>
       {Object.values(attributeKeyIds).some((s) => s.size > 0) ? (
         <MultiInstanceData
           attributeKeyIds={attributeKeyIds}

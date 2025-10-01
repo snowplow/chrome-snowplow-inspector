@@ -64,10 +64,7 @@ export const useSignals = (
   >([]);
 
   useEffect(() => {
-    const updateOptions = (
-      _: any,
-      namespace: string,
-    ) =>
+    const updateOptions = (_: any, namespace: string) =>
       namespace === "sync" &&
       chrome.storage.sync.get<StoredOptions>(
         {
