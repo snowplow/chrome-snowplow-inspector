@@ -40,17 +40,26 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   useErrorBoundary(errorAnalytics);
   const [active, setActive] = useState<IBeaconSummary>();
   const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
+  const [pinned, setPinned] = useState<string[]>([]);
   const [listenerStatus, setListenerStatus] = useState<
     "waiting" | "importing" | "active"
   >("waiting");
 
   useEffect(
     () =>
-      chrome.storage.local.get({ pipelines: "[]" }, ({ pipelines }) => {
-        setPipelines(JSON.parse(pipelines));
-      }),
+      chrome.storage.local.get(
+        { pinned: "[]", pipelines: "[]" },
+        ({ pinned, pipelines }) => {
+          setPipelines(JSON.parse(pipelines));
+          setPinned(JSON.parse(pinned));
+        },
+      ),
     [],
   );
+
+  useEffect(() => {
+    chrome.storage.local.set({ pinned: JSON.stringify(pinned) });
+  }, [pinned]);
 
   const addRequests = useCallback((reqs: Entry[]) => {
     if (!reqs.length) return;
@@ -141,6 +150,8 @@ export const Debugger: FunctionComponent<IDebugger> = ({
             resolver={resolver}
             setModal={setModal}
             pipelines={pipelines}
+            pinned={pinned}
+            setPinned={setPinned}
           />
         ) : (
           <p class="fallback">

@@ -111,7 +111,12 @@ export interface IBeaconSummary {
 }
 
 export type BeaconValidity = "Valid" | "Unrecognised" | "Invalid";
-export type FieldDetail = [field: string, value: string, classes: string];
+export type FieldDetail = [
+  field: string,
+  value: string,
+  param: string,
+  classes: string,
+];
 export type BeaconDetail = [group: string, fields: FieldDetail[]];
 
 export interface IBeaconDetails {
@@ -171,6 +176,8 @@ export interface IBeacon {
   resolver: Resolver;
   setModal: ModalSetter;
   pipelines: PipelineInfo[];
+  pinned: string[];
+  setPinned: Dispatch<StateUpdater<string[]>>;
 }
 
 export interface IBadRowsSummary {

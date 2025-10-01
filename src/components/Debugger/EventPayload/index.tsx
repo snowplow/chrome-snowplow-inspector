@@ -1,5 +1,6 @@
 import { h, type FunctionComponent, Fragment, type VNode } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
+import { Pin, PinOff } from "lucide-preact";
 
 import { protocol } from "../../../ts/protocol";
 import type {
@@ -30,23 +31,31 @@ import type { ModalSetter } from "../../Modals";
 import "./EventPayload.css";
 
 type ProtocolField = (typeof protocol.paramMap)[keyof typeof protocol.paramMap];
+type PinnableField =
+  (typeof protocol.groupPriorities)[number]["fields"][number];
 
-function genClasses(finfo: ProtocolField): string {
+function genClasses(
+  finfo: ProtocolField,
+  field: string,
+  pinned: string[],
+): string {
   const classes = [];
 
   if (finfo.deprecated) {
     classes.push("deprecated");
   }
 
+  if (pinned.includes(field)) {
+    classes.push("pinned");
+  }
+
   return classes.join(" ");
 }
 
-function destructureEvent({
-  collector,
-  method,
-  payload,
-  serverAnonymous,
-}: IBeaconSummary): IBeaconDetails {
+function destructureEvent(
+  { collector, method, payload, serverAnonymous }: IBeaconSummary,
+  pinned: PinnableField[],
+): IBeaconDetails {
   const result: IBeaconDetails = {
     appId: printableValue(payload.get("aid"), protocol.paramMap.aid),
     collector,
@@ -73,7 +82,7 @@ function destructureEvent({
       const { name, fields } = gp;
       const rows: FieldDetail[] = [];
 
-      for (const field of fields) {
+      for (const field of name === "Pinned" ? pinned : fields) {
         const finfo = protocol.paramMap[field];
 
         let val = payload.get(field);
@@ -81,7 +90,7 @@ function destructureEvent({
         val = printableValue(val, finfo);
 
         if (val != null) {
-          rows.push([finfo.name, val, genClasses(finfo)]);
+          rows.push([finfo.name, val, field, genClasses(finfo, field, pinned)]);
           seen.add(field);
         }
       }
@@ -90,6 +99,7 @@ function destructureEvent({
         rows.push([
           "Server Anonymization",
           serverAnonymous ? "Enabled" : "Disabled",
+          "sanon",
           "",
         ]);
       }
@@ -103,7 +113,7 @@ function destructureEvent({
   const unknownRows: FieldDetail[] = [];
   for (const [k, v] of payload) {
     if (!seen.has(k)) {
-      unknownRows.push([k, v, "unknown"]);
+      unknownRows.push([k, v, k, "unknown"]);
     }
   }
 
@@ -477,7 +487,7 @@ const PipelineDetails: FunctionComponent<{
   setModal: ModalSetter;
 }> = ({ pipeline, resolver, setModal }) => {
   return (
-    <FieldGroup key="pipeline" setName="Pipeline Configuration">
+    <FieldGroup setName="Pipeline Configuration">
       {Object.entries({
         "Pipeline Name": pipeline.domain,
         Organization: pipeline.organizationName,
@@ -534,13 +544,33 @@ const PipelineDetails: FunctionComponent<{
   );
 };
 
+const FieldPin: FunctionComponent<
+  { field: string } & Pick<IBeacon, "pinned" | "setPinned">
+> = ({ field, pinned, setPinned }) =>
+  pinned.includes(field) ? (
+    <PinOff
+      onClick={() => setPinned((old) => old.filter((e) => e !== field))}
+    />
+  ) : (
+    <Pin
+      onClick={() =>
+        setPinned((old) => (old.includes(field) ? old : [...old, field]))
+      }
+    />
+  );
+
 export const EventPayload: FunctionComponent<IBeacon> = ({
   activeBeacon,
   pipelines,
   resolver,
   setModal,
+  pinned,
+  setPinned,
 }) => {
-  const { collector, data, payload, ...info } = destructureEvent(activeBeacon);
+  const { collector, data, payload, ...info } = destructureEvent(
+    activeBeacon,
+    pinned as PinnableField[],
+  );
 
   const pipeline = useMemo(
     () =>
@@ -553,25 +583,27 @@ export const EventPayload: FunctionComponent<IBeacon> = ({
   return (
     <EventSummary resolver={resolver} collector={collector} {...info}>
       {pipeline && (
-        <PipelineDetails key="pipeline" {...{ pipeline, resolver, setModal }} />
+        <li key="pipeline">
+          <PipelineDetails {...{ pipeline, resolver, setModal }} />
+        </li>
       )}
       {data.map(([setName, rows]) => (
-        <li>
-          <FieldGroup key={setName} setName={setName}>
-            {rows.map(([name, val, classes]) =>
+        <li key={setName}>
+          <FieldGroup setName={setName}>
+            {rows.map(([name, val, field, classes]) =>
               !/Custom Entity|(Unstructured|Self-Describing|SD) Event/.test(
                 name,
               ) ? (
-                // <tr class={classes}>
                 <>
-                  <dt>{name}</dt>
+                  <dt class={classes}>
+                    {name} <FieldPin {...{ field, pinned, setPinned }} />
+                  </dt>
                   <dd>
                     <BeaconValue obj={val} {...{ resolver, setModal }} />
                     {/* <LabelType val={val} /> */}
                   </dd>
                 </>
               ) : (
-                // </tr>
                 <BeaconValue obj={val} {...{ resolver, setModal }} />
               ),
             )}

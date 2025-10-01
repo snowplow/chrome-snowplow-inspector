@@ -300,6 +300,19 @@ details.iglu {
         font-weight: 400;
         font-size: 14px;
         color: var(--muted-foreground);
+        display: flex;
+        align-items: center;
+
+        svg {
+          cursor: pointer;
+          height: 0.75rem;
+          display: none;
+        }
+
+        &.pinned svg,
+        &:hover svg {
+          display: unset;
+        }
       }
       dl {
         font-size: 14px;

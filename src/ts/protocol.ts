@@ -40,6 +40,10 @@ namespace TrackingProtocol {
 
 export const groupPriorities: TrackingProtocol.FieldGroup[] = [
   {
+    name: "Pinned",
+    fields: [],
+  },
+  {
     name: "Self-Describing Event",
     fields: ["ue_pr", "ue_px"],
   },
