@@ -9,31 +9,21 @@ import {
 
 import { errorAnalytics } from "../../ts/analytics";
 import type { IBeaconSummary, IDebugger, PipelineInfo } from "../../ts/types";
-import { isSnowplow } from "../../ts/util";
 
 import { EventPayload } from "./EventPayload";
 import { Timeline } from "./Timeline";
 
 import "./Debugger.css";
 
-const isValidBatch = (req: Entry): boolean => {
-  if (req.serverIPAddress === "") return false;
-  if (req.request.method === "OPTIONS") return false;
-  if (req.response.statusText === "Service Worker Fallback Required")
-    return false;
-
-  return isSnowplow(req.request);
-};
-
 export const Debugger: FunctionComponent<IDebugger> = ({
-  attributeKeys,
   destinationManager,
-  requests,
+  batches,
+  listenerStatus,
+  requestsRef,
   resolver,
   setApp,
-  setAttributeKeys,
-  setEventCount,
   setModal,
+  addRequests,
   setRequests,
 }) => {
   performance.measure("startDebugger");
@@ -41,9 +31,6 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   const [active, setActive] = useState<IBeaconSummary>();
   const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
   const [pinned, setPinned] = useState<string[]>([]);
-  const [listenerStatus, setListenerStatus] = useState<
-    "waiting" | "importing" | "active"
-  >("waiting");
 
   useEffect(
     () =>
@@ -61,87 +48,21 @@ export const Debugger: FunctionComponent<IDebugger> = ({
     chrome.storage.local.set({ pinned: JSON.stringify(pinned) });
   }, [pinned]);
 
-  const addRequests = useCallback((reqs: Entry[]) => {
-    if (!reqs.length) return;
-
-    setListenerStatus("active");
-
-    setRequests((events) => {
-      const merged = events.concat(reqs);
-
-      merged.sort((a, b) =>
-        a.startedDateTime === b.startedDateTime
-          ? 0
-          : a.startedDateTime < b.startedDateTime
-            ? -1
-            : 1,
-      );
-
-      return merged;
-    });
-  }, []);
-
   const clearRequests = useCallback(() => setRequests([]), []);
-
-  const handleNewRequests = useCallback(
-    (...reqs: Entry[]) => {
-      const batches: Entry[] = [];
-
-      reqs.forEach((req) => {
-        if (isValidBatch(req)) {
-          batches.push(req);
-          destinationManager.addPath(req.request.url);
-        }
-      });
-
-      addRequests(batches);
-    },
-    [addRequests],
-  );
-
-  useEffect(() => {
-    setListenerStatus("importing");
-    chrome.devtools.network.getHAR((harLog) => {
-      const buildKey = (e: Entry) =>
-        "".concat(
-          e.startedDateTime,
-          e.time as any,
-          e.request.url,
-          e._request_id as any,
-        );
-      const existing = new Set<string>(Array.from(requests, buildKey));
-      setListenerStatus("waiting");
-      handleNewRequests(
-        ...harLog.entries.filter(
-          (entry) => isValidBatch(entry) && !existing.has(buildKey(entry)),
-        ),
-      );
-    });
-
-    chrome.devtools.network.onRequestFinished.addListener(handleNewRequests);
-
-    return () => {
-      chrome.devtools.network.onRequestFinished.removeListener(
-        handleNewRequests,
-      );
-    };
-  }, []);
 
   return (
     <main class="app app--debugger debugger">
       <Timeline
         active={active}
         setActive={setActive}
-        batches={requests}
+        batches={batches}
+        requestsRef={requestsRef}
         resolver={resolver}
         destinationManager={destinationManager}
         setApp={setApp}
         setModal={setModal}
         addRequests={addRequests}
         clearRequests={clearRequests}
-        attributeKeys={attributeKeys}
-        setAttributeKeys={setAttributeKeys}
-        setEventCount={setEventCount}
       />
       <div class="debugger__display debugger--beacon">
         {active ? (

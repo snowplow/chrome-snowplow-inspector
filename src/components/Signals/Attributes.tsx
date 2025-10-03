@@ -327,7 +327,6 @@ const AttributesUI: FunctionComponent<{
 
 export const Attributes: FunctionComponent<{
   login?: OAuthResult;
-  setAttributeCount: Dispatch<StateUpdater<number | undefined>>;
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   attributeKeyIds: Record<string, Set<string>>;
   signalsDefs: ResourceDefinitions[];

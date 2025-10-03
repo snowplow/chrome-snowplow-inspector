@@ -20,7 +20,7 @@ import { CopyMenu } from "./CopyMenu";
 export const TimelineChrome: FunctionComponent<{
   active?: IBeaconSummary;
   addRequests: (requests: Entry[]) => void;
-  batchRef: RefObject<Entry[]>;
+  requestsRef: RefObject<Entry[]>;
   clearRequests: () => void;
   destinationManager: DestinationManager;
   filter: RegExp | undefined;
@@ -32,7 +32,7 @@ export const TimelineChrome: FunctionComponent<{
 }> = ({
   active,
   addRequests,
-  batchRef,
+  requestsRef,
   children,
   clearRequests,
   destinationManager,
@@ -75,26 +75,26 @@ export const TimelineChrome: FunctionComponent<{
       csv() {
         return exporters.exportToFormat(
           "csv",
-          batchRef.current!,
+          requestsRef.current!,
           summariesRef.current!,
         );
       },
       har() {
         return exporters.exportToFormat(
           "har",
-          batchRef.current!,
+          requestsRef.current!,
           summariesRef.current!,
         );
       },
       json() {
         return exporters.exportToFormat(
           "json",
-          batchRef.current!,
+          requestsRef.current!,
           summariesRef.current!,
         );
       },
     }),
-    [batchRef, summariesRef],
+    [requestsRef, summariesRef],
   );
   return (
     <aside class="timeline min-w-[250px]">

@@ -1,5 +1,6 @@
 import type { Entry } from "har-format";
 import type { Schema } from "jsonschema";
+import type { RefObject } from "preact";
 import type { Dispatch, StateUpdater } from "preact/hooks";
 
 import type { Resolver } from "./iglu";
@@ -56,6 +57,19 @@ export type OAuthAccess = {
   };
 };
 
+export type BatchContents = {
+  id: string;
+  collector: string;
+  collectorPath: string;
+  method: string;
+  pageref?: string;
+  events: Map<string, string>[];
+  serverAnonymous: boolean;
+  status: number;
+  statusText: string;
+  sendingPage?: string;
+};
+
 export type OAuthResult = {
   identity: OAuthIdentity;
   access: OAuthAccess;
@@ -77,14 +91,14 @@ export type Organization = {
 };
 
 export interface IDebugger {
-  attributeKeys: Record<string, Set<string>>;
   destinationManager: DestinationManager;
-  requests: Entry[];
+  batches: BatchContents[];
+  listenerStatus: "waiting" | "importing" | "active";
+  requestsRef: RefObject<Entry[]>;
   resolver: Resolver;
   setApp: Dispatch<StateUpdater<Application>>;
-  setAttributeKeys: Dispatch<StateUpdater<Record<string, Set<string>>>>;
-  setEventCount: Dispatch<StateUpdater<number | undefined>>;
   setModal: ModalSetter;
+  addRequests: (requests: Entry[]) => void;
   setRequests: Dispatch<StateUpdater<Entry[]>>;
 }
 
@@ -160,15 +174,13 @@ export interface ITimeline {
   active: IBeaconSummary | undefined;
   addRequests: (requests: Entry[]) => void;
   clearRequests: () => void;
-  batches: Entry[];
+  batches: BatchContents[];
+  requestsRef: RefObject<Entry[]>;
   destinationManager: DestinationManager;
   resolver: Resolver;
   setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;
-  attributeKeys: Record<string, Set<string>>;
-  setAttributeKeys: Dispatch<StateUpdater<Record<string, Set<string>>>>;
   setApp: Dispatch<StateUpdater<Application>>;
   setModal: ModalSetter;
-  setEventCount: Dispatch<StateUpdater<number | undefined>>;
 }
 
 export interface IBeacon {

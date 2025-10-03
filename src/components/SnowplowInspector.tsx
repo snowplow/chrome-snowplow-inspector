@@ -8,11 +8,14 @@ import {
   useState,
 } from "preact/hooks";
 
+import { extractBatchContents } from "../ts/extractBatchContents";
 import { doOAuthFlow } from "../ts/oauth";
+import { esMap } from "../ts/protocol";
 import type { Application, OAuthResult } from "../ts/types";
+import { isSnowplow } from "../ts/util";
+import { useSignals } from "../ts/useSignals";
 import { Resolver } from "../ts/iglu/Resolver";
 import { DestinationManager } from "../ts/DestinationManager";
-import { useSignals } from "../ts/useSignals";
 
 import {
   modals,
@@ -27,6 +30,15 @@ import { Toolbar } from "./Toolbar";
 
 import "./SnowplowInspector.css";
 import "../styles/tailwind.css";
+
+const isValidBatch = (req: Entry): boolean => {
+  if (req.serverIPAddress === "") return false;
+  if (req.request.method === "OPTIONS") return false;
+  if (req.response.statusText === "Service Worker Fallback Required")
+    return false;
+
+  return isSnowplow(req.request);
+};
 
 export const SnowplowInspector: FunctionComponent = () => {
   const [application, setApplication] = useState<Application>("debugger");
@@ -67,10 +79,45 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   const [requests, setRequests] = useState<Entry[]>([]);
   const [eventCount, setEventCount] = useState<number>();
-  const [attributeCount, setAttributeCount] = useState<number>();
   const [interventionCount, setInterventionCount] = useState<number>();
 
+  const requestsRef = useRef<Entry[]>([]);
+  requestsRef.current = requests;
+
+  const batches = useMemo(() => requests.map(extractBatchContents), [requests]);
+
   setInterventionCount(interventions.length || undefined);
+
+  setEventCount(
+    batches.reduce(
+      (sum: number | undefined = 0, batch) => sum + batch.events.length,
+      undefined,
+    ),
+  );
+
+  setAttributeKeyIds((targets) => {
+    let dirty = false;
+
+    for (const [attributeKey, identifiers] of Object.entries(targets)) {
+      const payloadKey =
+        attributeKey in esMap
+          ? esMap[attributeKey as keyof typeof esMap]
+          : undefined;
+      if (!payloadKey) continue;
+
+      for (const batch of batches) {
+        for (const payload of batch.events) {
+          const id = payload.get(payloadKey);
+          if (id != null) {
+            dirty = dirty || !identifiers.has(id);
+            identifiers.add(id);
+          }
+        }
+      }
+    }
+
+    return dirty ? { ...targets } : targets;
+  });
 
   useEffect(() => {
     chrome.action?.setBadgeText({
@@ -79,13 +126,77 @@ export const SnowplowInspector: FunctionComponent = () => {
     });
   }, [eventCount]);
 
+  const [listenerStatus, setListenerStatus] = useState<
+    "waiting" | "importing" | "active"
+  >("waiting");
+
+  const addRequests = useCallback((requests: Entry[]) => {
+    if (!requests.length) return;
+
+    setListenerStatus("active");
+
+    setRequests((current) => {
+      const seen: Set<string> = new Set();
+      const merged = current.concat(requests).filter((e) => {
+        const key = "".concat(
+          e.startedDateTime,
+          e.time as any,
+          e.request.url,
+          e._request_id as any,
+        );
+
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      merged.sort((a, b) =>
+        a.startedDateTime === b.startedDateTime
+          ? 0
+          : a.startedDateTime < b.startedDateTime
+            ? -1
+            : 1,
+      );
+
+      return merged;
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleNewRequests = (...reqs: Entry[]) => {
+      const batches: Entry[] = [];
+
+      for (const req of reqs) {
+        if (isValidBatch(req)) {
+          batches.push(req);
+          destinationManager.addPath(req.request.url);
+        }
+      }
+
+      addRequests(batches);
+    };
+
+    setListenerStatus("importing");
+    chrome.devtools.network.getHAR((harLog) => {
+      setListenerStatus("waiting");
+      handleNewRequests(...harLog.entries);
+    });
+
+    chrome.devtools.network.onRequestFinished.addListener(handleNewRequests);
+
+    return () => {
+      chrome.devtools.network.onRequestFinished.removeListener(
+        handleNewRequests,
+      );
+    };
+  }, []);
+
   const Modal = activeModal && modals[activeModal];
 
   return (
     <>
       <Toolbar
         application={application}
-        attributeCount={attributeCount}
         eventCount={eventCount}
         interventionCount={interventionCount}
         login={login}
@@ -95,14 +206,14 @@ export const SnowplowInspector: FunctionComponent = () => {
       {application === "debugger" && (
         <Debugger
           key="app"
-          attributeKeys={attributeKeyIds}
           destinationManager={destinationManager}
-          requests={requests}
+          batches={batches}
+          listenerStatus={listenerStatus}
+          requestsRef={requestsRef}
           resolver={resolver}
           setApp={setApplication}
-          setAttributeKeys={setAttributeKeyIds}
-          setEventCount={setEventCount}
           setModal={setModal}
+          addRequests={addRequests}
           setRequests={setRequests}
         />
       )}
@@ -112,7 +223,6 @@ export const SnowplowInspector: FunctionComponent = () => {
       {application === "attributes" && (
         <Attributes
           key="app"
-          setAttributeCount={setAttributeCount}
           login={login}
           setLogin={setLogin}
           attributeKeyIds={attributeKeyIds}
