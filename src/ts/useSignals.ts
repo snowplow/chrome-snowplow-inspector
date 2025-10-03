@@ -8,7 +8,7 @@ import {
 import { consoleAnalytics } from "./analytics";
 import { buildRegistry } from "./iglu";
 import { apiFetch, CONSOLE_API } from "./oauth";
-import type { OAuthResult, Organization } from "./types";
+import type { OAuthResult, Organization, SignalsInstall } from "./types";
 import type { StoredOptions } from "../options";
 
 import { request as requestPerms } from "./permissions";
@@ -25,10 +25,11 @@ export const useSignals = (
   login: OAuthResult | undefined,
   resolver: Resolver,
 ): [
-  Record<string, string[]>,
+  Record<string, SignalsInstall[]>,
   (
     | {
         client: SignalsClient;
+        info: SignalsInstall;
         keys: AttributeKey[];
         groups: AttributeGroup[];
         interventions: InterventionDefinition[];
@@ -40,7 +41,7 @@ export const useSignals = (
   (InterventionInstance & { received: Date })[],
 ] => {
   const [signalsInstalls, setSignalsInstalls] = useState<
-    Record<string, string[]>
+    Record<string, SignalsInstall[]>
   >({});
   const [signalsApiKeys, setSignalsApiKeys] = useState<
     Record<string, { apiKey: string; apiKeyId: string }>
@@ -55,6 +56,7 @@ export const useSignals = (
     (
       | {
           client: SignalsClient;
+          info: SignalsInstall;
           keys: AttributeKey[];
           groups: AttributeGroup[];
           interventions: InterventionDefinition[];
@@ -77,7 +79,13 @@ export const useSignals = (
             const updated = { ...signals };
             if (signalsSandboxUrl && signalsSandboxToken) {
               updated["sandbox"] = [
-                `Bearer:${signalsSandboxToken}@${signalsSandboxUrl}`,
+                {
+                  orgId: "sandbox",
+                  orgName: "sandbox",
+                  endpoint: `Bearer:${signalsSandboxToken}@${signalsSandboxUrl}`,
+                  label: "sandbox",
+                  name: "sandbox",
+                },
               ];
             } else {
               delete updated["sandbox"];
@@ -131,13 +139,31 @@ export const useSignals = (
         );
 
         Promise.all(
-          organizations.map<Promise<[string, string][]>>((org) =>
+          organizations.map<
+            Promise<
+              {
+                orgId: string;
+                orgName: string;
+                endpoint: string;
+                name: string;
+                label: string;
+              }[]
+            >
+          >((org) =>
             apiFetch("signals/v1", login.authentication, org.id).then(
-              (configured: { config: { personalizationApiHost: string } }[]) =>
-                configured.map((signals) => [
-                  org.id,
-                  signals.config.personalizationApiHost,
-                ]),
+              (
+                configured: {
+                  config: { personalizationApiHost: string };
+                  pipeline: { label: string; name: string };
+                }[],
+              ) =>
+                configured.map((signals) => ({
+                  orgId: org.id,
+                  orgName: org.name,
+                  endpoint: signals.config.personalizationApiHost,
+                  name: signals.pipeline.name,
+                  label: signals.pipeline.label,
+                })),
               (err) => {
                 console.error(err);
                 return [];
@@ -149,12 +175,12 @@ export const useSignals = (
             Object.assign(
               {},
               signals,
-              entries.reduce<Record<string, string[]>>((acc, pairs) => {
-                for (const [org, endpoints] of pairs) {
-                  if (org in acc) {
-                    acc[org].push(endpoints);
+              entries.reduce<typeof signals>((acc, instances) => {
+                for (const instance of instances) {
+                  if (instance.orgId in acc) {
+                    acc[instance.orgId].push(instance);
                   } else {
-                    acc[org] = [endpoints];
+                    acc[instance.orgId] = [instance];
                   }
                 }
 
@@ -174,24 +200,28 @@ export const useSignals = (
     );
   }, [login, resolver, setSignalsInstalls]);
 
-  const [apiClients, setApiClients] = useState<SignalsClient[]>([]);
+  const [apiClients, setApiClients] = useState<
+    { info: SignalsInstall; client: SignalsClient }[]
+  >([]);
 
   useEffect(() => {
-    const clientParams: ConstructorParameters<typeof SignalsClient>[] = [];
+    const clientParams: ([{ info: SignalsInstall }] &
+      ConstructorParameters<typeof SignalsClient>)[] = [];
     const origins: string[] = [];
     for (const [org, endpoints] of Object.entries(signalsInstalls)) {
       if (org === "sandbox") {
-        const endpoint = new URL(`https://${endpoints[0]!}/`);
+        const endpoint = new URL(`https://${endpoints[0].endpoint}/`);
         origins.push(endpoint.origin + "/*");
         clientParams.push([
           {
+            info: endpoints[0],
             baseUrl: endpoint.origin,
             sandboxToken: endpoint.password,
           },
         ]);
       } else {
-        for (const endpoint of endpoints) {
-          const origin = `https://${endpoint}/`;
+        for (const info of endpoints) {
+          const origin = `https://${info.endpoint}/`;
           origins.push(origin);
 
           // default to limited-functionality oauth credentials
@@ -205,6 +235,7 @@ export const useSignals = (
 
           clientParams.push([
             {
+              info,
               baseUrl: origin,
               organizationId: org,
               apiKey,
@@ -218,13 +249,18 @@ export const useSignals = (
 
     if (origins.length)
       requestPerms(...origins).then(() => {
-        setApiClients(clientParams.map((p) => new SignalsClient(...p)));
+        setApiClients(
+          clientParams.map(([{ info, ...p }]) => ({
+            info,
+            client: new SignalsClient(p),
+          })),
+        );
       });
   }, [signalsInstalls, signalsApiKeys]);
 
   useEffect(() => {
     setSignalsDefs([]);
-    for (const client of apiClients) {
+    for (const [i, { client, info }] of apiClients.entries()) {
       const opts = client._getFetchOptions({ method: "GET" });
       if (client.sandboxToken) {
         Object.assign(opts.headers, {
@@ -272,8 +308,9 @@ export const useSignals = (
         });
         setSignalsDefs((existing) => {
           const updated = [...existing];
-          updated[apiClients.indexOf(client)] = {
+          updated[i] = {
             client,
+            info,
             keys,
             groups,
             interventions,
@@ -295,7 +332,7 @@ export const useSignals = (
       });
     }
 
-    for (const client of apiClients) {
+    for (const { client } of apiClients) {
       const endpoint = new URL(`${client.baseUrl}/api/v1/interventions`);
 
       for (const sub of subscriptions) {

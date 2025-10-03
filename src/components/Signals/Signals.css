@@ -274,6 +274,10 @@
     border-radius: 0.25rem;
   }
 
+  .grouplabel {
+    text-transform: uppercase;
+  }
+
   .attribute-group-controls {
     display: flex;
     flex-flow: row nowrap;
@@ -285,6 +289,24 @@
 
     label:first-of-type {
       flex: 1;
+    }
+
+    input[type="checkbox"] {
+      display: none;
+    }
+
+    label.lbl {
+      padding: 0.25rem;
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      margin: 0.5rem 0.25rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+    }
+    label.lbl:has(input[type="checkbox"]:checked) {
+      background-color: var(--secondary);
     }
 
     select {

@@ -1,6 +1,7 @@
 import { h, type FunctionComponent } from "preact";
-import type { OAuthResult } from "../../ts/types";
 import { useState, type Dispatch, type StateUpdater } from "preact/hooks";
+
+import type { OAuthResult, SignalsInstall } from "../../ts/types";
 
 import { JsonViewer } from "../JSONViewer";
 
@@ -148,7 +149,7 @@ export const Interventions: FunctionComponent<{
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   setInterventionCount: Dispatch<StateUpdater<number | undefined>>;
   signalsDefs: ({ interventions: InterventionDefinition[] } | undefined)[];
-  signalsInfo: Record<string, string[]>;
+  signalsInfo: Record<string, SignalsInstall[]>;
 }> = ({ interventions, login, setLogin, signalsDefs, signalsInfo }) => {
   const signalsAvailable = Object.keys(signalsInfo).length > 0;
   return (

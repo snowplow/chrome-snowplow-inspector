@@ -26,6 +26,14 @@ interface SyncOptions {
   repolist: string[];
 }
 
+export type SignalsInstall = {
+  endpoint: string;
+  orgId: string;
+  orgName: string;
+  label: string;
+  name: string;
+};
+
 export interface IConsoleStatus {
   login?: OAuthResult;
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
@@ -158,7 +166,6 @@ export interface IErrorMessageSet {
 
 export interface IToolbar {
   application: Application;
-  attributeCount?: number;
   eventCount?: number;
   interventionCount?: number;
   login?: OAuthResult;

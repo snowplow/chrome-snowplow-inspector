@@ -196,6 +196,7 @@ export const SnowplowInspector: FunctionComponent = () => {
   return (
     <>
       <Toolbar
+        key="toolbar"
         application={application}
         eventCount={eventCount}
         interventionCount={interventionCount}

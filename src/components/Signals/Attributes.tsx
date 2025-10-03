@@ -7,7 +7,7 @@ import {
   type StateUpdater,
 } from "preact/hooks";
 
-import type { OAuthResult } from "../../ts/types";
+import type { OAuthResult, SignalsInstall } from "../../ts/types";
 
 import { Brochure } from "./Brochure";
 import {
@@ -23,6 +23,7 @@ import { Search } from "lucide-preact";
 type ResourceDefinitions =
   | {
       client: SignalsClient | null;
+      info: SignalsInstall;
       keys: AttributeKey[];
       groups: AttributeGroup[];
     }
@@ -37,6 +38,8 @@ const AttributeGroupData: FunctionComponent<{
   groups: AttributeGroup[];
   identifiers: Record<string, Set<string>>;
   includeInstance: boolean;
+  orgName: string;
+  label: string;
 }> = ({
   client,
   filter,
@@ -44,6 +47,8 @@ const AttributeGroupData: FunctionComponent<{
   groups,
   identifiers,
   includeInstance,
+  orgName,
+  label,
 }) => {
   const [version, setVersion] = useState(
     Math.max(...groups.map(({ version }) => version)),
@@ -133,7 +138,8 @@ const AttributeGroupData: FunctionComponent<{
     <details open>
       <summary>
         <span class="groupname">{name}</span>
-        {includeInstance && <span class="groupinstance">{client.baseUrl}</span>}
+        {includeInstance && <span class="groupinstance">{orgName}</span>}
+        <span class="grouplabel">{label}</span>
         {groups.length > 1 ? (
           <select
             class="groupversion"
@@ -223,56 +229,86 @@ const MultiInstanceData: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
   definitions: ResourceDefinitions[];
   filter?: string | RegExp;
+  labelFilter: Record<string, boolean>;
+  orgFilter: string;
   sourceFilter: SourceFilter;
-}> = ({ attributeKeyIds, definitions, filter, sourceFilter }) =>
-  definitions.map(
-    ({ client, groups } = { client: null, groups: [], keys: [] }) => {
-      if (!client) return null;
+}> = ({
+  attributeKeyIds,
+  definitions,
+  filter,
+  labelFilter,
+  orgFilter,
+  sourceFilter,
+}) =>
+  definitions.map((resources) => {
+    if (!resources) return null;
+    const {
+      client,
+      groups,
+      info: { orgName, label },
+    } = resources;
+    if (!client) return null;
+    if (orgFilter !== "All" && orgFilter !== orgName) return null;
+    if (label in labelFilter && !labelFilter[label]) return null;
 
-      const versionGroups = useMemo(
-        () =>
-          groups.reduce(
-            (acc, group) => {
-              const key = client.baseUrl + group.name;
-              if (!(key in acc)) acc[key] = [];
-              acc[key].push(group);
-              return acc;
-            },
-            {} as Record<string, AttributeGroup[]>,
-          ),
-        [client, groups],
-      );
+    const versionGroups = useMemo(
+      () =>
+        groups.reduce(
+          (acc, group) => {
+            const key = client.baseUrl + group.name;
+            if (!(key in acc)) acc[key] = [];
+            acc[key].push(group);
+            return acc;
+          },
+          {} as Record<string, AttributeGroup[]>,
+        ),
+      [client, groups],
+    );
 
-      return Object.values(versionGroups).map((versions) => (
-        <AttributeGroupData
-          key={`${client.baseUrl}.${versions[0].name}`}
-          client={client}
-          filter={filter}
-          sourceFilter={sourceFilter}
-          groups={versions}
-          identifiers={attributeKeyIds}
-          includeInstance={definitions.length > 1}
-        />
-      ));
-    },
-  );
+    return Object.values(versionGroups).map((versions) => (
+      <AttributeGroupData
+        key={`${client.baseUrl}.${versions[0].name}`}
+        client={client}
+        filter={filter}
+        sourceFilter={sourceFilter}
+        groups={versions}
+        identifiers={attributeKeyIds}
+        orgName={orgName}
+        label={label}
+        includeInstance={definitions.length > 1}
+      />
+    ));
+  });
 
 const AttributesUI: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
   signalsDefs: ResourceDefinitions[];
-}> = ({ attributeKeyIds, signalsDefs }) => {
+  signalsInfo: Record<string, SignalsInstall[]>;
+}> = ({ attributeKeyIds, signalsDefs, signalsInfo }) => {
   const [filter, setFilter] = useState<string>();
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("All");
+  const [orgFilter, setOrgFilter] = useState("All");
+  const [labelFilter, setLabelFilter] = useState<Record<string, boolean>>({});
 
   let pattern: undefined | string | RegExp = filter;
   try {
     pattern = pattern && new RegExp(pattern, "i");
   } catch (_) {}
 
+  const orgs = new Set<string>();
+  const labels = new Set<string>();
+
+  for (const installs of Object.values(signalsInfo)) {
+    for (const install of installs) {
+      orgs.add(install.orgName);
+      labels.add(install.label);
+    }
+  }
+
   return (
     <article>
       <div class="attribute-group-controls">
-        <label title="Search Behaviors Attributes">
+        <label key="search" title="Search Behaviors Attributes">
           <span>
             <Search />
           </span>
@@ -287,7 +323,40 @@ const AttributesUI: FunctionComponent<{
             value={filter}
           />
         </label>
-        <label title="Filter sources">
+        {Array.from(labels.values(), (l) => (
+          <label key={`lbl-${l}`} class="lbl">
+            <input
+              type="checkbox"
+              checked={labelFilter[l] ?? true}
+              onChange={({ currentTarget }) =>
+                setLabelFilter((current) => ({
+                  ...current,
+                  [l]: currentTarget.checked,
+                }))
+              }
+            />
+            {l}
+          </label>
+        ))}
+        {orgs.size > 1 ? (
+          <label key="orgs" title="Filter organizations">
+            <select
+              onChange={({ currentTarget }) =>
+                setOrgFilter(currentTarget.value ?? "All")
+              }
+            >
+              <option key="all" value="All" selected={orgFilter == "All"}>
+                All organizations
+              </option>
+              {Array.from(orgs, (org) => (
+                <option key={org} value={org} selected={orgFilter == org}>
+                  {org}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        <label key="sources" title="Filter sources">
           <select
             onChange={({ currentTarget }) =>
               setSourceFilter(currentTarget.value as SourceFilter)
@@ -313,6 +382,8 @@ const AttributesUI: FunctionComponent<{
           attributeKeyIds={attributeKeyIds}
           definitions={signalsDefs}
           filter={pattern}
+          labelFilter={labelFilter}
+          orgFilter={orgFilter}
           sourceFilter={sourceFilter}
         />
       ) : (
@@ -330,7 +401,7 @@ export const Attributes: FunctionComponent<{
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   attributeKeyIds: Record<string, Set<string>>;
   signalsDefs: ResourceDefinitions[];
-  signalsInfo: Record<string, string[]>;
+  signalsInfo: Record<string, SignalsInstall[]>;
 }> = ({ attributeKeyIds, login, setLogin, signalsDefs, signalsInfo }) => {
   const signalsAvailable = Object.keys(signalsInfo).length > 0;
   return (
@@ -339,6 +410,7 @@ export const Attributes: FunctionComponent<{
         <AttributesUI
           attributeKeyIds={attributeKeyIds}
           signalsDefs={signalsDefs}
+          signalsInfo={signalsInfo}
         />
       ) : (
         <Brochure login={login} setLogin={setLogin} />

@@ -8,7 +8,6 @@ import "./Toolbar.css";
 
 export const Toolbar: FunctionComponent<IToolbar> = ({
   application,
-  attributeCount,
   eventCount,
   interventionCount,
   login,
@@ -18,12 +17,6 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
   const eventStatus =
     typeof eventCount == "number"
       ? eventCount > 0
-        ? "active"
-        : "inactive"
-      : "";
-  const attributeStatus =
-    typeof attributeCount == "number"
-      ? attributeCount > 0
         ? "active"
         : "inactive"
       : "";
@@ -65,11 +58,10 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             value="attributes"
             checked={application === "attributes"}
           />
-          <span class={attributeStatus}>
+          <span>
             <DatabaseZap />
           </span>
           <span>Attributes</span>
-          {attributeCount ? <span>{attributeCount}</span> : null}
         </label>
         <label>
           <input
