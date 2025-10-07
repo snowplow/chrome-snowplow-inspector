@@ -149,6 +149,28 @@
     gap: 0.75rem;
     overflow-block: auto;
 
+    figure.attrdef {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+
+      figcaption {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+
+        svg {
+          height: 1rem;
+          width: 1rem;
+        }
+
+        &:hover {
+          color: var(--accent-foreground);
+        }
+      }
+    }
+
     details,
     & > div {
       display: flex;

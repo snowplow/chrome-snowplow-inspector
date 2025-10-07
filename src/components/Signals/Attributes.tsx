@@ -18,7 +18,7 @@ import {
 
 import { JsonViewer } from "../JSONViewer";
 
-import { Search } from "lucide-preact";
+import { X, Search } from "lucide-preact";
 
 type ResourceDefinitions =
   | {
@@ -159,7 +159,14 @@ const AttributeGroupData: FunctionComponent<{
         )}
         <span class="groupsource">{source}</span>
       </summary>
-      {showDef ? <JsonViewer data={showDef} /> : null}
+      {showDef ? (
+        <figure class="attrdef">
+          <figcaption onClick={() => setDefinitionSelection(undefined)}>
+            Attribute Definition: {showDef.name} <X />
+          </figcaption>
+          <JsonViewer data={showDef} />
+        </figure>
+      ) : null}
       {values.map((result) => {
         if (!result) return;
         const { attributeKey, identifier, ...attributes } = result;
