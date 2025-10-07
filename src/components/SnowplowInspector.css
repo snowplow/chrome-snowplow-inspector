@@ -216,6 +216,7 @@ ul[popover] {
     display: flex;
     padding: 0.375rem 0.75rem;
     align-items: center;
+    gap: 0.5rem;
   }
 
   li:first-child {

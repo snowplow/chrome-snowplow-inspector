@@ -1,4 +1,6 @@
 import { h, type FunctionComponent } from "preact";
+import { Copy } from "lucide-preact";
+
 import type { IBeaconSummary } from "../../../ts/types";
 import { copyToClipboard, tryb64 } from "../../../ts/util";
 
@@ -71,8 +73,11 @@ export const CopyMenu: FunctionComponent<{
   beacon: IBeaconSummary;
 }> = ({ beacon }) =>
   [
-    <li>
+    <li key="hr">
       <hr />
+    </li>,
+    <li key="label" class="label">
+      Copy as
     </li>,
   ].concat(
     Object.entries(formatters).flatMap(([format, formatter]) => {
@@ -80,12 +85,16 @@ export const CopyMenu: FunctionComponent<{
       return eligible
         ? [
             <li
+              key={format}
               title={`Copy current event as ${format}`}
-              onClick={() => copyToClipboard(formatter(beacon))}
+              onClick={({ currentTarget }) => {
+                copyToClipboard(formatter(beacon));
+                currentTarget.parentElement?.hidePopover();
+              }}
               role="button"
               tabindex={0}
             >
-              {format}
+              <Copy /> {format}
             </li>,
           ]
         : [];

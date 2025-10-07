@@ -37,11 +37,6 @@
 #consolestatus-po {
   position-area: top;
 
-  img,
-  svg {
-    margin-right: 0.5rem;
-  }
-
   li:last-child {
     padding-top: 0.875rem;
     padding-bottom: 0.875rem;
