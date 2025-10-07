@@ -19,6 +19,21 @@
   img {
     max-height: 2rem;
   }
+
+  button.console {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    padding: 0.5rem 1rem;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+
+    img {
+      height: 1rem;
+    }
+  }
 }
 
 [popovertarget="consolestatus-po"] {
