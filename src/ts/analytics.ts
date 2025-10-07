@@ -117,7 +117,7 @@ export const consoleAnalytics = (
   chrome.storage.sync.get({ enableTracking: true }, (settings) => {
     if (settings.enableTracking) {
       trackStructEvent({
-        category: "Console Sync",
+        category: "Console Auth",
         action,
         label,
         property,

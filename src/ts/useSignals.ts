@@ -170,7 +170,14 @@ export const useSignals = (
               },
             ),
           ),
-        ).then((entries) =>
+        ).then((entries) => {
+          consoleAnalytics(
+            "Signals Discovery",
+            undefined,
+            undefined,
+            entries.reduce((acc, entry) => acc + entry.length, 0),
+          );
+
           setSignalsInstalls((signals) =>
             Object.assign(
               {},
@@ -187,8 +194,8 @@ export const useSignals = (
                 return acc;
               }, {}),
             ),
-          ),
-        );
+          );
+        });
 
         resolver.import(false, ...ds);
         return resolver.walk();
@@ -231,6 +238,9 @@ export const useSignals = (
           if (org in signalsApiKeys) {
             apiKey = signalsApiKeys[org].apiKey;
             apiKeyId = signalsApiKeys[org].apiKeyId;
+            consoleAnalytics("Signals Auth", "Found", org);
+          } else {
+            consoleAnalytics("Signals Auth", "Missing", org);
           }
 
           clientParams.push([
@@ -248,14 +258,17 @@ export const useSignals = (
     }
 
     if (origins.length)
-      requestPerms(...origins).then(() => {
-        setApiClients(
-          clientParams.map(([{ info, ...p }]) => ({
-            info,
-            client: new SignalsClient(p),
-          })),
-        );
-      });
+      requestPerms(...origins).then(
+        () => {
+          setApiClients(
+            clientParams.map(([{ info, ...p }]) => ({
+              info,
+              client: new SignalsClient(p),
+            })),
+          );
+        },
+        () => consoleAnalytics("Signals Permissions", "Rejected"),
+      );
   }, [signalsInstalls, signalsApiKeys]);
 
   useEffect(() => {
