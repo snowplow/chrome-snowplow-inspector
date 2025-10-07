@@ -55,7 +55,7 @@
   }
 
   .vertical_divider {
-    border-left: 1px solid #2d2d2d;
+    border-left: 1px solid var(--input);
     height: 24px;
     margin: 0 8px;
   }
@@ -100,10 +100,10 @@
       content: attr(data-event-count);
       display: inline-block;
       border-radius: 5rem;
-      background-color: var(--muted-foreground);
+      background-color: var(--accent-foreground);
       padding: 0.125rem 0.75rem;
       text-align: center;
-      color: #1f2937;
+      color: var(--muted);
     }
 
     &::after {
@@ -118,16 +118,16 @@
   }
 
   &[open] > summary span {
-    color: var(--color-text-contrast);
+    color: var(--foreground);
   }
 
   &[open] > summary span::before {
-    background-color: #916ce7;
-    color: var(--color-text-contrast);
+    background-color: var(--primary);
+    color: var(--primary-foreground);
   }
 
   &[open] > summary::after {
-    color: var(--color-text-contrast);
+    color: var(--foreground);
     content: "";
     mask-image: url("lucide-static/icons/minus-circle.svg");
   }
@@ -143,7 +143,7 @@
       transparent,
       transparent 1.35rem,
       0%,
-      #404040 calc(1.35rem + 1px),
+      var(--border-darker) calc(1.35rem + 1px),
       transparent 0
     );
   }
@@ -176,7 +176,7 @@
       &:hover,
       &:active,
       &.event--active {
-        background-color: #404040;
+        background-color: var(--accent);
       }
 
       &.event--invalid::after {

@@ -1,54 +1,3 @@
-.rowset {
-  background-color: var(--color-contrast);
-  color: var(--color-text-contrast);
-  border-radius: 0.25rem;
-
-  & summary {
-    font-family: "Rubik", sans-serif;
-    font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1.25;
-    padding: 1rem 1.5rem;
-  }
-
-  > table {
-    width: 100%;
-    max-width: 100%;
-    padding: 1.5rem 3rem;
-    background-color: var(--color-foreground);
-    border-bottom-left-radius: 0.25rem;
-    border-bottom-right-radius: 0.25rem;
-    box-sizing: border-box;
-    color: var(--color-text-light);
-
-    th {
-      text-align: left;
-      font-family: "Roboto", sans-serif;
-      font-weight: 600;
-      font-size: 1rem;
-      word-break: normal;
-      align-self: center;
-      white-space: nowrap;
-      width: 20%;
-    }
-
-    td {
-      display: flex;
-      flex: 1;
-      align-items: center;
-      word-break: break-all;
-
-      > *:not(.typeinfo) {
-        flex: 1;
-      }
-    }
-
-    > .iglu {
-      margin: -0.5rem -2rem;
-    }
-  }
-}
-
 details.iglu {
   &[open] > summary .label__type::before {
     display: inline-block;
@@ -63,7 +12,7 @@ details.iglu {
 
   > .iglu__content {
     padding-left: 1rem;
-    border-left: 1px solid #404040;
+    border-left: 1px solid var(--border-darker);
     margin-left: 7px;
     padding-top: 16px;
   }
@@ -75,7 +24,7 @@ details.iglu {
     .schema__name {
       padding-left: 10px;
       margin-left: 7px;
-      border-left: 1px solid #404040;
+      border-left: 1px solid var(--border-darker);
       color: var(--muted-foreground);
       font-size: 12px;
     }
@@ -88,7 +37,7 @@ details.iglu {
 
     .label__type {
       font-weight: bold;
-      font-size: 18px;
+      font-size: 1.25rem;
       color: var(--foreground);
       display: flex;
       align-items: center;
@@ -98,12 +47,12 @@ details.iglu {
 
 .iglu {
   summary > span {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 
   .iglu__validation {
-    color: #173518;
-    background-color: #aadaab;
+    color: var(--success-foreground);
+    background-color: var(--success);
     font-weight: 400;
     padding: 0.125rem 0.75rem;
     border-radius: 5rem;
@@ -116,99 +65,21 @@ details.iglu {
 
   .iglu--valid {
     .iglu__validation {
-      color: #173518;
-      background-color: #aadaab;
+      color: var(--success-foreground);
+      background-color: var(--success);
     }
   }
 
   .iglu--unrecognised {
     .iglu__validation {
-      background-color: #03a9f4;
+      background-color: var(--information);
     }
   }
 
   .iglu--invalid {
     .iglu__validation {
-      color: #4f110c;
-      background-color: #f2b0ab;
-    }
-  }
-}
-
-.rowset .iglu {
-  background-color: var(--color-contrast);
-  color: var(--color-text-contrast);
-  border-radius: 0.25rem;
-  margin-bottom: 0.5rem;
-
-  .array {
-    > tr > th {
-      width: 1em;
-    }
-  }
-
-  th {
-    padding: 0 1.5rem;
-  }
-
-  .iglu__payload {
-    padding: 0.1rem;
-    display: flex;
-
-    table {
-      background-color: var(--color-foreground);
-      width: 100%;
-      border-radius: 0 0 0.25rem 0.25rem;
-    }
-
-    textarea {
-      resize: none;
-    }
-  }
-
-  .iglu__payload {
-    color: var(--color-text);
-
-    th {
-      color: var(--color-text-light);
-    }
-
-    .iglu__payload--Errors {
-      color: var(--color-text-contrast);
-    }
-  }
-
-  .iglu__tabs-control {
-    display: flex;
-    background-color: var(--color-foreground);
-    margin: 0 0.1rem;
-    padding: 0.25rem 0.1rem 0;
-
-    input {
-      display: none;
-    }
-
-    label {
-      cursor: pointer;
-      padding: 0.5rem 1.5rem;
-      border-radius: 0.4rem;
-      border-bottom: 3px solid transparent;
-      color: var(--color-text);
-
-      &:hover {
-        opacity: 95%;
-      }
-
-      &.tab--active {
-        border-color: currentColor;
-        background-color: var(--color-contrast);
-        color: var(--color-text-contrast);
-        border-radius: 0.4rem 0.4rem 0 0;
-
-        &:hover {
-          opacity: 95%;
-        }
-      }
+      color: var(--error-foreground);
+      background-color: var(--error);
     }
   }
 }
@@ -229,7 +100,7 @@ details.iglu {
     background-color: var(--popover);
     border-top-left-radius: 0.5rem;
     border-top-right-radius: 0.5rem;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
 
     line-height: 1.25rem;
 
@@ -292,13 +163,13 @@ details.iglu {
 
   main {
     margin: 0 2.5rem;
-    padding-bottom: 56px;
+    padding-bottom: 4rem;
 
     dl.event-generic-summary,
     .event-fieldgroup dl {
       dt {
         font-weight: 400;
-        font-size: 14px;
+        font-size: 0.875rem;
         color: var(--muted-foreground);
         display: flex;
         align-items: center;
@@ -315,13 +186,13 @@ details.iglu {
         }
       }
       dl {
-        font-size: 14px;
+        font-size: 0.875rem;
         color: white;
         font-weight: bold;
       }
 
       dd {
-        margin-bottom: 16px;
+        margin-bottom: 1rem;
       }
 
       > detail {
@@ -342,7 +213,7 @@ details.iglu {
   border-bottom: 1px solid var(--border);
 
   summary.title span {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   > summary.title::before {
@@ -372,7 +243,7 @@ details.iglu {
   }
 
   &[open] span {
-    font-size: 12px;
+    font-size: 0.875rem;
   }
 
   &[open] > summary::after {
@@ -399,23 +270,23 @@ details.iglu {
 
   .iglu__tabs-control {
     display: flex;
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    padding: 4px;
-    gap: 2px;
+    background-color: var(--accent);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
     width: fit-content;
-    margin-bottom: 6px;
+    margin-bottom: 0.5rem;
   }
 
   .tab {
     position: relative;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 0.25rem;
     transition: all 0.2s ease;
     margin: 0;
     padding: 0;
     background: transparent;
-    min-width: 80px;
+    min-width: 6rem;
   }
 
   .tab input[type="radio"] {
@@ -426,25 +297,20 @@ details.iglu {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2px 16px;
-    color: #888;
-    font-size: 14px;
+    padding: 0.125rem 1rem;
+    color: var(--accent-foreground);
     font-weight: 500;
     background-color: transparent;
     transition: all 0.2s ease;
   }
 
   .tab:hover {
-    color: #bbb;
+    color: var(--muted-foreground);
   }
 
   .tab--active {
     background-color: var(--secondary);
-    color: white;
-  }
-
-  .tab--active:hover {
-    color: white;
+    color: var(--secondary-foreground);
   }
 }
 
@@ -452,10 +318,10 @@ details.iglu {
   font-weight: 400;
   border-radius: 5rem;
   line-height: 1.25rem;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-family: "Roboto";
-  margin-left: 5px;
-  padding: 0 8px;
+  margin-left: 0.375rem;
+  padding: 0 0.5rem;
 
   &:enabled:hover {
     color: white !important;

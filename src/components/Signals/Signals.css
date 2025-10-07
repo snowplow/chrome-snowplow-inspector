@@ -6,7 +6,7 @@
 
     max-width: 20rem;
     padding: 1.5rem;
-    border-right: 1px solid #3c3c3c;
+    border-right: 1px solid var(--tabs-divider);
     margin-left: 1.5rem;
 
     resize: horizontal;
@@ -88,7 +88,7 @@
           transparent,
           transparent 1.25rem,
           0%,
-          #404040 calc(1.25rem + 1px),
+          var(--border-darker) calc(1.25rem + 1px),
           transparent 0
         );
       }
@@ -111,8 +111,8 @@
 
         &.active,
         &:hover {
-          background-color: #404040;
-          color: white;
+          background-color: var(--accent);
+          color: var(--accent-foreground);
         }
 
         &::before {
@@ -205,7 +205,7 @@
       font-style: normal;
       font-weight: 400;
       line-height: 1.25rem;
-      color: #d4d4d4;
+      color: var(--foreground);
 
       &::before {
         display: inline-block;
@@ -222,7 +222,7 @@
         background-color: var(--secondary);
         font-size: 0.875rem;
         padding: 0.25rem 0.5rem;
-        color: white;
+        color: var(--secondary-foreground);
       }
 
       .groupname {
@@ -239,6 +239,7 @@
       color: var(--foreground);
       margin: 1rem 1.25rem;
       width: calc(100% - 2.5rem);
+      border-collapse: separate;
     }
 
     tr:hover {
