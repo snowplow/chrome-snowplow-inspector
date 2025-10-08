@@ -1,11 +1,15 @@
 import { Registry } from "./Registry";
-import { ExtensionOptions, RegistrySpec, RegistryStatus } from "../../types";
+import type {
+  ExtensionOptions,
+  RegistrySpec,
+  RegistryStatus,
+} from "../../types";
 
-import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
+import { type IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
 
 export class LocalRegistry extends Registry {
   private readonly manifest: Map<IgluUri, ResolvedIgluSchema> = new Map();
-  lastStatus: RegistryStatus = "OK";
+  override lastStatus: RegistryStatus = "OK";
 
   constructor(spec: RegistrySpec) {
     super(spec);

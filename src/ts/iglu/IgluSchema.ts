@@ -1,5 +1,5 @@
 import { default as canonicalize } from "canonicalize";
-import { Schema, ValidatorResult } from "jsonschema";
+import { type Schema, ValidatorResult } from "jsonschema";
 
 import { Registry } from "./Registries";
 
@@ -99,12 +99,12 @@ export class ResolvedIgluSchema extends IgluSchema {
     super(self.vendor, self.name, self.format, self.version);
   }
 
-  protected buildSearchIndex(schema: ResolvedIgluSchema): string {
+  protected override buildSearchIndex(schema: ResolvedIgluSchema): string {
     const base = super.buildSearchIndex(schema);
     const fields = new Set<string>([base]);
 
     let data: Schema | undefined;
-    const stack: (typeof data)[] = [data];
+    const stack: (typeof data)[] = [this.data];
     const meta: (keyof Schema)[] = ["title", "description", "type"];
     while (stack.length) {
       data = stack.pop();
@@ -115,9 +115,7 @@ export class ResolvedIgluSchema extends IgluSchema {
       }
 
       if (data.items) {
-        for (const [prop, d] of Object.entries(data.items)) {
-          stack.push(d);
-        }
+        stack.push(...Object.values(data.items));
       }
 
       if (data.properties) {
@@ -132,7 +130,7 @@ export class ResolvedIgluSchema extends IgluSchema {
     return Array.from(fields).join("\n");
   }
 
-  uri(): IgluUri {
+  override uri(): IgluUri {
     return this.self.uri();
   }
 

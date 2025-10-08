@@ -1,5 +1,5 @@
-import { Entry } from "har-format";
-import { Dispatch, StateUpdater } from "preact/hooks";
+import type { Entry } from "har-format";
+import type { Dispatch, StateUpdater } from "preact/hooks";
 
 import { immediatelyRequest } from "../../../ts/permissions";
 import { parseNgrokRequests } from "../../../ts/util";

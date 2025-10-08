@@ -1,5 +1,9 @@
 const pending = new Map<string, Promise<void>>();
 
+chrome.permissions?.getAll(({ origins }) =>
+  origins?.forEach((origin) => pending.set(origin, Promise.resolve())),
+);
+
 const queue: string[] = [];
 let nextClick: Promise<void> | undefined;
 

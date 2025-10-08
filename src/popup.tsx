@@ -1,57 +1,120 @@
-import { render, h, Fragment } from "preact";
+import { render, h } from "preact";
+import { useCallback, useEffect, useState } from "preact/hooks";
 
-import "./popup.scss";
+import { homepage } from "../package.json";
+import { doOAuthFlow } from "./ts/oauth";
+import type { OAuthIdentity } from "./ts/types";
 
-const REPOSITORY_URL = "https://github.com/snowplow/chrome-snowplow-inspector";
+import "./popup.css";
+import logo from "../res/logo.svg";
+
+const Shortcut = () => {
+  const [os, setOs] = useState<chrome.runtime.PlatformInfo["os"]>("win");
+
+  useEffect(() => {
+    chrome.runtime.getPlatformInfo((info) => setOs(info.os));
+  }, []);
+
+  return os === "mac" ? (
+    <kbd>
+      <kbd>⌘ Cmd</kbd>+<kbd>⌥ Alt</kbd>+<kbd>I</kbd>
+    </kbd>
+  ) : (
+    <kbd>
+      <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd>
+    </kbd>
+  );
+};
+
+const ConsoleDetails = () => {
+  const [identity, setIdentity] = useState<OAuthIdentity>();
+  const [authenticating, setAuthenticating] = useState<boolean>(false);
+
+  useEffect(() => {
+    doOAuthFlow(false).then(({ identity }) => setIdentity(identity));
+  }, []);
+
+  const startFlow = useCallback(() => {
+    setAuthenticating(true);
+    doOAuthFlow(true).then(({ identity }) => {
+      setIdentity(identity);
+      setAuthenticating(false);
+    });
+  }, []);
+
+  return (
+    <div class="console">
+      <h2>Synchronize with Console</h2>
+      <p class="muted">
+        Synchronizing Snowplow Inspector with your Snowplow Console login
+        enables the following functionality:
+      </p>
+      <ul class="muted">
+        <li>
+          Collect and display pipeline configuration such as enabled Enrichments
+          for events sent to a pipeline
+        </li>
+        <li>
+          Import registry information for production and development (Mini)
+        </li>
+      </ul>
+      {identity ? (
+        <p>Console account: {identity.name || "Logged In"}</p>
+      ) : (
+        <button
+          type="button"
+          class="cta"
+          onClick={startFlow}
+          disabled={authenticating}
+        >
+          Sign in to Snowplow Console
+        </button>
+      )}
+    </div>
+  );
+};
 
 const Popup = () => (
-  <>
-    <div class="banner">
-      <a
-        href="https://snowplow.io/?utm_source=debugger%20extension&utm_medium=software&utm_campaign=Chrome%20extension%20about%20page%20logo"
-        target="_blank"
-      >
-        <img src="logo.svg" alt="Snowplow logo" />
-      </a>
-    </div>
-    <div class="wrapper">
-      <h1>Snowplow Inspector</h1>
+  <div class="wrapper">
+    <h1>
+      <img src={logo} alt="Snowplow logo" />
+      Snowplow Inspector
+    </h1>
+    <div>
       <p>
-        <a
-          href="https://snowplow.io/blog/snowplow-acquires-poplin-data/?utm_source=debugger%20extension&utm_medium=software&utm_campaign=Chrome%20extension%20about%20page"
-          target="_blank"
-        >
-          Poplin Data is now Snowplow Australia.
-        </a>
-      </p>
-      <p>
-        Snowplow Inspector is a debugger for
+        The inspector is a debugger for{" "}
         <a href="https://snowplow.io/?utm_source=debugger%20extension&utm_medium=software&utm_campaign=Chrome%20extension%20about%20page">
           Snowplow Behavioral Data Platform
         </a>
         .
       </p>
-      <p>
-        To use, open Developer Tools and switch to the &ldquo;Snowplow&rdquo;
-        tab.
+      <h2>How it works</h2>
+      <p class="muted">
+        Open Dev Tools (<Shortcut />) and switch to the &ldquo;Snowplow&rdquo;
+        debugger tab.
+        <img src="assets/devbar.png" alt="Screenshot showing Snowplow tab" />
       </p>
+      <h2>What's new?</h2>
       <p>
         <a
-          href={`${REPOSITORY_URL}/releases/tag/v${
+          class="button"
+          href={`${homepage}/releases/tag/v${
             chrome.runtime.getManifest().version
           }`}
           target="_blank"
         >
-          What's new? Check out the latest Release Notes
+          View Release Notes
         </a>
       </p>
+      <h2>Bugs &amp; Feature Requests</h2>
       <p>
-        <a href={`${REPOSITORY_URL}/issues`} target="_blank">
-          Report problems or request features for the extension
+        <a class="button" href={`${homepage}/issues`} target="_blank">
+          Let us know how to improve
         </a>
       </p>
     </div>
-  </>
+    <ConsoleDetails />
+  </div>
 );
 
 render(<Popup />, document.body);

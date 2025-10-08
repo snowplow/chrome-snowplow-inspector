@@ -5,9 +5,13 @@ import {
   LocalRegistry,
   StaticRegistry,
 } from "./Registries";
-import { IgluSchema, IgluUri, ResolvedIgluSchema } from "./IgluSchema";
+import {
+  type IgluSchema,
+  type IgluUri,
+  ResolvedIgluSchema,
+} from "./IgluSchema";
 import { repoAnalytics } from "../analytics";
-import { ExtensionOptions, RegistrySpec } from "../types";
+import type { RegistrySpec } from "../types";
 
 const DEFAULT_REGISTRIES: RegistrySpec[] = [
   { kind: "local", name: "Local Registry", priority: 0 },
@@ -45,9 +49,8 @@ export class Resolver extends Registry {
     chrome.storage.sync.get(
       {
         registries: DEFAULT_REGISTRIES.map((r) => JSON.stringify(r)),
-        repolist: [],
       },
-      ({ registries, repolist }) => {
+      ({ registries }) => {
         let defaultRepos = false;
         for (const repo of registries as string[]) {
           const spec = JSON.parse(repo);
@@ -63,133 +66,27 @@ export class Resolver extends Registry {
 
         if (defaultRepos) this.persist();
 
-        // handle legacy repo settings
-        this.importLegacyLocalSchemas()
-          .then(() => this.importLegacyRepos(repolist, this.registries))
-          .then((migrated) => void (migrated && this.persist()))
-          .then(() =>
-            this.registries.sort((a, b) => {
-              const ap = a.priority || Number.MAX_SAFE_INTEGER;
-              const bp = b.priority || Number.MAX_SAFE_INTEGER;
+        this.registries.sort((a, b) => {
+          const ap = a.priority || Number.MAX_SAFE_INTEGER;
+          const bp = b.priority || Number.MAX_SAFE_INTEGER;
 
-              let result = ap - bp;
+          let result = ap - bp;
 
-              const kindPriority: RegistrySpec["kind"][] = [
-                "local",
-                "ds",
-                "iglu",
-                "static",
-              ];
-              if (!result)
-                result +=
-                  kindPriority.indexOf(a.spec.kind) -
-                  kindPriority.indexOf(b.spec.kind);
+          const kindPriority: RegistrySpec["kind"][] = [
+            "local",
+            "ds",
+            "iglu",
+            "static",
+          ];
+          if (!result)
+            result +=
+              kindPriority.indexOf(a.spec.kind) -
+              kindPriority.indexOf(b.spec.kind);
 
-              return result;
-            }),
-          );
+          return result;
+        });
       },
     );
-  }
-
-  private importLegacyLocalSchemas() {
-    return new Promise<void>((fulfil) => {
-      chrome.storage.local.get(
-        ["schemalist", "localSchemas"],
-        ({ schemalist, localSchemas }: Partial<ExtensionOptions>) => {
-          const MIGRATION_NAME = "Migrated Local Registry";
-          const ls = localSchemas ? JSON.parse(localSchemas) : {};
-          if (Array.isArray(schemalist) && schemalist.length) {
-            const schemas: ResolvedIgluSchema[] = [];
-            const remainder: any[] = [];
-
-            schemalist.forEach((s) => {
-              const data = typeof s === "string" ? JSON.parse(s) : s;
-              if (typeof data === "object" && data && "self" in data) {
-                const { vendor, name, format, version } = data["self"];
-
-                const built = IgluSchema.fromUri(
-                  `iglu:${vendor}/${name}/${format}/${version}`,
-                );
-                if (built) {
-                  const res = built.resolve(data, this);
-                  if (res) schemas.push(res);
-                }
-              } else {
-                remainder.push(JSON.stringify(data));
-              }
-            });
-
-            let registry = this.registries.find(
-              ({ spec: { kind, name } }) =>
-                kind === "local" && name === MIGRATION_NAME,
-            );
-            if (!registry)
-              this.registries.push(
-                (registry = buildRegistry({
-                  kind: "local",
-                  name: MIGRATION_NAME,
-                  priority: 0,
-                })),
-              );
-
-            ls[registry.id] = (ls[registry.id] || []).concat(schemas);
-
-            chrome.storage.local.set(
-              {
-                schemalist: remainder,
-                localSchemas: JSON.stringify(ls),
-              },
-              fulfil,
-            );
-          } else fulfil();
-        },
-      );
-    });
-  }
-
-  private importLegacyRepos(repolist: string[], current: Registry[]): boolean {
-    const migrated: Registry[] = [];
-
-    for (const legacy of repolist) {
-      const uri = new URL(legacy);
-
-      let handled = false;
-      for (const repo of current) {
-        if (repo.opts["uri"] === legacy) handled = true;
-        if (/\/api$/i.test(legacy) && repo.spec.kind === "iglu") {
-          if (
-            repo.opts["uri"] === uri.origin + uri.pathname &&
-            uri.username === repo.opts["apiKey"]
-          )
-            handled = true;
-        }
-      }
-
-      if (!handled) {
-        if (/\/api$/i.test(legacy)) {
-          migrated.push(
-            buildRegistry({
-              kind: "iglu",
-              name: legacy,
-              uri: uri.origin + uri.pathname,
-              apiKey: uri.username,
-            }),
-          );
-        } else {
-          migrated.push(
-            buildRegistry({
-              kind: "static",
-              name: uri.hostname,
-              uri: uri.href,
-            }),
-          );
-        }
-      }
-    }
-
-    Array.prototype.push.apply(current, migrated);
-    return migrated.length > 0;
   }
 
   resolve(schema: IgluSchema, exclude?: Registry[]) {
@@ -234,7 +131,7 @@ export class Resolver extends Registry {
     );
   }
 
-  walk() {
+  override walk() {
     this.hitCache.clear();
     return Promise.all(
       this.registries.map((reg) =>
@@ -324,10 +221,16 @@ export class Resolver extends Registry {
   }
 
   persist() {
+    const permanent: string[] = [];
+    for (const r of this.registries) {
+      if (r.spec.kind === "ds" && r.opts.useOAuth) continue;
+
+      permanent.push(JSON.stringify(r));
+    }
     return new Promise<void>((fulfil) =>
       chrome.storage.sync.set(
         {
-          registries: this.registries.map((r) => JSON.stringify(r)),
+          registries: permanent,
         },
         fulfil,
       ),

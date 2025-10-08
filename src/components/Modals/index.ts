@@ -1,23 +1,19 @@
 import { BadRows } from "./BadRows";
 import { ChangeDestination } from "./ChangeDestination";
-import { ConsoleSync } from "./ConsoleSync";
 import { DeleteRegistries } from "./DeleteRegistries";
 import { EditRegistries } from "./EditRegistries";
 import { EditSchemas } from "./EditSchemas";
-import { EditTestSuites } from "./EditTestSuites";
 import { ImportRegistries } from "./ImportRegistries";
 import { LiveStream } from "./LiveStream";
 
-import "./Modals.scss";
+import "./Modals.css";
 
 export const modals = {
   badRows: BadRows,
-  consoleSync: ConsoleSync,
   deleteRegistries: DeleteRegistries,
   destination: ChangeDestination,
   editRegistries: EditRegistries,
   editSchemas: EditSchemas,
-  editTestSuites: EditTestSuites,
   importRegistries: ImportRegistries,
   stream: LiveStream,
 } as const;

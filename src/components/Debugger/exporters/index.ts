@@ -1,6 +1,6 @@
-import { Entry } from "har-format";
+import type { Entry } from "har-format";
 
-import { IBeaconSummary } from "../../../ts/types";
+import type { IBeaconSummary } from "../../../ts/types";
 
 import toCsv from "./csv";
 import toHar from "./har";

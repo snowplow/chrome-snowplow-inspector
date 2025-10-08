@@ -1,8 +1,8 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 import { useState } from "preact/hooks";
 
-import { Registry } from "../../ts/iglu";
-import { RegistrySpec } from "../../ts/types";
+import type { Registry } from "../../ts/iglu";
+import type { RegistrySpec } from "../../ts/types";
 
 const kindFieldOptions: { [name: string]: RegistrySpec["kind"] } = {
   Local: "local",
@@ -137,6 +137,7 @@ const RegistryListing: FunctionComponent<{
       registry.spec.kind,
       (registry.lastStatus || "").toLowerCase(),
     ].join(" ")}
+    className="inline-flex items-center rounded-md bg-[#8BD9FE]/10 px-2 py-1 text-sm font-medium text-[#8BD9FE] inset-ring inset-ring-blue-400/30 m-0.5 cursor-pointer"
     value={registry.id}
     selected={!!selected}
   >

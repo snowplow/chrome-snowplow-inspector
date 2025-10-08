@@ -1,37 +1,109 @@
-import { h, FunctionComponent } from "preact";
-import { useState } from "preact/hooks";
+import { h, type FunctionComponent } from "preact";
+import { Building2, LogOut, Settings } from "lucide-preact";
 
-import { IConsoleStatus, OAuthIdentity } from "../ts/types";
+import { consoleAnalytics, landingUrl } from "../ts/analytics";
+import { doOAuthFlow } from "../ts/oauth";
+import type { IConsoleStatus, OAuthIdentity } from "../ts/types";
 
-import "./ConsoleStatus.scss";
+import "./ConsoleStatus.css";
+import logo from "@res/logo.svg";
 
-export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
-  resolver,
-  setModal,
-}) => {
-  const [identity, setIdentity] = useState<OAuthIdentity>();
-
-  const handler = () => {
-    setModal("consoleSync", {
-      resolver,
-      setIdentity,
-    });
-  };
-
-  return !chrome.identity ? null : identity ? (
-    <button
-      class="console"
-      disabled
-      title={`Console: ${identity.iss}\nLogin: ${identity.sub}\nLast Update: ${
-        identity.updated_at
-      }\n\n${JSON.stringify(identity)}`}
-    >
-      <img src={identity.picture} />
-      {identity.name || "Logged In"}
+const LogoOrButton: FunctionComponent<{ handler: () => void }> = ({
+  handler,
+  children,
+}) =>
+  chrome.identity ? (
+    <button class="console" onClick={handler}>
+      {children} Log in
     </button>
   ) : (
-    <button class="console" onClick={handler}>
-      Sync with Console
-    </button>
+    // if identity not available we can't log in from here, gracefully degrade to a link
+    <a class="toolbar__logo" href={landingUrl} target="_blank">
+      {children} Snowplow
+    </a>
+  );
+
+const Profile: FunctionComponent<{ identity: OAuthIdentity }> = ({
+  identity,
+}) => (
+  <span class="profile">
+    {identity.picture ? (
+      <img alt="Profile picture" src={identity.picture} />
+    ) : (
+      identity.name
+        .split(/\s+/)
+        .map((s) => s[0])
+        .join("")
+        .toUpperCase()
+    )}
+  </span>
+);
+export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
+  login,
+  setLogin,
+}) => {
+  const loginHandler = () => {
+    consoleAnalytics("Auth Flow Start");
+    doOAuthFlow(true).then(
+      (response) => {
+        consoleAnalytics("Auth Flow Complete");
+        setLogin(response);
+      },
+      (e: Error) => {
+        consoleAnalytics("Auth Flow Error", String(e));
+        // TODO: display error information
+      },
+    );
+  };
+
+  const logoutHandler = () => {
+    if (!login) return;
+    login.logout().finally(() => setLogin(undefined));
+  };
+
+  const { access, identity } = login ?? {};
+  const { "https://snowplowanalytics.com/roles": { user } = {} } = access ?? {};
+
+  return (
+    <div class="console_info">
+      {identity ? (
+        [
+          <ul id="consolestatus-po" popover="auto">
+            <li title={`User ID: ${user?.id}`}>
+              <Profile identity={identity} />
+              {user?.name}
+            </li>
+            <li title={`Organization ID: ${user?.organization.id}`}>
+              <Building2 />
+              {user?.organization.name}
+            </li>
+            <li
+              onClick={() => chrome.runtime.openOptionsPage()}
+              role="button"
+              tabIndex={0}
+            >
+              <Settings />
+              Options
+            </li>
+            <li
+              title={`Last Login: ${identity?.updated_at}`}
+              onClick={logoutHandler}
+              role="button"
+              tabIndex={0}
+            >
+              <LogOut />
+              Log Out
+            </li>
+          </ul>,
+          <button type="button" popovertarget="consolestatus-po">
+            <Profile identity={identity} />
+          </button>,
+        ]
+      ) : (
+        <LogoOrButton handler={loginHandler}>
+          <img alt="Snowplow logo" src={logo} />
+        </LogoOrButton>
+      )}
+    </div>
   );
 };

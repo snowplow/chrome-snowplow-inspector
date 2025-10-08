@@ -1,0 +1,230 @@
+.timeline {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+
+  resize: horizontal;
+  overflow-inline: clip;
+  overflow-block: auto;
+
+  position: sticky;
+  top: 0;
+
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.timeline__controls {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+
+  border: 0;
+  padding: 0;
+  margin: 0;
+
+  legend {
+    position: absolute;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  label[title] {
+    margin: 0.25rem 0;
+  }
+
+  svg {
+    height: 16px;
+    width: 16px;
+    color: var(--muted-foreground);
+  }
+
+  svg.search_icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .icon_button {
+    background: none;
+    padding: 0px 8px;
+
+    &:last-of-type {
+      margin-left: auto;
+    }
+  }
+
+  .vertical_divider {
+    border-left: 1px solid var(--input);
+    height: 24px;
+    margin: 0 8px;
+  }
+  > div {
+    display: flex;
+  }
+}
+
+.timeline__events {
+  list-style: none;
+  padding: 0 0.5rem;
+  margin: 0;
+
+  display: flex;
+  flex-flow: column-reverse nowrap;
+  justify-content: start;
+  flex: 1;
+  gap: 0.5rem;
+}
+
+.event-group {
+  display: flex;
+  flex-flow: column nowrap;
+  border-radius: 0.5rem;
+
+  > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted-foreground);
+    padding: 0.5rem 0;
+    cursor: pointer;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      line-height: 1.25rem;
+    }
+
+    & span::before {
+      content: attr(data-event-count);
+      display: inline-block;
+      border-radius: 5rem;
+      background-color: var(--accent-foreground);
+      padding: 0.125rem 0.75rem;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    &::after {
+      content: "";
+      display: inline-block;
+      height: 1rem;
+      width: 1rem;
+      mask: url("lucide-static/icons/plus-circle.svg") no-repeat center;
+      mask-size: cover;
+      background-color: currentColor;
+    }
+  }
+
+  &[open] > summary span {
+    color: var(--foreground);
+  }
+
+  &[open] > summary span::before {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  &[open] > summary::after {
+    color: var(--foreground);
+    content: "";
+    mask-image: url("lucide-static/icons/minus-circle.svg");
+  }
+
+  ol {
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0;
+    border-radius: 0.5rem;
+    background-color: var(--card);
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      transparent 1.35rem,
+      0%,
+      var(--border-darker) calc(1.35rem + 1px),
+      transparent 0
+    );
+  }
+
+  li {
+    display: flex;
+
+    a {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      cursor: pointer;
+
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.25rem;
+      margin: 0.1rem 0.4rem;
+
+      span[data-timestamp]::after {
+        content: attr(data-timestamp);
+        display: block;
+        font-size: 0.75rem;
+        color: var(--muted-foreground);
+        line-height: 1rem;
+      }
+
+      &.event--uncollected {
+        color: red;
+      }
+
+      &:hover,
+      &:active,
+      &.event--active {
+        background-color: var(--accent);
+      }
+
+      &.event--invalid::after {
+        content: "\0026d4\00fe0f";
+        float: right;
+      }
+
+      &::before {
+        content: "";
+        display: inline-block;
+        border-radius: 100%;
+        height: 0.5em;
+        width: 0.5em;
+        margin-right: 0.5em;
+      }
+    }
+
+    &.destination-blue a::before {
+      background-color: #30b8f6;
+    }
+    &.destination-red a::before {
+      background-color: #661712;
+    }
+    &.destination-dark a::before {
+      background-color: #98a2b3;
+    }
+    &.destination-purple a::before {
+      background-color: #412476;
+    }
+    &.destination-black a::before {
+      background-color: black;
+    }
+    &.destination-turquoise a::before {
+      background-color: #0b7f86;
+    }
+    &.destination-yellow a::before {
+      background-color: #ffd760;
+    }
+    &.destination-light a::before {
+      background-color: #ddd;
+    }
+  }
+}
+
+#clipboard {
+  width: 1px;
+  height: 1px;
+  flex: 0;
+  position: fixed;
+  left: -10000px;
+}

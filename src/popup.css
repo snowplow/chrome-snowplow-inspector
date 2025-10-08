@@ -1,0 +1,129 @@
+@use "~@fontsource/roboto/latin-700" as *;
+@use "~@fontsource/roboto/latin-500" as *;
+@use "~@fontsource/roboto/latin-400" as *;
+@use "~@fontsource/inter/latin-700" as *;
+
+html {
+  margin: 0;
+  padding: 2rem;
+  min-width: 800px;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  line-height: 1.75rem;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem 2.25rem;
+}
+
+.wrapper::before {
+  align-self: stretch;
+  content: "";
+  border-left: 1px solid #e5e7eb;
+  order: 3;
+}
+
+.wrapper > div {
+  max-width: 50%;
+  flex: 1;
+  order: 2;
+}
+
+h1 {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex: 1 1 100%;
+  gap: 0.625rem;
+}
+
+h1 > img {
+  max-width: 2.3rem;
+}
+
+h2 {
+  font-family: "Roboto", sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+a.button {
+  display: inline-block;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  padding: 0.25rem 1rem;
+  text-decoration: none;
+
+  &:hover {
+    border: 1px solid #98a2b3;
+  }
+}
+
+kbd {
+  font-family: "Roboto", san-serif;
+  font-weight: 700;
+  font-style: italic;
+  color: #6638b8;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+button {
+  border-radius: 0.25rem;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  font-family: "Roboto", sans-serif;
+  line-height: 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    rgba(0, 0, 0, 0.05) 0px 0px 2px,
+    rgba(16, 24, 40, 0.05) 0px 1px 2px;
+}
+
+.cta {
+  background-color: #6638b8;
+  border: 1px solid #6638b8;
+  color: white;
+}
+
+.cta:hover {
+  box-shadow:
+    rgba(0, 0, 0, 0.15) 0px -2px 0px inset,
+    rgba(255, 255, 255, 0.15) 0px 48px 0px inset;
+}
+
+.wrapper .console {
+  font-size: 0.875rem;
+  order: 3;
+}

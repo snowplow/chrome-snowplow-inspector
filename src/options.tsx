@@ -1,18 +1,26 @@
 import { h, render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
-import "./options.scss";
+import "./options.css";
 
-type StoredOptions = {
+export type StoredOptions = {
   enableTracking: boolean;
-  hideTestSuites: boolean;
+  signalsSandboxToken: string;
+  signalsSandboxUrl: string;
+  signalsApiKeys: { org: string; apiKey: string; apiKeyId: string }[];
   tunnelAddress: string;
 };
+
+const SAMPLE_UUID = "00000000-0000-0000-0000-000000000000";
+const UUID_PATTERN =
+  "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$";
 
 const Options = () => {
   const [options, setOptions] = useState<StoredOptions>({
     enableTracking: true,
-    hideTestSuites: false,
+    signalsSandboxToken: "",
+    signalsSandboxUrl: "",
+    signalsApiKeys: [],
     tunnelAddress: "http://localhost:4040/",
   });
   const [status, setStatus] = useState("");
@@ -30,19 +38,48 @@ const Options = () => {
 
   const handler = (e: Event) => {
     e.preventDefault();
-    chrome.storage.sync.set(options, () => {
-      setStatus("Preferences Saved");
-    });
+    if (
+      e.currentTarget instanceof HTMLFormElement &&
+      e.currentTarget.reportValidity()
+    ) {
+      const validated = {
+        ...options,
+        signalsApiKeys: options.signalsApiKeys.filter(
+          ({ org, apiKey, apiKeyId }) => !!(org && apiKey && apiKeyId),
+        ),
+      };
+      chrome.storage.sync.set(validated, () => {
+        setStatus("Preferences Saved");
+      });
+    }
   };
 
   return (
     <form
       onChange={({ target }) => {
         if (target instanceof HTMLInputElement) {
-          setOptions((options) => ({
-            ...options,
-            [target.name]: target.checked ?? target.value,
-          }));
+          const apiKeyIndex = parseInt(target.dataset.apiKeyIndex || "", 10);
+          if (!Number.isNaN(apiKeyIndex)) {
+            const info = options.signalsApiKeys[apiKeyIndex] ?? {
+              org: "",
+              apiKey: "",
+              apiKeyId: "",
+            };
+            info[target.name as keyof typeof info] = target.value;
+            const signalsApiKeys = [...options.signalsApiKeys];
+            signalsApiKeys[apiKeyIndex] = info;
+
+            setOptions((options) => ({
+              ...options,
+              signalsApiKeys,
+            }));
+          } else {
+            setOptions((options) => ({
+              ...options,
+              [target.name]:
+                target.type === "checkbox" ? target.checked : target.value,
+            }));
+          }
         }
       }}
       onSubmit={handler}
@@ -58,25 +95,143 @@ const Options = () => {
           Send anonymous usage information
         </label>
 
-        <label>
-          <input
-            type="checkbox"
-            name="hideTestSuites"
-            checked={options.hideTestSuites}
-          />
-          Hide the Test Suites panel
-        </label>
+        <fieldset>
+          <legend>Signals</legend>
+          <p>
+            For security reasons, only{" "}
+            <abbr title="Machine to Machine">M2M</abbr>
+            access tokens can access the attribute data stored in your Signals
+            instance - <em>not</em> the access token provided when you log into
+            Console. M2M tokens are obtained using API keys{" "}
+            <a
+              href="https://console.snowplowanalytics.com/credentials"
+              target="_blank"
+            >
+              generated in Console
+            </a>
+            . Here you can define API keys to use for each Organization ID you
+            want to access Attributes data for.
+          </p>
+          <p>
+            <a href="https://snowplow.io/signals" target="_blank">
+              Find out more about Signals
+            </a>
+            , or{" "}
+            <a href="https://docs.snowplow.io/docs/signals" target="_blank">
+              view the documentation.
+            </a>
+          </p>
+          <fieldset>
+            <legend>API Keys</legend>
+            <div>
+              {options.signalsApiKeys.map(({ org, apiKey, apiKeyId }, i) => (
+                <fieldset key={i}>
+                  <label>
+                    Organization ID
+                    <input
+                      type="text"
+                      name="org"
+                      data-api-key-index={i}
+                      pattern={UUID_PATTERN}
+                      placeholder={SAMPLE_UUID}
+                      value={org}
+                      required={!!(org || apiKey || apiKeyId)}
+                    />
+                  </label>
+                  {/^[0-9a-f-]{36}$/i.test(org) && !(apiKey && apiKeyId) ? (
+                    <a
+                      href={`https://console.snowplowanalytics.com/${org}/credentials`}
+                      target="_blank"
+                    >
+                      Generate an API key pair
+                    </a>
+                  ) : null}
+                  <label>
+                    API Key ID
+                    <input
+                      type="text"
+                      name="apiKeyId"
+                      data-api-key-index={i}
+                      pattern={UUID_PATTERN}
+                      placeholder={SAMPLE_UUID}
+                      value={apiKeyId}
+                      required={!!(org || apiKey || apiKeyId)}
+                    />
+                  </label>
+                  <label>
+                    API Key
+                    <input
+                      type="text"
+                      name="apiKey"
+                      data-api-key-index={i}
+                      pattern={UUID_PATTERN}
+                      placeholder={SAMPLE_UUID}
+                      value={apiKey}
+                      required={!!(org || apiKey || apiKeyId)}
+                    />
+                  </label>
+                </fieldset>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setOptions(({ signalsApiKeys, ...opts }) => ({
+                  ...opts,
+                  signalsApiKeys: signalsApiKeys.concat({
+                    org: "",
+                    apiKey: "",
+                    apiKeyId: "",
+                  }),
+                }))
+              }
+            >
+              Add new organization
+            </button>
+          </fieldset>
+        </fieldset>
+        <details>
+          <summary>Advanced...</summary>
+          <label>
+            Ngrok tunnel address
+            <input
+              type="text"
+              name="tunnelAddress"
+              value={options.tunnelAddress}
+            />
+          </label>
+          <fieldset>
+            <legend>Signals Sandbox</legend>
+            <p>
+              If you're still trialing Signals, you can enter details of your
+              sandbox environment here.
+            </p>
+            <label>
+              Signals Sandbox URL
+              <input
+                type="text"
+                name="signalsSandboxUrl"
+                pattern="^[^/:]+(:[0-9]+)?$"
+                placeholder="00000000-0000-0000-0000-000000000000.svc.snplow.net"
+                value={options.signalsSandboxUrl}
+              />
+            </label>
 
-        <label>
-          Ngrok tunnel address
-          <input
-            type="text"
-            name="tunnelAddress"
-            value={options.tunnelAddress}
-          />
-        </label>
+            <label>
+              Signals Sandbox Token
+              <input
+                type="text"
+                name="signalsSandboxToken"
+                pattern={UUID_PATTERN}
+                placeholder={SAMPLE_UUID}
+                value={options.signalsSandboxToken}
+                required={!!options.signalsSandboxUrl}
+              />
+            </label>
+          </fieldset>
+        </details>
 
-        {status ? <p>{status}</p> : <button>Save</button>}
+        {status ? <p class="status">{status}</p> : <button>Save</button>}
       </fieldset>
     </form>
   );

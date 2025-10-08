@@ -1,13 +1,20 @@
-import { h, FunctionComponent } from "preact";
-import { useCallback, useMemo, useRef, useState } from "preact/hooks";
+import { h, type FunctionComponent } from "preact";
+import {
+  useCallback,
+  useErrorBoundary,
+  useMemo,
+  useRef,
+  useState,
+} from "preact/hooks";
 
-import { Registry, Resolver } from "../../ts/iglu";
-import { ModalSetter } from "../../components/Modals";
+import { errorAnalytics } from "../../ts/analytics";
+import { type Registry, Resolver } from "../../ts/iglu";
+import { type ModalSetter } from "../../components/Modals";
 
 import { Directory } from "./Directory";
 import { RegistryList } from "./RegistryList";
 
-import "./SchemaManager.scss";
+import "./SchemaManager.css";
 
 type Filter = {
   search?: RegExp;
@@ -23,6 +30,7 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
   resolver,
   setModal,
 }) => {
+  useErrorBoundary(errorAnalytics);
   const [filters, setFilters] = useState<Filter>({
     search: undefined,
     selections: [],
@@ -45,22 +53,22 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
 
   const filterBar = useMemo(
     () => (
-      <div class="directory__filter">
+      <div className="directory__filter mb-2">
         <input
+          className="w-full px-2 py-2 bg-[#191919] border-none text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-white focus:border-transparent"
           type="search"
           placeholder="Filter Pattern"
           title="Regular expression to search schemas for"
-          onKeyUp={(event) => {
-            const target = event.currentTarget;
-            if (!target.value.trim()) return clearSearch();
+          onInput={({ currentTarget }) => {
+            if (!currentTarget.value.trim()) return clearSearch();
 
             try {
-              const re = new RegExp(target.value, "im");
-              target.setCustomValidity("");
+              const re = new RegExp(currentTarget.value, "im");
+              currentTarget.setCustomValidity("");
               setFilters((filters) => ({ ...filters, search: re }));
             } catch {
-              target.setCustomValidity("Invalid regular expression");
-              target.reportValidity();
+              currentTarget.setCustomValidity("Invalid regular expression");
+              currentTarget.reportValidity();
             }
           }}
         />
@@ -81,17 +89,17 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
   );
 
   return (
-    <main class="app app--schema_manager schema_manager" ref={smRef}>
+    <main class="app app--schema_manager schema_manager px-4 py-2" ref={smRef}>
       <Directory setCollapsed={setCollapsed} resolver={resolver} {...filters}>
         {filterBar}
+        <RegistryList
+          filterRegistries={filterRegistries}
+          clearSearch={clearSearch}
+          resolver={resolver}
+          setModal={setModal}
+          selectedRegistries={filters.selections}
+        />
       </Directory>
-      <RegistryList
-        filterRegistries={filterRegistries}
-        clearSearch={clearSearch}
-        resolver={resolver}
-        setModal={setModal}
-        selectedRegistries={filters.selections}
-      />
     </main>
   );
 };

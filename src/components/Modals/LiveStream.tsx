@@ -1,12 +1,17 @@
-import { SearchResponse } from "elasticsearch";
-import { Entry } from "har-format";
-import { h, FunctionComponent } from "preact";
-import { Dispatch, StateUpdater, useMemo, useState } from "preact/hooks";
+import type { SearchResponse } from "elasticsearch";
+import type { Entry } from "har-format";
+import { h, type FunctionComponent } from "preact";
+import {
+  type Dispatch,
+  type StateUpdater,
+  useMemo,
+  useState,
+} from "preact/hooks";
 import { BaseModal } from "./BaseModal";
 
 import { esToRequests } from "../../ts/util";
 import { request as requestPerms } from "../../ts/permissions";
-import { ModalOptions } from ".";
+import type { ModalOptions } from ".";
 
 export interface LiveStreamOptions extends ModalOptions {
   addRequests: (reqs: Entry[]) => void;

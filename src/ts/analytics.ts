@@ -4,7 +4,7 @@ import {
   trackStructEvent,
 } from "@snowplow/browser-tracker";
 
-import { RegistrySpec } from "./iglu/Registries";
+import type { RegistrySpec } from "./iglu/Registries";
 
 const SNOWPLOW_ENDPOINT = "https://snowflake-217500-prod1.collector.snplow.net";
 
@@ -117,7 +117,7 @@ export const consoleAnalytics = (
   chrome.storage.sync.get({ enableTracking: true }, (settings) => {
     if (settings.enableTracking) {
       trackStructEvent({
-        category: "Console Sync",
+        category: "Console Auth",
         action,
         label,
         property,
@@ -148,6 +148,33 @@ export const repoAnalytics = (
       });
     }
   });
+};
+
+export const errorAnalytics = (error: unknown) => {
+  if (error instanceof Error) {
+    trackStructEvent({
+      category: "Unhandled Error",
+      action: error.name,
+      label: error.message,
+    });
+  } else if (typeof error !== "string") {
+    try {
+      error = JSON.stringify(error);
+    } catch (e) {
+      error = String(error).concat(": ", String(e));
+    }
+    trackStructEvent({
+      category: "Unhandled Error",
+      action: "ObjectError",
+      label: String(error),
+    });
+  } else {
+    trackStructEvent({
+      category: "Unhandled Error",
+      action: "StringError",
+      label: error,
+    });
+  }
 };
 
 export const landingUrl =

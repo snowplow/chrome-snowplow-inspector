@@ -1,5 +1,5 @@
-import { h, FunctionComponent } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { h, type FunctionComponent } from "preact";
+import { useEffect, useRef } from "preact/hooks";
 
 export const BaseModal: FunctionComponent<{
   formId?: string;

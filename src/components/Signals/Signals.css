@@ -1,0 +1,406 @@
+.attributes,
+.interventions {
+  > aside {
+    position: sticky;
+    top: 0;
+
+    max-width: 20rem;
+    padding: 1.5rem;
+    border-right: 1px solid var(--tabs-divider);
+    margin-left: 1.5rem;
+
+    resize: horizontal;
+    overflow-block: auto;
+
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: start;
+    gap: 0.5rem;
+
+    color: var(--muted-foreground);
+
+    h1 {
+      font-family: "Roboto", sans-serif;
+      font-size: 1.125rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 1.25rem;
+      color: var(--foreground);
+    }
+
+    hgroup p {
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.5rem;
+    }
+
+    img {
+      width: 2rem;
+      float: left;
+      margin-right: 0.625rem;
+    }
+
+    > p {
+      margin: 0 2rem;
+    }
+
+    a {
+      display: inline-block;
+      color: white;
+      background-color: #916ce7;
+      border-radius: 0.25rem;
+      padding: 0.25rem 1rem;
+      text-align: center;
+      text-decoration: none;
+      margin: 2rem;
+    }
+
+    figure {
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: stretch;
+      gap: 1rem;
+
+      width: 100%;
+      padding: 1.25rem;
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+
+      figcaption {
+        color: var(--foreground);
+        font-family: "Roboto", sans-serif;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 1.5rem;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0.5rem 0;
+        margin: 0;
+        border-radius: 0.5rem;
+        background-color: var(--card);
+        background-image: linear-gradient(
+          to right,
+          transparent,
+          transparent 1.25rem,
+          0%,
+          var(--border-darker) calc(1.25rem + 1px),
+          transparent 0
+        );
+      }
+
+      li {
+        display: flex;
+        align-items: center;
+
+        cursor: pointer;
+        color: var(--muted-foreground);
+
+        padding: 1rem 0.5rem;
+        border-radius: 0.25rem;
+
+        font-family: "Roboto", sans-serif;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.5rem;
+
+        &.active,
+        &:hover {
+          background-color: var(--accent);
+          color: var(--accent-foreground);
+        }
+
+        &::before {
+          display: inline-block;
+          content: "";
+          height: 1.5rem;
+          width: 1.5rem;
+          mask: url("lucide-static/icons/zap.svg") no-repeat center;
+          mask-size: cover;
+          background-color: currentColor;
+          margin-right: 1rem;
+        }
+
+        [data-received] {
+          display: flex;
+          flex-flow: column nowrap;
+
+          &::after {
+            content: attr(data-received);
+            font-size: 0.75rem;
+            font-weight: 400;
+            line-height: 1rem;
+          }
+        }
+      }
+    }
+  }
+
+  > article {
+    flex: 1;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.75rem;
+    overflow-block: auto;
+
+    figure.attrdef {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+
+      figcaption {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+
+        svg {
+          height: 1rem;
+          width: 1rem;
+        }
+
+        &:hover {
+          color: var(--accent-foreground);
+        }
+      }
+    }
+
+    details,
+    & > div {
+      display: flex;
+      flex-flow: column nowrap;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background-color: var(--card);
+
+      padding: 0.75rem 0.5rem;
+
+      &[open] > summary::before {
+        mask: url("lucide-static/icons/chevron-down.svg") no-repeat center;
+        mask-size: cover;
+      }
+    }
+
+    > div {
+      padding: 0;
+      margin-bottom: 1rem;
+
+      h1 {
+        background-color: var(--popover);
+        padding: 1rem 1.5rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+
+      h2 {
+        margin: 1.5rem 1.5rem 1rem;
+        color: var(--muted-foreground);
+      }
+
+      table {
+        margin: 0 2.75rem;
+        width: calc(100% - 5.5rem);
+      }
+
+      td > span {
+        color: white;
+        background-color: var(--secondary);
+        border: 1px solid var(--border);
+        border-radius: 0.25rem;
+      }
+    }
+
+    summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      gap: 0.25rem;
+
+      font-family: "Roboto", sans-serif;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 1.25rem;
+      color: var(--foreground);
+
+      &::before {
+        display: inline-block;
+        content: "";
+        height: 1rem;
+        width: 1rem;
+        mask: url("lucide-static/icons/chevron-up.svg") no-repeat center;
+        mask-size: cover;
+        background-color: currentColor;
+        margin-right: 0.25rem;
+      }
+
+      span {
+        background-color: var(--secondary);
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+        color: var(--secondary-foreground);
+      }
+
+      .groupname {
+        flex: 1;
+        background-color: unset;
+        font-size: 1rem;
+        line-height: 1.5rem;
+        font-weight: 700;
+        padding: 0;
+      }
+    }
+
+    table {
+      color: var(--foreground);
+      margin: 1rem 1.25rem;
+      width: calc(100% - 2.5rem);
+      border-collapse: separate;
+    }
+
+    tr:hover {
+      cursor: pointer;
+      background-color: var(--accent);
+    }
+
+    th {
+      font-weight: 400;
+      font-style: normal;
+      text-align: left;
+      text-overflow: ellipsis;
+      font-family: "Roboto", sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      width: 40%;
+    }
+
+    td {
+      display: flex;
+    }
+
+    td > span {
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      background-color: var(--secondary);
+    }
+  }
+
+  .groupversion {
+    background-color: var(--secondary);
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+  }
+
+  .grouplabel {
+    text-transform: uppercase;
+  }
+
+  .attribute-group-controls {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+
+    background-color: inherit;
+    border: 0;
+    margin: 0;
+
+    label:first-of-type {
+      flex: 1;
+    }
+
+    input[type="checkbox"] {
+      display: none;
+    }
+
+    label.lbl {
+      padding: 0.25rem;
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      margin: 0.5rem 0.25rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+    }
+    label.lbl:has(input[type="checkbox"]:checked) {
+      background-color: var(--secondary);
+    }
+
+    select {
+      padding: 0.5rem;
+      background-color: inherit;
+      color: inherit;
+      border: 1px solid var(--border);
+    }
+
+    option {
+      background-color: inherit;
+      color: inherit;
+    }
+  }
+
+  .brochure {
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+
+    h1 {
+      color: var(--foreground);
+      margin: 0.5rem 0;
+      font-family: "Inter", sans-serif;
+      font-size: 2.5rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 2.9rem;
+    }
+
+    p {
+      color: var(--muted-foreground);
+    }
+
+    > div {
+      display: flex;
+      flex-flow: column nowrap;
+      max-width: 25rem;
+      align-items: start;
+
+      &:last-child {
+        align-items: end;
+      }
+    }
+
+    img {
+      height: 2.5rem;
+    }
+
+    a {
+      display: inline-block;
+      width: 10rem;
+      padding: 0.25rem 1rem;
+      background-color: var(--secondary);
+      border-radius: 0.25rem;
+      border: 1px solid var(--border);
+      margin: 1.5rem 0;
+      color: var(--foreground);
+
+      text-align: center;
+      font-family: "Roboto", sans-serif;
+      font-size: 0.875rem;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 1.25rem;
+      text-decoration: none;
+
+      &:first-child {
+        background-color: #916ce7;
+        border-color: transparent;
+      }
+    }
+  }
+}

@@ -1,11 +1,11 @@
 import { Registry } from "./Registry";
-import { IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
-import { RegistrySpec, RegistryStatus } from "../../types";
+import { type IgluUri, IgluSchema, ResolvedIgluSchema } from "../IgluSchema";
+import type { RegistrySpec, RegistryStatus } from "../../types";
 
 const REQUEST_TIMEOUT_MS = 5000;
 
 export class IgluRegistry extends Registry {
-  fields = {
+  override fields = {
     uri: {
       title: "Iglu API Endpoint",
       type: "url",

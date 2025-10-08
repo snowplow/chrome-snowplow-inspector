@@ -1,21 +1,23 @@
 import { default as canonicalize } from "canonicalize";
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent, type ComponentChildren } from "preact";
 import {
-  Dispatch,
-  StateUpdater,
+  type Dispatch,
+  type StateUpdater,
   useEffect,
   useMemo,
   useState,
 } from "preact/hooks";
 
 import {
-  Registry,
+  type Registry,
   IgluSchema,
   ResolvedIgluSchema,
   Resolver,
-  IgluUri,
+  type IgluUri,
 } from "../../ts/iglu";
 import { chunkEach, colorOf } from "../../ts/util";
+
+import { JsonViewer } from "../JSONViewer";
 
 interface SchemaDirectory {
   [vendor: string]: VendorDirectory;
@@ -45,32 +47,50 @@ const refreshSchemas = (
   setCatalog: Dispatch<StateUpdater<(IgluSchema | ResolvedIgluSchema)[]>>,
   signal: AbortSignal,
 ) => {
-  const seenRegs = new Map<IgluUri, Registry[]>();
   setCatalog([]);
 
   resolver.walk().then((discovered) => {
+    discovered.sort((a, b) => {
+      const ua = a.uri(),
+        ub = b.uri();
+      if (ua === ub) return 0;
+      return ua < ub ? -1 : 1;
+    });
+
     setCatalog(discovered);
 
-    setTimeout(() => {
-      chunkEach(
-        discovered,
-        (ds, i) => {
-          if (!seenRegs.has(ds.uri())) seenRegs.set(ds.uri(), []);
-          if (signal.aborted) return Promise.resolve();
-
-          return resolver
-            .resolve(ds, seenRegs.get(ds.uri())!)
-            .then((res) => {
-              if (!signal.aborted)
-                setCatalog((catalog) => ((catalog[i] = res), [...catalog]));
-            })
-            .catch(() => console.log("couldn't find ", ds.uri()));
-        },
-        undefined,
-        signal,
-      );
-    }, 0);
+    chunkEach(
+      discovered,
+      (ds) => {
+        if (signal.aborted) return Promise.reject();
+        return resolver.resolve(ds);
+      },
+      setCatalog,
+      undefined,
+      signal,
+    );
   });
+};
+
+const LazyDisplay: FunctionComponent<{
+  content: () => ComponentChildren;
+  deps?: any[];
+  name: string;
+  initOpen?: boolean;
+}> = ({ children, content, deps = [], name, initOpen = false }) => {
+  const [open, setOpen] = useState(initOpen);
+  const viewer = useMemo(content, deps);
+
+  return (
+    <details
+      class={name}
+      open={open}
+      onToggle={({ currentTarget }) => setOpen(currentTarget.open)}
+    >
+      <summary>{children}</summary>
+      {open ? viewer : null}
+    </details>
+  );
 };
 
 export const Directory: FunctionComponent<DirectoryAttrs> = ({
@@ -90,30 +110,21 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
     return () => aborter.abort();
   }, [resolver, ...resolver.registries]);
 
-  const filtered = useMemo(
-    () =>
-      (selections.length || search
-        ? catalog.filter((s) => {
-            const filterHit =
-              !selections.length ||
-              (s instanceof ResolvedIgluSchema
-                ? !!selections.find((r) => r.id === s.registry.id)
-                : false);
-            return filterHit && (!search || s.like(search));
-          })
-        : catalog
-      ).sort((a, b) => {
-        const ua = a.uri(),
-          ub = b.uri();
-        if (ua === ub) return 0;
-        return ua < ub ? -1 : 1;
-      }),
-    [selections, search, catalog],
-  );
-
   const directory: SchemaDirectory = useMemo(
     () =>
-      filtered.reduce((acc, el) => {
+      catalog.reduce((acc: SchemaDirectory, el) => {
+        if (selections.length) {
+          if (
+            !(el instanceof ResolvedIgluSchema) ||
+            !selections.some((r) => r.id === el.registry.id)
+          )
+            return acc;
+        }
+
+        if (search && !el.like(search)) {
+          return acc;
+        }
+
         const v = (acc[el.vendor] = acc[el.vendor] || {});
         const n = (v[el.name] = v[el.name] || {});
         const f = (n[el.format] = n[el.format] || {});
@@ -121,8 +132,8 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
         f[el.version].push(el);
 
         return acc;
-      }, {} as SchemaDirectory),
-    [filtered],
+      }, {}),
+    [selections, search, catalog],
   );
 
   const listings = useMemo(
@@ -149,79 +160,93 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
             }
           }}
         >
-          <summary>{vendor}</summary>
+          <summary key="_summary">{vendor}</summary>
           {Object.entries(schemas).map(([name, formats]) => (
-            <details class="name" key={name}>
-              <summary>{name}</summary>
-              {Object.entries(formats).map(([format, versions]) => (
-                <details class="format" key={format} open>
-                  <summary>{format}</summary>
-                  {Object.entries(versions).map(([version, deployments]) =>
-                    deployments
-                      .map((d) =>
-                        d instanceof ResolvedIgluSchema
-                          ? canonicalize(d.data) || JSON.stringify(d.data)
-                          : d.uri(),
-                      )
-                      .map((d, _, a) => a.indexOf(d))
-                      .reduce<Registry[][]>((canon, e, i) => {
-                        const s = deployments[i];
-                        canon[e] = canon[e] || [];
-                        if (s instanceof ResolvedIgluSchema) {
-                          canon[e].push(s.registry);
-                        }
+            <LazyDisplay
+              key={name}
+              name="name"
+              deps={[directory]}
+              content={() =>
+                Object.entries(formats).map(([format, versions]) => (
+                  <LazyDisplay
+                    key={format}
+                    name="format"
+                    initOpen
+                    deps={[directory]}
+                    content={() =>
+                      Object.entries(versions).map(([version, deployments]) =>
+                        deployments
+                          .map((d) =>
+                            d instanceof ResolvedIgluSchema
+                              ? canonicalize(d.data) || JSON.stringify(d.data)
+                              : d.uri(),
+                          )
+                          .map((d, _, a) => a.indexOf(d))
+                          .reduce<Registry[][]>((canon, e, i) => {
+                            const s = deployments[i];
+                            canon[e] = canon[e] || [];
+                            if (s instanceof ResolvedIgluSchema) {
+                              canon[e].push(s.registry);
+                            }
 
-                        return canon;
-                      }, [])
-                      .map(
-                        (
-                          registries,
-                          i,
-                        ): [Registry[], IgluSchema | ResolvedIgluSchema] => [
-                          registries,
-                          deployments[i],
-                        ],
+                            return canon;
+                          }, [])
+                          .map(
+                            (
+                              registries,
+                              i,
+                            ): [
+                              Registry[],
+                              IgluSchema | ResolvedIgluSchema,
+                            ] => [registries, deployments[i]],
+                          )
+                          .map(([registries, deployment]) => ({
+                            val:
+                              deployment instanceof ResolvedIgluSchema ? (
+                                [deployment.data]
+                              ) : (
+                                <label>
+                                  Loading {deployment.uri()}&hellip;{" "}
+                                  <progress />
+                                </label>
+                              ),
+                            registries,
+                          }))
+                          .map(({ val, registries }, i) => (
+                            <LazyDisplay
+                              key={i}
+                              content={() =>
+                                Array.isArray(val) ? (
+                                  <JsonViewer data={val[0]} />
+                                ) : (
+                                  val
+                                )
+                              }
+                              name="version"
+                              deps={[directory]}
+                            >
+                              {version}
+                              {registries.map((r) => (
+                                <span
+                                  class={["registry", colorOf(r.spec.id!)].join(
+                                    " ",
+                                  )}
+                                >
+                                  {r.spec.name}
+                                </span>
+                              ))}
+                            </LazyDisplay>
+                          )),
                       )
-                      .map(([registries, deployment]) => ({
-                        val:
-                          deployment instanceof ResolvedIgluSchema ? (
-                            JSON.stringify(deployment.data, null, 4)
-                          ) : (
-                            <label>
-                              Loading {deployment.uri()}&hellip; <progress />
-                            </label>
-                          ),
-                        registries,
-                      }))
-                      .map(({ val, registries }) => (
-                        <details class="version">
-                          <summary>
-                            {version}
-                            {registries.map((r) => (
-                              <span
-                                class={[
-                                  "registry",
-                                  "is-pulled-right",
-                                  colorOf(r.spec.id!),
-                                ].join(" ")}
-                              >
-                                {r.spec.name}
-                              </span>
-                            ))}
-                          </summary>
-                          {typeof val === "string" ? (
-                            <textarea readOnly rows={val.split("\n").length}>
-                              {val}
-                            </textarea>
-                          ) : (
-                            val
-                          )}
-                        </details>
-                      )),
-                  )}
-                </details>
-              ))}
-            </details>
+                    }
+                  >
+                    {format}
+                  </LazyDisplay>
+                ))
+              }
+            >
+              {name}
+            </LazyDisplay>
           ))}
         </details>
       )),
@@ -229,9 +254,11 @@ export const Directory: FunctionComponent<DirectoryAttrs> = ({
   );
 
   return (
-    <div class="directory">
+    <div class="directory p-1 flex flex-col">
       {children}
-      {listings}
+      <div className="overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
+        {listings}
+      </div>
     </div>
   );
 };

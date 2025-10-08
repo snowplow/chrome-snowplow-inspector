@@ -1,125 +1,85 @@
-import { Entry } from "har-format";
-import { h, FunctionComponent } from "preact";
-import { useCallback, useEffect, useState } from "preact/hooks";
-
+import { h, type FunctionComponent } from "preact";
 import {
-  DisplayItem,
-  IBeaconSummary,
-  IDebugger,
-  PipelineInfo,
-} from "../../ts/types";
-import { isSnowplow } from "../../ts/util";
+  useCallback,
+  useEffect,
+  useErrorBoundary,
+  useState,
+} from "preact/hooks";
 
-import { Beacon } from "./Beacon";
-import { TestReport } from "./TestReport";
+import { errorAnalytics } from "../../ts/analytics";
+import type { IBeaconSummary, IDebugger, PipelineInfo } from "../../ts/types";
+
+import { EventPayload } from "./EventPayload";
 import { Timeline } from "./Timeline";
 
-import "./Debugger.scss";
+import "./Debugger.css";
 
 export const Debugger: FunctionComponent<IDebugger> = ({
-  addRequests,
-  clearRequests,
-  events,
   destinationManager,
+  batches,
+  listenerStatus,
+  requestsRef,
   resolver,
+  setApp,
   setModal,
+  addRequests,
+  setRequests,
 }) => {
-  const [active, setActive] = useState<DisplayItem>();
+  useErrorBoundary(errorAnalytics);
+  const [active, setActive] = useState<IBeaconSummary>();
   const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);
+  const [pinned, setPinned] = useState<string[]>([]);
 
   useEffect(
     () =>
-      chrome.storage.local.get({ pipelines: "[]" }, ({ pipelines }) => {
-        setPipelines(JSON.parse(pipelines));
-      }),
+      chrome.storage.local.get(
+        { pinned: "[]", pipelines: "[]" },
+        ({ pinned, pipelines }) => {
+          setPipelines(JSON.parse(pipelines));
+          setPinned(JSON.parse(pinned));
+        },
+      ),
     [],
   );
 
-  const isActive = useCallback(
-    (beacon: IBeaconSummary) => {
-      if (active && active.display === "beacon")
-        return active.item.id === beacon.id;
-      return false;
-    },
-    [active],
-  );
-
-  const handleNewRequests = useCallback(
-    (reqs: Entry[] | Entry) => {
-      const batch = Array.isArray(reqs) ? reqs : [reqs];
-
-      const validEntries: Entry[] = [];
-
-      batch.forEach((req) => {
-        if (req.serverIPAddress === "") return;
-        if (req.request.method === "OPTIONS") return;
-        if (req.response.statusText === "Service Worker Fallback Required")
-          return;
-
-        if (isSnowplow(req.request)) {
-          validEntries.push(req);
-          destinationManager.addPath(req.request.url);
-        }
-      });
-
-      addRequests(validEntries);
-    },
-    [addRequests],
-  );
-
   useEffect(() => {
-    chrome.devtools.network.getHAR((harLog) => {
-      handleNewRequests(
-        harLog.entries.filter(
-          (entry) =>
-            !events.find(
-              (event) =>
-                event.startedDateTime === entry.startedDateTime &&
-                event.time === entry.time &&
-                event.request.url === entry.request.url &&
-                event._request_id === entry._request_id,
-            ),
-        ),
-      );
-    });
+    chrome.storage.local.set({ pinned: JSON.stringify(pinned) });
+  }, [pinned]);
 
-    chrome.devtools.network.onRequestFinished.addListener(handleNewRequests);
-
-    return () => {
-      chrome.devtools.network.onRequestFinished.removeListener(
-        handleNewRequests,
-      );
-    };
-  }, []);
+  const clearRequests = useCallback(() => setRequests([]), []);
 
   return (
     <main class="app app--debugger debugger">
       <Timeline
+        active={active}
         setActive={setActive}
-        isActive={isActive}
-        displayMode={active ? active.display : "beacon"}
-        requests={events}
+        batches={batches}
+        requestsRef={requestsRef}
         resolver={resolver}
+        destinationManager={destinationManager}
+        setApp={setApp}
         setModal={setModal}
         addRequests={addRequests}
         clearRequests={clearRequests}
       />
-      {!active || active.display === "beacon" ? (
-        <div class="debugger__display debugger--beacon">
-          {active && active.item ? (
-            <Beacon
-              activeBeacon={active.item}
-              resolver={resolver}
-              setModal={setModal}
-              pipelines={pipelines}
-            />
-          ) : null}
-        </div>
-      ) : (
-        <div class="debugger__display debugger--testcase">
-          <TestReport activeSuite={active.item} setActive={setActive} />
-        </div>
-      )}
+      <div class="debugger__display debugger--beacon">
+        {active ? (
+          <EventPayload
+            activeBeacon={active}
+            resolver={resolver}
+            setModal={setModal}
+            pipelines={pipelines}
+            pinned={pinned}
+            setPinned={setPinned}
+          />
+        ) : (
+          <p class="fallback">
+            {listenerStatus === "importing"
+              ? "Importing earlier requests from Network panel"
+              : "Waiting for new requests..."}
+          </p>
+        )}
+      </div>
     </main>
   );
 };

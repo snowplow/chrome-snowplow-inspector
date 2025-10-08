@@ -1,8 +1,8 @@
-import { h, FunctionComponent } from "preact";
+import { h, type FunctionComponent } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { BaseModal } from "./BaseModal";
 
-import { ModalOptions } from ".";
+import type { ModalOptions } from ".";
 import { DestinationManager } from "../../ts/DestinationManager";
 import { request } from "../../ts/permissions";
 
@@ -41,7 +41,11 @@ export const ChangeDestination: FunctionComponent<ChangeDestinationOptions> = ({
 
               request(
                 ...additionalPerms,
-                ...destinationList.map((e) => `*://${e}/*`),
+                ...destinationList.map((e) =>
+                  e.includes("://")
+                    ? `${e.replace(/^.+:\/\//, "*://")}/*`
+                    : `*://${e}/*`,
+                ),
               ).then(() => {
                 destinationManager.update(destinationList, endpoint, enabled);
                 setModal();
@@ -91,13 +95,13 @@ export const ChangeDestination: FunctionComponent<ChangeDestinationOptions> = ({
         </p>
         <p>
           Requests using custom POST paths will preserve their custom path
-          unless your Target Endpoint specifies an explicit path to prefer, e.g.
-          <code> /com.snowplowanalytics.snowplow/tp2 </code>
-          for the default POST endpoint.
+          unless your Target Endpoint specifies an explicit path to prefer, e.g.{" "}
+          <code>/com.snowplowanalytics.snowplow/tp2</code> for the default POST
+          endpoint.
         </p>
         <div>
           <label>
-            Collector Endpoints
+            Collectors to forward
             <textarea
               id="destinations"
               name="destinations"
@@ -113,7 +117,7 @@ export const ChangeDestination: FunctionComponent<ChangeDestinationOptions> = ({
         </div>
         <div>
           <label>
-            Target Destination
+            Destination
             <input
               id="endpoint"
               name="endpoint"
@@ -134,7 +138,7 @@ export const ChangeDestination: FunctionComponent<ChangeDestinationOptions> = ({
               checked={enabled}
               onInput={({ currentTarget }) => setEnabled(currentTarget.checked)}
             />
-            Enable Destination Changing
+            Enable Forwarding
           </label>
         </div>
         {requestingPerms ? (

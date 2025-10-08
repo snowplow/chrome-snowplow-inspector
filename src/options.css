@@ -3,11 +3,23 @@ body {
   font-family: "Roboto", sans-serif;
 }
 
-fieldset {
-  margin: auto;
-  width: 100%;
-  max-width: 30em;
+form > fieldset {
+  max-width: 30rem;
+  margin: 0 auto;
   border: 0;
+
+  > label:first-child {
+    justify-content: center;
+  }
+}
+
+fieldset {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  border: solid 1px #e3e3e3;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
 }
 
 h1 {
@@ -20,11 +32,15 @@ h1 {
 
 label {
   display: flex;
-  gap: 0.6em;
+  justify-content: space-between;
   line-height: 2em;
   width: 100%;
-  margin: 1.5em 0;
   cursor: pointer;
+}
+
+input[type="text"] {
+  flex: 1;
+  max-width: 60%;
 }
 
 button {
@@ -47,7 +63,20 @@ button {
   font-weight: 500;
 }
 
+summary {
+  cursor: pointer;
+}
+
 p {
+  margin: 0;
+}
+
+a {
+  color: #6738b8;
+  text-decoration: none;
+}
+
+p.status {
   background-color: #039855;
   color: white;
   padding: 1em;

@@ -1,0 +1,72 @@
+.debugger {
+  margin: 0;
+  padding: 8px 16px;
+  .debugger__display {
+    flex: 84;
+    margin: 1.5rem 1.5rem 1.5rem 0.5rem;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: stretch;
+    gap: 1rem;
+
+    .fallback {
+      margin: auto;
+
+      &::before {
+        content: "";
+        position: relative;
+        top: 2.5rem;
+
+        display: flex;
+        aspect-ratio: 1;
+
+        background:
+          url("@res/logo-white.svg"),
+          radial-gradient(
+            circle at center,
+            #6638b8 0%,
+            #6638b8 70%,
+            transparent 70%
+          ),
+          radial-gradient(
+            circle at center,
+            #542e97 0%,
+            #542e97 70%,
+            transparent 70%
+          ),
+          radial-gradient(
+            circle at center,
+            #412476 0%,
+            #412476 70%,
+            transparent 70%
+          );
+        background-repeat: no-repeat;
+        background-position: center center;
+
+        animation: snowplow_pulse 1.5s ease-in infinite alternate;
+      }
+    }
+
+    &:after {
+      content: " ";
+      white-space: pre;
+    }
+  }
+}
+
+@keyframes snowplow_pulse {
+  from {
+    background-size:
+      auto auto,
+      5% 5%,
+      20% 20%,
+      40% 40%;
+  }
+  to {
+    background-size:
+      auto auto,
+      50% 50%,
+      50% 50%,
+      50% 50%;
+  }
+}

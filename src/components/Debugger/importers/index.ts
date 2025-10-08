@@ -1,6 +1,6 @@
-import { Entry } from "har-format";
-import { Dispatch, StateUpdater } from "preact/hooks";
-import { ModalSetter } from "../../Modals";
+import type { Entry } from "har-format";
+import type { Dispatch, StateUpdater } from "preact/hooks";
+import type { ModalSetter } from "../../Modals";
 
 import importHAR from "./har";
 import ngrok from "./ngrok";

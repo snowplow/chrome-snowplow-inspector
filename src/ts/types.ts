@@ -1,12 +1,17 @@
-import { Entry } from "har-format";
-import { Schema } from "jsonschema";
-import { Dispatch, StateUpdater } from "preact/hooks";
+import type { Entry } from "har-format";
+import type { Schema } from "jsonschema";
+import type { RefObject } from "preact";
+import type { Dispatch, StateUpdater } from "preact/hooks";
 
-import { Resolver } from "./iglu";
-import { DestinationManager } from "./DestinationManager";
-import { ModalSetter } from "../components/Modals";
+import type { Resolver } from "./iglu";
+import type { DestinationManager } from "./DestinationManager";
+import type { ModalSetter } from "../components/Modals";
 
-export type Application = "debugger" | "schemaManager";
+export type Application =
+  | "debugger"
+  | "schemaManager"
+  | "attributes"
+  | "interventions";
 
 export type RegistryStatus = "OK" | "UNHEALTHY";
 
@@ -21,15 +26,24 @@ interface SyncOptions {
   repolist: string[];
 }
 
+export type SignalsInstall = {
+  endpoint: string;
+  orgId: string;
+  orgName: string;
+  label: string;
+  name: string;
+};
+
 export interface IConsoleStatus {
-  resolver: Resolver;
-  setModal: ModalSetter;
+  login?: OAuthResult;
+  setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
 }
 
 export type ExtensionOptions = LocalOptions & SyncOptions;
 
 export type OAuthIdentity = {
   iss: string;
+  sid: string;
   name: string;
   sub: string;
   updated_at: string;
@@ -51,13 +65,49 @@ export type OAuthAccess = {
   };
 };
 
+export type BatchContents = {
+  id: string;
+  collector: string;
+  collectorPath: string;
+  method: string;
+  pageref?: string;
+  events: Map<string, string>[];
+  serverAnonymous: boolean;
+  status: number;
+  statusText: string;
+  sendingPage?: string;
+};
+
+export type OAuthResult = {
+  identity: OAuthIdentity;
+  access: OAuthAccess;
+  authentication: Partial<RequestInit>;
+  logout: () => Promise<string>;
+};
+
+export type Organization = {
+  id: string;
+  name: string;
+  domain: string;
+  tier: string;
+  tags: string[];
+  essoDomain?: string;
+  features: null | unknown;
+  featuresV2?: {
+    signals?: { enabled: boolean };
+  };
+};
+
 export interface IDebugger {
-  addRequests: (requests: Entry[]) => void;
-  clearRequests: () => void;
-  events: Entry[];
   destinationManager: DestinationManager;
+  batches: BatchContents[];
+  listenerStatus: "waiting" | "importing" | "active";
+  requestsRef: RefObject<Entry[]>;
   resolver: Resolver;
+  setApp: Dispatch<StateUpdater<Application>>;
   setModal: ModalSetter;
+  addRequests: (requests: Entry[]) => void;
+  setRequests: Dispatch<StateUpdater<Entry[]>>;
 }
 
 export interface IPageRequests {
@@ -74,8 +124,7 @@ export interface IBeaconSummary {
   method: string;
   page?: string;
   payload: Map<string, string>;
-  time: string;
-  validity: BeaconValidity;
+  time: Date;
   serverAnonymous: boolean;
   collectorStatus: {
     code: number;
@@ -84,7 +133,12 @@ export interface IBeaconSummary {
 }
 
 export type BeaconValidity = "Valid" | "Unrecognised" | "Invalid";
-export type FieldDetail = [field: string, value: string, classes: string];
+export type FieldDetail = [
+  field: string,
+  value: string,
+  param: string,
+  classes: string,
+];
 export type BeaconDetail = [group: string, fields: FieldDetail[]];
 
 export interface IBeaconDetails {
@@ -112,10 +166,11 @@ export interface IErrorMessageSet {
 
 export interface IToolbar {
   application: Application;
-  changeApp: Dispatch<StateUpdater<Application>>;
-  destinationManager: DestinationManager;
-  resolver: Resolver;
-  setModal: ModalSetter;
+  eventCount?: number;
+  interventionCount?: number;
+  login?: OAuthResult;
+  setApp: Dispatch<StateUpdater<Application>>;
+  setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
 }
 
 export interface IRowSet {
@@ -123,13 +178,15 @@ export interface IRowSet {
 }
 
 export interface ITimeline {
-  isActive: (beacon: IBeaconSummary) => boolean;
+  active: IBeaconSummary | undefined;
   addRequests: (requests: Entry[]) => void;
   clearRequests: () => void;
-  displayMode: DisplayItem["display"];
-  requests: Entry[];
+  batches: BatchContents[];
+  requestsRef: RefObject<Entry[]>;
+  destinationManager: DestinationManager;
   resolver: Resolver;
-  setActive: Dispatch<StateUpdater<DisplayItem | undefined>>;
+  setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;
+  setApp: Dispatch<StateUpdater<Application>>;
   setModal: ModalSetter;
 }
 
@@ -138,6 +195,8 @@ export interface IBeacon {
   resolver: Resolver;
   setModal: ModalSetter;
   pipelines: PipelineInfo[];
+  pinned: string[];
+  setPinned: Dispatch<StateUpdater<string[]>>;
 }
 
 export interface IBadRowsSummary {
@@ -246,16 +305,6 @@ export type TestSuiteResult =
         passCauses: [TestSuiteCondition, string?][];
         failCauses: [TestSuiteCondition, string?][];
       };
-    };
-
-export type DisplayItem =
-  | {
-      display: "beacon";
-      item: IBeaconSummary;
-    }
-  | {
-      display: "testsuite";
-      item: TestSuiteResult;
     };
 
 export type NgrokEvent = {
