@@ -177,7 +177,7 @@ details.iglu {
         svg {
           cursor: pointer;
           height: 0.75rem;
-          opacity: .3;
+          opacity: 0.3;
         }
 
         &.pinned svg,

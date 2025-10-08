@@ -11,36 +11,6 @@ type InsightsAuthResponse = {
   accessToken: string;
 };
 
-type DataStructuresSchema = {
-  hash: string;
-  organizationId: string;
-  vendor: IgluSchema["vendor"];
-  name: IgluSchema["name"];
-  format: IgluSchema["format"];
-  description: string;
-  meta: {
-    schemaType: "event" | "entity";
-    hidden: boolean;
-    customData: object;
-  };
-  deployments: {
-    version: IgluSchema["version"];
-    patchLevel: number;
-    contentHash: string;
-    env: "DEV" | "PROD";
-    ts: string;
-    message: string;
-    initiator: string;
-  }[];
-};
-
-type DataStructuresMetaData = {
-  hash: string;
-  organizationId: string;
-  description: string;
-  deployments: Omit<DataStructuresSchema["deployments"][number], "version">[];
-} & DataStructuresSchema["meta"];
-
 export class DataStructuresRegistry extends Registry {
   override fields = {
     organizationId: {
@@ -91,7 +61,6 @@ export class DataStructuresRegistry extends Registry {
   private accessExpiry?: Date;
   private useOAuth?: boolean;
 
-  private readonly metadata: Map<IgluUri, DataStructuresMetaData> = new Map();
   private authLock?: Promise<RequestInit["headers"]>;
 
   constructor(spec: RegistrySpec) {
@@ -220,31 +189,6 @@ export class DataStructuresRegistry extends Registry {
     });
   }
 
-  private pickPatch(metadata: DataStructuresMetaData) {
-    let candidate: DataStructuresMetaData["deployments"][number] | null = null;
-    let patches = false;
-    for (const version of metadata.deployments) {
-      if (
-        false ||
-        !candidate ||
-        candidate.patchLevel < version.patchLevel ||
-        candidate.ts < version.ts ||
-        (candidate?.env === "DEV" && version.env === "PROD")
-      ) {
-        patches =
-          patches ||
-          (!!candidate && candidate.contentHash !== version.contentHash);
-        candidate = version;
-      }
-    }
-
-    if (candidate && patches) {
-      return "?env=" + candidate.env.toLowerCase();
-    }
-
-    return "";
-  }
-
   resolve(schema: IgluSchema): Promise<ResolvedIgluSchema> {
     if (this.cache.has(schema.uri())) return this.cache.get(schema.uri())!;
 
@@ -255,29 +199,9 @@ export class DataStructuresRegistry extends Registry {
         return Promise.reject("PREFIX_MISMATCH");
     }
 
-    if (this.metadata.has(schema.uri())) {
-      const md = this.metadata.get(schema.uri())!;
-      const patchEnv = this.pickPatch(md);
-
-      const p = this.fetch(
-        `api/msc/v1/organizations/data-structures/v1/${md.hash}/versions/${schema.version}${patchEnv}`,
-      )
-        .then((resp) => resp.json())
-        .then((data) => schema.resolve(data, this))
-        .then((res) => {
-          if (res) {
-            this.lastStatus = "OK";
-            return res;
-          } else return Promise.reject();
-        });
-
-      this.cache.set(schema.uri(), p);
-      return p;
-    } else if (!this.metadata.size) {
+    if (!this.cache.size) {
       return this.walk().then(() =>
-        this.metadata.has(schema.uri())
-          ? this.resolve(schema)
-          : Promise.reject(),
+        this.cache.has(schema.uri()) ? this.resolve(schema) : Promise.reject(),
       );
     } else return Promise.reject();
   }
@@ -308,52 +232,39 @@ export class DataStructuresRegistry extends Registry {
   }
 
   _walk() {
-    return this.fetch("api/msc/v1/organizations/data-structures/v1")
-      .then((resp) => resp.json())
-      .then((resp) => {
-        if (Array.isArray(resp)) {
-          const structures: DataStructuresSchema[] = resp;
+    return this.fetch(
+      "api/msc/v1/organizations/data-structures/v1/schemas/versions?env=DEV",
+    )
+      .then(
+        (r) => r.json(),
+        () => [],
+      )
+      .then(
+        (
+          schemas: {
+            self: {
+              vendor: string;
+              name: string;
+              format: string;
+              version: string;
+            };
+          }[],
+        ) => {
           const catalog: IgluSchema[] = [];
 
-          structures.forEach((struct) => {
-            const { description, meta, hash, organizationId } = struct;
-            if (organizationId !== this.organizationId) return;
+          for (const schema of schemas) {
+            const { name, vendor, format, version } = schema.self;
 
-            const { vendor, name, format, deployments } = struct;
+            const uri = new IgluSchema(vendor, name, format, version);
+            catalog.push(uri);
 
-            const versionInfo: Map<
-              string,
-              DataStructuresMetaData["deployments"][number][]
-            > = new Map();
+            const resolved = uri.resolve(schema, this);
 
-            deployments.forEach((dep) => {
-              const v: Omit<typeof dep, "version"> = Object.assign({}, dep, {
-                version: undefined,
-              });
-
-              if (versionInfo.has(dep.version)) {
-                versionInfo.get(dep.version)?.push(v);
-              } else {
-                versionInfo.set(dep.version, [v]);
-              }
-            });
-
-            versionInfo.forEach((deployments, version) => {
-              const s = new IgluSchema(vendor, name, format, version);
-              catalog.push(s);
-              const metadata: DataStructuresMetaData = {
-                ...meta,
-                description,
-                hash,
-                organizationId,
-                deployments,
-              };
-              this.metadata.set(s.uri(), metadata);
-            });
-          });
+            if (resolved) this.cache.set(uri.uri(), Promise.resolve(resolved));
+          }
 
           return catalog;
-        } else return Promise.reject();
-      });
+        },
+      );
   }
 }
