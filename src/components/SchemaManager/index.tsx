@@ -1,6 +1,13 @@
 import { h, type FunctionComponent } from "preact";
-import { useCallback, useMemo, useRef, useState } from "preact/hooks";
+import {
+  useCallback,
+  useErrorBoundary,
+  useMemo,
+  useRef,
+  useState,
+} from "preact/hooks";
 
+import { errorAnalytics } from "../../ts/analytics";
 import { type Registry, Resolver } from "../../ts/iglu";
 import { type ModalSetter } from "../../components/Modals";
 
@@ -23,6 +30,7 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
   resolver,
   setModal,
 }) => {
+  useErrorBoundary(errorAnalytics);
   const [filters, setFilters] = useState<Filter>({
     search: undefined,
     selections: [],

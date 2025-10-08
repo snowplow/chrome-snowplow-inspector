@@ -3,11 +3,13 @@ import { h, type FunctionComponent, Fragment } from "preact";
 import {
   useCallback,
   useEffect,
+  useErrorBoundary,
   useMemo,
   useRef,
   useState,
 } from "preact/hooks";
 
+import { errorAnalytics } from "../ts/analytics";
 import { extractBatchContents } from "../ts/extractBatchContents";
 import { doOAuthFlow } from "../ts/oauth";
 import { esMap } from "../ts/protocol";
@@ -41,6 +43,7 @@ const isValidBatch = (req: Entry): boolean => {
 };
 
 export const SnowplowInspector: FunctionComponent = () => {
+  useErrorBoundary(errorAnalytics);
   const [application, setApplication] = useState<Application>("debugger");
   const [activeModal, setActiveModal] = useState<Modal>();
   const [login, setLogin] = useState<OAuthResult>();

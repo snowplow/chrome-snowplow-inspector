@@ -1,4 +1,3 @@
-import type { Entry } from "har-format";
 import { h, type FunctionComponent } from "preact";
 import {
   useCallback,
@@ -26,7 +25,6 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   addRequests,
   setRequests,
 }) => {
-  performance.measure("startDebugger");
   useErrorBoundary(errorAnalytics);
   const [active, setActive] = useState<IBeaconSummary>();
   const [pipelines, setPipelines] = useState<PipelineInfo[]>([]);

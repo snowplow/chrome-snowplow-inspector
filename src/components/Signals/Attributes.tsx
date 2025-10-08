@@ -1,12 +1,14 @@
 import { h, type FunctionComponent } from "preact";
 import {
   useEffect,
+  useErrorBoundary,
   useMemo,
   useState,
   type Dispatch,
   type StateUpdater,
 } from "preact/hooks";
 
+import { errorAnalytics } from "../../ts/analytics";
 import type { OAuthResult, SignalsInstall } from "../../ts/types";
 
 import { Brochure } from "./Brochure";
@@ -50,6 +52,7 @@ const AttributeGroupData: FunctionComponent<{
   orgName,
   label,
 }) => {
+  useErrorBoundary(errorAnalytics);
   const [version, setVersion] = useState(
     Math.max(...groups.map(({ version }) => version)),
   );

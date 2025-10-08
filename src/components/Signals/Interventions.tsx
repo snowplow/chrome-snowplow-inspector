@@ -1,6 +1,12 @@
 import { h, type FunctionComponent } from "preact";
-import { useState, type Dispatch, type StateUpdater } from "preact/hooks";
+import {
+  useErrorBoundary,
+  useState,
+  type Dispatch,
+  type StateUpdater,
+} from "preact/hooks";
 
+import { errorAnalytics } from "../../ts/analytics";
 import type { OAuthResult, SignalsInstall } from "../../ts/types";
 
 import { JsonViewer } from "../JSONViewer";
@@ -151,6 +157,7 @@ export const Interventions: FunctionComponent<{
   signalsDefs: ({ interventions: InterventionDefinition[] } | undefined)[];
   signalsInfo: Record<string, SignalsInstall[]>;
 }> = ({ interventions, login, setLogin, signalsDefs, signalsInfo }) => {
+  useErrorBoundary(errorAnalytics);
   const signalsAvailable = Object.keys(signalsInfo).length > 0;
   return (
     <main key="app" class="app app--interventions interventions">
