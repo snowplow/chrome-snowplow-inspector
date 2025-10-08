@@ -96,10 +96,10 @@ If you intend to make a pull request, (thankyou!) please ensure `npm test` runs 
 This will check for type errors with the TypeScript compiler, and validate the code formatting.
 `npm run fmt` will reformat any changes to meet the formatting requirements.
 
-To do a build without watch mode, `npm install` will automatically do `npm run prepare` which does a normal build.
+To do a build without watch mode, `npm install` will automatically do `npm run prepare`, which does a normal build.
 
-Development versions of the extension use a staging environment of the Snowplow Console which most external contributors will not login information for.
-We are happy to help test your changes that interact with console APIs if required.
+Watch-mode builds of the extension use the production extension identifier by default and talk to the production Console API; you can alter `build.mjs` to not do this if you want to isolate the extension environment from the production extension, or to work with a staging environment of the Snowplow Console (though most external contributors will not have login information).
+Likewise, to use the production ID with a non-watch build, (e.g. to distribute a modified unpacked build) modify `build.mjs` to not remove the `key` from `manifest.json` so a new one is generated.
 
 === Publishing
 - `npm run zip` will produce a .zip file ready for uploading to the link:https://chrome.google.com/webstore/devconsole/b79d3fcc-9e6c-4237-a25b-11c86912ec5b/maplkdomeamdlngconidoefjpogkmljm/edit[Chrome Web Store] Developer Dashboard

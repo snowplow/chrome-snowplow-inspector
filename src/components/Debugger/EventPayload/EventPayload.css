@@ -177,12 +177,12 @@ details.iglu {
         svg {
           cursor: pointer;
           height: 0.75rem;
-          display: none;
+          opacity: .3;
         }
 
         &.pinned svg,
         &:hover svg {
-          display: unset;
+          opacity: 1;
         }
       }
       dl {
