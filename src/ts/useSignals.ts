@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
   type Dispatch,
   type StateUpdater,
@@ -64,6 +65,7 @@ export const useSignals = (
       | undefined
     )[]
   >([]);
+  const badSignals = useRef(new Set<SignalsClient>());
 
   useEffect(() => {
     const updateOptions = (_: any, namespace: string) =>
@@ -346,18 +348,34 @@ export const useSignals = (
     }
 
     for (const { client } of apiClients) {
+      // skip listening for clients we've had trouble with in the past
+      // give them a small chance to recover though
+      if (badSignals.current.has(client) && Math.random() < 0.3) continue;
+
       const endpoint = new URL(`${client.baseUrl}/api/v1/interventions`);
 
       for (const sub of subscriptions) {
         const params = new URLSearchParams(sub);
+
         const es = new EventSource(`${endpoint}?${params.toString()}`);
+
+        es.addEventListener("error", () => {
+          badSignals.current.add(client);
+          es.close();
+        });
+
         es.addEventListener("message", (ev: MessageEvent<string>) => {
+          badSignals.current.delete(client);
           setInterventions((existing) => [
             ...existing,
             Object.assign(JSON.parse(ev.data), { received: new Date() }),
           ]);
         });
-        eventSources.push(es);
+
+        es.addEventListener("open", () => {
+          badSignals.current.delete(client);
+          eventSources.push(es);
+        });
       }
     }
 
