@@ -1,5 +1,6 @@
 import type { Cookie, Entry, Header, Request } from "har-format";
 import type { Schema } from "jsonschema";
+import type { Dispatch, StateUpdater } from "preact/hooks";
 
 import { protocol } from "./protocol";
 import { schemas, decodeB64Thrift } from "./thriftcodec";
@@ -791,34 +792,43 @@ const colorOf = (id: string) => {
   return COLOR_ALLOCATIONS.get(id);
 };
 
-const chunkEach = <T>(
+const chunkEach = <T, R>(
   arr: T[],
-  cb: (e: T, i: number) => Promise<void>,
+  cb: (e: T) => Promise<R>,
+  updater: Dispatch<StateUpdater<(T | R)[]>>,
   CHUNK_SIZE: number = 24,
   aborter?: AbortSignal,
 ) => {
-  return new Promise<void>((fulfil) => {
-    let next = CHUNK_SIZE;
-    let chunk = arr.slice(0, CHUNK_SIZE).map(cb);
+  let timeout = setTimeout(function doChunk(i: number = 0) {
+    const chunkStart = CHUNK_SIZE * i;
+    const chunk = arr
+      .slice(chunkStart, chunkStart + CHUNK_SIZE)
+      .map((e) => cb(e).catch(() => e));
 
-    if (!chunk.length) fulfil();
+    if (!chunk.length) return;
 
-    const step = (chunk: Promise<void>[]): Promise<void> => {
-      if (aborter?.aborted) return Promise.resolve();
-      return Promise.race(chunk.map((p, i) => p.then(() => i))).then((i) => {
-        if (next < arr.length) {
-          chunk[i] = cb(arr[next], next);
-          next += 1;
-        } else {
-          chunk = chunk.filter((_, j) => j !== i);
+    Promise.race(chunk).then(() => {
+      // once the first part of the chunk completes, begin the next chunk
+      // we're assuming here that the rest of the chunk will follow shortly
+      if (aborter?.aborted) return;
+      timeout = setTimeout(doChunk, 0, i + 1);
+    });
+
+    Promise.all(chunk).then((res) => {
+      // with the whole chunk complete, render the results
+      updater((current) => {
+        if (aborter?.aborted) return current;
+
+        for (const [index, result] of res.entries()) {
+          current[chunkStart + index] = result;
         }
 
-        if (chunk.length && !(aborter?.aborted ?? false)) return step(chunk);
+        return [...current];
       });
-    };
+    });
+  }, 0);
 
-    fulfil(step(chunk));
-  });
+  aborter?.addEventListener("abort", () => clearTimeout(timeout));
 };
 
 const ngrokEventToHAR = (event: NgrokEvent): Entry => {

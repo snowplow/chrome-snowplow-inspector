@@ -51,17 +51,16 @@ export const SchemaManager: FunctionComponent<SchemaManagerAttributes> = ({
           type="search"
           placeholder="Filter Pattern"
           title="Regular expression to search schemas for"
-          onKeyUp={(event) => {
-            const target = event.currentTarget;
-            if (!target.value.trim()) return clearSearch();
+          onInput={({ currentTarget }) => {
+            if (!currentTarget.value.trim()) return clearSearch();
 
             try {
-              const re = new RegExp(target.value, "im");
-              target.setCustomValidity("");
+              const re = new RegExp(currentTarget.value, "im");
+              currentTarget.setCustomValidity("");
               setFilters((filters) => ({ ...filters, search: re }));
             } catch {
-              target.setCustomValidity("Invalid regular expression");
-              target.reportValidity();
+              currentTarget.setCustomValidity("Invalid regular expression");
+              currentTarget.reportValidity();
             }
           }}
         />

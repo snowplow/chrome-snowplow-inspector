@@ -104,7 +104,7 @@ export class ResolvedIgluSchema extends IgluSchema {
     const fields = new Set<string>([base]);
 
     let data: Schema | undefined;
-    const stack: (typeof data)[] = [data];
+    const stack: (typeof data)[] = [this.data];
     const meta: (keyof Schema)[] = ["title", "description", "type"];
     while (stack.length) {
       data = stack.pop();
