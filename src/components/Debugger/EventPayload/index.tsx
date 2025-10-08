@@ -442,7 +442,7 @@ const EventSummary: FunctionComponent<
   return (
     <article class={`event-payload destination-${colorOf(collector + appId)}`}>
       <header>
-        <h1>{name} Event</h1>
+        <h1>{name.includes("Event") ? name : `${name} Event`}</h1>
         <span>
           Method: <span>{method}</span>
         </span>
