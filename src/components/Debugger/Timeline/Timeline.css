@@ -84,19 +84,21 @@
   > summary {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     color: var(--muted-foreground);
     padding: 0.5rem 0;
     cursor: pointer;
+    gap: 0.5rem;
+    line-height: 1.25rem;
 
     span {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      line-height: 1.25rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow-x: hidden;
+      flex: 1;
+      width: 0;
     }
 
-    & span::before {
+    &::before {
       content: attr(data-event-count);
       display: inline-block;
       border-radius: 5rem;
@@ -114,14 +116,15 @@
       mask: url("lucide-static/icons/plus-circle.svg") no-repeat center;
       mask-size: cover;
       background-color: currentColor;
+      margin-left: auto;
     }
   }
 
-  &[open] > summary span {
+  &[open] > summary {
     color: var(--foreground);
   }
 
-  &[open] > summary span::before {
+  &[open] > summary::before {
     background-color: var(--primary);
     color: var(--primary-foreground);
   }

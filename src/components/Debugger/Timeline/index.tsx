@@ -194,32 +194,37 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   );
 
   const pageGroups = useMemo(() => {
-    const groups: [string, IBeaconSummary[]][] = [];
+    const groups: [string, string, IBeaconSummary[]][] = [];
 
     for (const summary of batchSummaries.flat(1)) {
       const { pageref, page } = summary;
-      const rawKey = pageref || (page ? new URL(page) : fallbackUrl);
-      const key =
-        rawKey instanceof URL
-          ? rawKey.pathname.slice(0, 34)
-          : (rawKey?.slice(0, 34) ?? "Current Page");
+      const pageName =
+        (page ? new URL(page) : fallbackUrl)?.pathname ?? "Unknown page";
 
-      const [lastKey, list] = groups.pop() ?? [key, []];
+      const key = pageref || pageName;
 
-      if (key === lastKey) {
-        list.push(summary);
-        groups.push([lastKey, list]);
+      const [latestKey, latestName, latestList] = groups.pop() ?? [];
+      const [priorKey, priorName, priorList] = groups.pop() ?? [];
+      let newList: (typeof groups)[number] | null = null;
+
+      if (latestKey === key && latestList) {
+        latestList.push(summary);
+      } else if (priorKey === key && priorList) {
+        priorList.push(summary);
       } else {
-        groups.push([lastKey, list]);
-        groups.push([key, [summary]]);
+        newList = [key, pageName, [summary]];
       }
+
+      if (priorKey) groups.push([priorKey, priorName!, priorList!]);
+      if (latestKey) groups.push([latestKey, latestName!, latestList!]);
+      if (newList) groups.push(newList);
     }
 
     return groups;
   }, [batchSummaries, fallbackUrl]);
 
   summariesRef.current = batchSummaries;
-  if (pageGroups.length && !active) setActive(pageGroups[0][1][0]);
+  if (pageGroups.length && !active) setActive(pageGroups[0][2][0]);
 
   return (
     <TimelineChrome
@@ -236,7 +241,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
       setModal={setModal}
     >
       <ol class="timeline__events">
-        {pageGroups.map(([pageName, events], i) => (
+        {pageGroups.map(([_, pageName, events], i) => (
           <li>
             <PageGroup key={i} pageName={pageName} events={events.length}>
               <ol>
