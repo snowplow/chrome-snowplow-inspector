@@ -6,14 +6,12 @@ export const PageGroup: FunctionComponent<{
 }> = ({ pageName, children, events }) => {
   return (
     <details class="event-group" open>
-      <summary>
-        <span
-          data-event-count={events.toLocaleString(undefined, {
-            minimumIntegerDigits: 2,
-          })}
-        >
-          {pageName}
-        </span>
+      <summary
+        data-event-count={events.toLocaleString(undefined, {
+          minimumIntegerDigits: 2,
+        })}
+      >
+        <span title={pageName}>{pageName}</span>
       </summary>
       {children}
     </details>

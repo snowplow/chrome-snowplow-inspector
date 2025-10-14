@@ -19,8 +19,9 @@ export const extractBatchContents = (
   index: number,
 ): BatchContents => {
   const { headers, method, postData, url } = request;
-  const ref = pageref && /^page_\d+/.test(pageref) ? "beacon" : pageref;
-  const id = ref + hash(new Date(startedDateTime).toJSON() + url + index);
+  const id =
+    (pageref ?? "beacon") +
+    hash(new Date(startedDateTime).toJSON() + url + index);
 
   const collectorUrl = new URL(url);
   const collector = collectorUrl.hostname;
@@ -138,7 +139,7 @@ export const extractBatchContents = (
     collector,
     collectorPath,
     method,
-    pageref: ref,
+    pageref,
     events,
     serverAnonymous,
     status: response.status,
