@@ -49,14 +49,6 @@ const InterventionsUI: FunctionComponent<{
   const [active, setActive] = useState<ReceivedIntervention>();
   return [
     <aside>
-      <hgroup>
-        <img alt="Snowplow logo" src={logo} />
-        <h1>Interventions Signals</h1>
-        <p>
-          Utilize Behavioral attributes and AI to dynamically guide users based
-          on their actions.
-        </p>
-      </hgroup>
       {interventions.length ? (
         <figure>
           <figcaption>Intervention Order</figcaption>
@@ -76,15 +68,29 @@ const InterventionsUI: FunctionComponent<{
             ))}
           </ul>
         </figure>
-      ) : null}
-      <p>
-        By analyzing online behaviors, we can tailor interactions to enhance
-        user experience and engagement, ensuring that each user receives a
-        personalized journey.
-      </p>
-      <a target="_blank" href="https://docs.snowplow.io/docs/signals">
-        Learn more
-      </a>
+      ) : (
+        [
+          <hgroup>
+            <img alt="Snowplow logo" src={logo} />
+            <h1>Interventions Signals</h1>
+            <p>
+              Utilize Behavioral attributes and AI to dynamically guide users
+              based on their actions.
+            </p>
+          </hgroup>,
+          <p>
+            By analyzing online behaviors, we can tailor interactions to enhance
+            user experience and engagement, ensuring that each user receives a
+            personalized journey.
+          </p>,
+          <a
+            target="_blank"
+            href="https://docs.snowplow.io/docs/signals/concepts/#interventions"
+          >
+            Learn more
+          </a>,
+        ]
+      )}
     </aside>,
     <article>
       {active && (
