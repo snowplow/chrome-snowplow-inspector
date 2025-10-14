@@ -262,13 +262,13 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   } else if (typeof obj.data === "object" && obj.data !== null) {
     children.push(
       ...Object.entries(obj.data).map(([p, val]) => (
-        <tr>
+        <>
           {Array.isArray(obj.data) ? null : <dt>{p}</dt>}
           <dd>
             <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
             {isSDJ(val) ? null : <LabelType val={val} />}
           </dd>
-        </tr>
+        </>
       )),
     );
   }
@@ -276,14 +276,7 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   const { validity, errorText, schema } = schemaValidity;
 
   const tabs = {
-    Data: () => (
-      <>
-        {/* <LabelType val={obj.data} /> */}
-        <table class={Array.isArray(obj.data) ? "array" : "object"}>
-          {children}
-        </table>
-      </>
-    ),
+    Data: () => <>{children}</>,
     JSON: () => <JsonViewer data={obj} />,
     Schema: () => {
       const resolved =
@@ -302,28 +295,20 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   return (
     <details class={["iglu", "iglu--" + validity.toLowerCase()].join(" ")} open>
       <summary>
-        <div style={{ width: "100%" }}>
-          <div class="iglu__status">
-            <div>
-              <div class="label__type">
-                {capitalizeFirst(nameType(obj.data))}
-              </div>
-            </div>
-            <div>
-              <abbr
-                class="iglu__validation"
-                title={errorText}
-                onClick={() => {
-                  if (errorText) {
-                    copyToClipboard(errorText);
-                  }
-                }}
-              >
-                {validity}
-              </abbr>
-            </div>
-          </div>
-          <div class="schema__name">{obj.schema}</div>
+        <div class="schema__name">{obj.schema}</div>
+        <LabelType val={obj.data} />
+        <div class="iglu__status">
+          <span
+            class="iglu__validation"
+            title={errorText}
+            onClick={() => {
+              if (errorText) {
+                copyToClipboard(errorText);
+              }
+            }}
+          >
+            {validity}
+          </span>
         </div>
       </summary>
       <div class="iglu__content">
@@ -358,17 +343,17 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
     }
   } else if (!isSDJ(obj)) {
     return (
-      <table class={Array.isArray(obj) ? "array" : "object"}>
+      <dl class={Array.isArray(obj) ? "array" : "object"}>
         {Object.entries(obj).map(([p, val]) => (
-          <tr>
-            {Array.isArray(obj) ? null : <th>{p}</th>}
-            <td>
+          <>
+            {Array.isArray(obj) ? null : <dt>{p}</dt>}
+            <dd>
               <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
               <LabelType val={val} />
-            </td>
-          </tr>
+            </dd>
+          </>
         ))}
-      </table>
+      </dl>
     );
   } else return <SDJValue obj={obj} resolver={resolver} />;
 };
@@ -378,9 +363,7 @@ const FieldGroup: FunctionComponent<IRowSet> = ({ setName, children }) => (
     <summary class="title">
       <span>{setName}</span>
     </summary>
-    <dl>
-      <div class="">{children}</div>
-    </dl>
+    <div>{children}</div>
   </details>
 );
 
