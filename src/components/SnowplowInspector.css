@@ -317,6 +317,7 @@ label[title] {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     padding-left: 0;
+    width: 0;
   }
 
   input[type="text"] {
