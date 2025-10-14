@@ -1,13 +1,15 @@
 .debugger {
   margin: 0;
-  padding: 8px 16px;
+  padding: 0.5rem;
+  padding-right: 0;
+
   .debugger__display {
     flex: 84;
-    margin: 1.5rem 1.5rem 1.5rem 0.5rem;
+    margin: 1.5rem 0.5rem;
     display: flex;
     flex-flow: column nowrap;
     align-items: stretch;
-    gap: 1rem;
+    gap: 0.25rem;
 
     .fallback {
       margin: auto;

@@ -1,5 +1,5 @@
 details.iglu {
-  &[open] > summary .label__type::before {
+  &[open] > summary .schema__name::before {
     display: inline-block;
     content: "";
     height: 1rem;
@@ -13,34 +13,27 @@ details.iglu {
   > .iglu__content {
     padding-left: 1rem;
     border-left: 1px solid var(--border-darker);
-    margin-left: 7px;
-    padding-top: 16px;
+    margin-left: 0.5rem;
+    padding-top: 1rem;
   }
 
   summary {
     align-items: baseline;
     padding-bottom: 0px;
+    display: flex;
+    gap: 1rem;
+    cursor: pointer;
 
     .schema__name {
-      padding-left: 10px;
-      margin-left: 7px;
-      border-left: 1px solid var(--border-darker);
+      margin-right: auto;
       color: var(--muted-foreground);
-      font-size: 12px;
+      font-size: 1rem;
     }
 
     .iglu__status {
       display: flex;
       align-items: center;
       justify-content: space-between;
-    }
-
-    .label__type {
-      font-weight: bold;
-      font-size: 1.25rem;
-      color: var(--foreground);
-      display: flex;
-      align-items: center;
     }
   }
 }
@@ -166,7 +159,8 @@ details.iglu {
     padding-bottom: 4rem;
 
     dl.event-generic-summary,
-    .event-fieldgroup dl {
+    .event-fieldgroup dl,
+    .event-fieldgroup > div {
       dt {
         font-weight: 400;
         font-size: 0.875rem;
@@ -185,11 +179,6 @@ details.iglu {
           opacity: 1;
         }
       }
-      dl {
-        font-size: 0.875rem;
-        color: white;
-        font-weight: bold;
-      }
 
       dd {
         margin-bottom: 1rem;
@@ -207,6 +196,14 @@ details.iglu {
       padding: 0;
     }
   }
+}
+
+dl.array,
+dl.object {
+  padding-left: 1rem;
+  padding-top: 0.5rem;
+  border-left: 1px solid var(--border-darker);
+  margin-left: 0.5rem;
 }
 
 .event-fieldgroup {
@@ -231,7 +228,7 @@ details.iglu {
     margin-right: 0.25rem;
   }
 
-  summary .label__type::before {
+  summary .schema__name::before {
     display: inline-block;
     content: "";
     height: 1rem;

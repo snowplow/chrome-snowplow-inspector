@@ -97,7 +97,7 @@ export const TimelineChrome: FunctionComponent<{
     [requestsRef, summariesRef],
   );
   return (
-    <aside class="timeline min-w-[250px]">
+    <aside class="timeline">
       <fieldset class="timeline__controls">
         <legend>Event List Actions</legend>
         <div>

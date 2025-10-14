@@ -38,7 +38,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
           }
         }}
       >
-        <label>
+        <label title="Events">
           <input
             type="radio"
             name="application"
@@ -51,7 +51,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
           <span>Events</span>
           {eventCount ? <span>{eventCount}</span> : null}
         </label>
-        <label>
+        <label title="Attributes">
           <input
             type="radio"
             name="application"
@@ -63,7 +63,7 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
           </span>
           <span>Attributes</span>
         </label>
-        <label>
+        <label title="Interventions">
           <input
             type="radio"
             name="application"
