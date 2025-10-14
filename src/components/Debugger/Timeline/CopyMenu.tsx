@@ -35,7 +35,7 @@ const formatters: Record<string, (beacon: IBeaconSummary) => string> = {
       "--compressed",
       ua && `-A ${JSON.stringify(ua)}`,
       // shell will merge the consecutive strings
-      lang && `-H "Accept-Language: ${JSON.stringify(lang)}`,
+      lang && `-H "Accept-Language: ${JSON.stringify(lang).slice(1, -1)}"`,
       `-H "Content-Type: application/json; charset=UTF-8"`,
       // double stringify to escape quotes properly
       `--data-raw ${JSON.stringify(JSON.stringify(wrapPost(data)))}`,
