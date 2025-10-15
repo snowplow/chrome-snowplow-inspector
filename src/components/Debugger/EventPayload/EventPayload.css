@@ -28,6 +28,7 @@ details.iglu {
       margin-right: auto;
       color: var(--muted-foreground);
       font-size: 1rem;
+      white-space: nowrap;
     }
 
     .iglu__status {
@@ -277,28 +278,27 @@ dl.object {
 
   .tab {
     position: relative;
-    cursor: pointer;
-    border-radius: 0.25rem;
-    transition: all 0.2s ease;
-    margin: 0;
-    padding: 0;
-    background: transparent;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
     min-width: 6rem;
+    padding: 0.125rem 1rem;
+    background: transparent;
+    border-radius: 0.25rem;
+    margin: 0;
+
+    font-weight: 500;
+    color: var(--accent-foreground);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
   .tab input[type="radio"] {
     display: none;
-  }
-
-  .tab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.125rem 1rem;
-    color: var(--accent-foreground);
-    font-weight: 500;
-    background-color: transparent;
-    transition: all 0.2s ease;
   }
 
   .tab:hover {

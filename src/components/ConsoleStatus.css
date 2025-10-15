@@ -8,6 +8,10 @@
 
   margin: 0.5rem 1.04rem;
 
+  @media (width <= 834px) {
+    margin: 0.5rem 0;
+  }
+
   .profile {
     line-height: 0;
 
