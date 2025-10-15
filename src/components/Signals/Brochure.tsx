@@ -29,10 +29,12 @@ export const Brochure: FunctionComponent<{
   return (
     <article class="brochure">
       <div>
-        <img alt="Snowplow logo" src={logo} />
-        <h1>Signals</h1>
+        <hgroup>
+          <img alt="Snowplow logo" src={logo} />
+          <h1>Signals</h1>
+        </hgroup>
         <p>
-          a personalization engine built on Snowplow's behavioral data pipeline.
+          A personalization engine built on Snowplow's behavioral data pipeline.
           Allows users to enhance their applications by aggregating user
           attributes and providing near real-time visibility into customer
           behavior.
