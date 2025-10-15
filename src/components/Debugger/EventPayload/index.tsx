@@ -261,15 +261,17 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
     );
   } else if (typeof obj.data === "object" && obj.data !== null) {
     children.push(
-      ...Object.entries(obj.data).map(([p, val]) => (
-        <>
-          {Array.isArray(obj.data) ? null : <dt>{p}</dt>}
-          <dd>
-            <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
-            {isSDJ(val) ? null : <LabelType val={val} />}
-          </dd>
-        </>
-      )),
+      <dl>
+        {Object.entries(obj.data).map(([p, val]) => (
+          <>
+            {Array.isArray(obj.data) ? null : <dt>{p}</dt>}
+            <dd>
+              <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
+              {isSDJ(val) ? null : <LabelType val={val} />}
+            </dd>
+          </>
+        ))}
+      </dl>,
     );
   }
 

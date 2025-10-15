@@ -40,6 +40,8 @@ details.iglu {
 }
 
 .iglu {
+  flex: 1;
+
   summary > span {
     font-size: 0.75rem;
   }
@@ -183,6 +185,8 @@ details.iglu {
 
       dd {
         margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
       }
 
       > detail {
@@ -205,6 +209,7 @@ dl.object {
   padding-top: 0.5rem;
   border-left: 1px solid var(--border-darker);
   margin-left: 0.5rem;
+  flex: 1;
 }
 
 .event-fieldgroup {
@@ -295,6 +300,10 @@ dl.object {
 
     cursor: pointer;
     transition: all 0.2s ease;
+
+    @media (width <= 834px) {
+      padding: 0.125rem 0;
+    }
   }
 
   .tab input[type="radio"] {
@@ -313,15 +322,17 @@ dl.object {
 
 .typeinfo {
   font-weight: 400;
-  border-radius: 5rem;
+  border-radius: 0.25rem;
   line-height: 1.25rem;
   font-size: 0.75rem;
   font-family: "Roboto";
   margin-left: 0.375rem;
-  padding: 0 0.5rem;
+  padding: 0 0.75rem;
+  opacity: 75%;
 
   &:enabled:hover {
     color: white !important;
+    opacity: 100%;
   }
 
   &.typeinfo--string:enabled {
