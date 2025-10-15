@@ -64,6 +64,7 @@
 
 #consolestatus-po {
   position-area: top;
+  translate: 10%;
 
   li:last-child {
     padding-top: 0.875rem;
