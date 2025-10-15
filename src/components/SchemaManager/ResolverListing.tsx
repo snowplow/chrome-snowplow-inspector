@@ -9,22 +9,24 @@ export const ResolverListing: FunctionComponent<{
   selected: Registry[];
   selectRegistries: (regs: Registry[]) => void;
 }> = ({ resolver, selected, selectRegistries }) => (
-  <select
-    multiple
-    size={resolver.registries.length}
-    onChange={(event) => {
-      const target = event.currentTarget;
-      const options = Array.from(target.selectedOptions);
+  <fieldset
+    onChange={({ currentTarget }) => {
+      const selections = Object.fromEntries(
+        Array.from(currentTarget.getElementsByTagName("input"), (e) => [
+          e.value,
+          e.checked,
+        ]),
+      );
 
-      const registries = options
-        .map((opt) => resolver.registries.findIndex((r) => r.id === opt.value))
-        .filter((i) => i !== -1)
-        .map((i) => resolver.registries[i]);
-      selectRegistries(registries);
+      selectRegistries(resolver.registries.filter((r) => selections[r.id]));
     }}
   >
     {resolver.registries.map((reg) => (
-      <RegistryDetail registry={reg} selected={selected.includes(reg)} />
+      <RegistryDetail
+        key={reg.id}
+        registry={reg}
+        selected={selected.includes(reg)}
+      />
     ))}
-  </select>
+  </fieldset>
 );

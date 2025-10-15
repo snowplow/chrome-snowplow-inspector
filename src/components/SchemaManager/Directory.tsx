@@ -13,7 +13,6 @@ import {
   IgluSchema,
   ResolvedIgluSchema,
   Resolver,
-  type IgluUri,
 } from "../../ts/iglu";
 import { chunkEach, colorOf } from "../../ts/util";
 

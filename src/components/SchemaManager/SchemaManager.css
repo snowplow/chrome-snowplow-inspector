@@ -90,6 +90,10 @@
       line-height: normal;
     }
 
+    fieldset input[type="checkbox"] {
+      display: none;
+    }
+
     button,
     .button {
       color: white;

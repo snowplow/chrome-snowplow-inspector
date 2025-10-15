@@ -198,7 +198,6 @@ export class Resolver extends Registry {
               continue;
             case "static":
             case "iglu":
-            case "ds":
               let matches = 0;
               let opts = 0;
               for (const [p, v] of Object.entries(existing.opts)) {
@@ -212,6 +211,17 @@ export class Resolver extends Registry {
                 if (opts !== matches) this.registries[i] = reg;
                 replaced = true;
               }
+              break;
+            case "ds":
+              if (
+                reg.opts.organizationId === existing.opts.organizationId &&
+                reg.opts.dsApiEndpoint === existing.opts.dsApiEndpoint &&
+                reg.opts.useOAuth === existing.opts.useOAuth
+              ) {
+                this.registries[i] = reg;
+                replaced = true;
+              }
+              break;
           }
         }
       }

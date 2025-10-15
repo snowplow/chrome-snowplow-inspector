@@ -8,6 +8,10 @@
 
   margin: 0.5rem 1.04rem;
 
+  @media (width <= 834px) {
+    margin: 0.5rem 0;
+  }
+
   .profile {
     line-height: 0;
 
@@ -60,6 +64,7 @@
 
 #consolestatus-po {
   position-area: top;
+  translate: 10%;
 
   li:last-child {
     padding-top: 0.875rem;
