@@ -131,18 +131,12 @@ const RegistryListing: FunctionComponent<{
   registry: Registry;
   selected?: boolean;
 }> = ({ registry, selected }) => (
-  <option
-    class={[
-      "registry",
-      registry.spec.kind,
-      (registry.lastStatus || "").toLowerCase(),
-    ].join(" ")}
-    className="inline-flex items-center rounded-md bg-[#8BD9FE]/10 px-2 py-1 text-sm font-medium text-[#8BD9FE] inset-ring inset-ring-blue-400/30 m-0.5 cursor-pointer"
-    value={registry.id}
-    selected={!!selected}
+  <label
+    class={`inline-flex items-center rounded-md ${selected ? "bg-[#0398de]/10" : "bg-[#8BD9FE]/10"} px-2 py-1 text-sm font-medium text-[#8BD9FE] inset-ring inset-ring-blue-400/30 m-0.5 cursor-pointer`}
   >
+    <input type="checkbox" checked={!!selected} value={registry.id} />
     {registry.spec.name}
-  </option>
+  </label>
 );
 
 export const RegistryDetail: FunctionComponent<{
