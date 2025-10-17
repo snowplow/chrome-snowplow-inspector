@@ -228,6 +228,7 @@ export const SnowplowInspector: FunctionComponent = () => {
         <Attributes
           key="app"
           login={login}
+          eventCount={eventCount}
           setLogin={setLogin}
           attributeKeyIds={attributeKeyIds}
           signalsDefs={signalsDefs}

@@ -35,6 +35,7 @@ type SourceFilter = "All" | "Stream" | "Batch" | "External";
 
 const AttributeGroupData: FunctionComponent<{
   client: SignalsClient;
+  eventCount?: number;
   filter?: string | RegExp;
   sourceFilter: SourceFilter;
   groups: AttributeGroup[];
@@ -44,6 +45,7 @@ const AttributeGroupData: FunctionComponent<{
   label: string;
 }> = ({
   client,
+  eventCount,
   filter,
   sourceFilter,
   groups,
@@ -82,7 +84,7 @@ const AttributeGroupData: FunctionComponent<{
     let cancelled = false;
     const ids = [...(identifiers[attribute_key.name] ?? [])];
 
-    ids.forEach((identifier, i) => {
+    const fetchForIdentifier = (identifier: string, i: number) => {
       client
         .getGroupAttributes({
           name,
@@ -121,12 +123,19 @@ const AttributeGroupData: FunctionComponent<{
             });
           },
         );
+    };
 
-      return () => {
-        cancelled = true;
-      };
-    });
-  }, [identifiers, version]);
+    const fetchAllIdentifiers = () => {
+      ids.forEach(fetchForIdentifier);
+    };
+
+    let timeout = setTimeout(fetchAllIdentifiers, 3000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [identifiers, version, eventCount]);
 
   if (!values.some(Boolean)) return null;
 
@@ -238,6 +247,7 @@ const AttributeGroupData: FunctionComponent<{
 const MultiInstanceData: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
   definitions: ResourceDefinitions[];
+  eventCount?: number;
   filter?: string | RegExp;
   labelFilter: Record<string, boolean>;
   orgFilter: string;
@@ -245,6 +255,7 @@ const MultiInstanceData: FunctionComponent<{
 }> = ({
   attributeKeyIds,
   definitions,
+  eventCount,
   filter,
   labelFilter,
   orgFilter,
@@ -278,6 +289,7 @@ const MultiInstanceData: FunctionComponent<{
     return Object.values(versionGroups).map((versions) => (
       <AttributeGroupData
         key={`${client.baseUrl}.${versions[0].name}`}
+        eventCount={eventCount}
         client={client}
         filter={filter}
         sourceFilter={sourceFilter}
@@ -292,9 +304,10 @@ const MultiInstanceData: FunctionComponent<{
 
 const AttributesUI: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
+  eventCount?: number;
   signalsDefs: ResourceDefinitions[];
   signalsInfo: Record<string, SignalsInstall[]>;
-}> = ({ attributeKeyIds, signalsDefs, signalsInfo }) => {
+}> = ({ attributeKeyIds, eventCount, signalsDefs, signalsInfo }) => {
   const [filter, setFilter] = useState<string>();
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("All");
   const [orgFilter, setOrgFilter] = useState("All");
@@ -391,6 +404,7 @@ const AttributesUI: FunctionComponent<{
         <MultiInstanceData
           attributeKeyIds={attributeKeyIds}
           definitions={signalsDefs}
+          eventCount={eventCount}
           filter={pattern}
           labelFilter={labelFilter}
           orgFilter={orgFilter}
@@ -412,13 +426,22 @@ export const Attributes: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
   signalsDefs: ResourceDefinitions[];
   signalsInfo: Record<string, SignalsInstall[]>;
-}> = ({ attributeKeyIds, login, setLogin, signalsDefs, signalsInfo }) => {
+  eventCount?: number;
+}> = ({
+  attributeKeyIds,
+  eventCount,
+  login,
+  setLogin,
+  signalsDefs,
+  signalsInfo,
+}) => {
   const signalsAvailable = Object.keys(signalsInfo).length > 0;
   return (
     <main key="app" class="app app--attributes attributes">
       {signalsAvailable ? (
         <AttributesUI
           attributeKeyIds={attributeKeyIds}
+          eventCount={eventCount}
           signalsDefs={signalsDefs}
           signalsInfo={signalsInfo}
         />
