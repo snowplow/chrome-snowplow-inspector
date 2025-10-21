@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from "preact/hooks";
+import { ChevronRight } from "lucide-preact";
 
 import { IgluSchema, type IgluUri, Resolver } from "../../../ts/iglu";
 import type { BeaconValidity, IBeaconSummary } from "../../../ts/types";
@@ -163,6 +164,7 @@ export const EventEntry: FunctionComponent<{
       onClick={setActive.bind(null, event)}
     >
       <span data-timestamp={dt.format(time)}>{eventName}</span>
+      {isActive ? <ChevronRight /> : null}
     </a>
   );
 };
