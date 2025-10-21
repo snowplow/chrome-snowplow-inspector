@@ -173,9 +173,10 @@ const Tabs = <T extends Record<string, () => VNode>>({
 
   return (
     <>
-      <form class="iglu__tabs-control" onChange={tabHandler}>
+      <fieldset class="iglu__tabs-control" onChange={tabHandler}>
         {Object.keys(options).map((tabName) => (
           <label
+            key={tabName}
             class={["tab", activeTab === tabName ? "tab--active" : ""].join(
               " ",
             )}
@@ -189,14 +190,8 @@ const Tabs = <T extends Record<string, () => VNode>>({
             {tabName}
           </label>
         ))}
-      </form>
-      <div
-        class={["iglu__payload", "iglu__payload--" + activeTab.toString()].join(
-          " ",
-        )}
-      >
-        {options[activeTab]()}
-      </div>
+      </fieldset>
+      {options[activeTab]()}
     </>
   );
 };
@@ -251,28 +246,30 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
 
   if (isSDJ(obj.data)) {
     children.push(
-      <SDJValue obj={obj.data} resolver={resolver} setModal={setModal} />,
+      <tr>
+        <td>
+          <SDJValue obj={obj.data} resolver={resolver} setModal={setModal} />
+        </td>
+      </tr>,
     );
   } else if (typeof obj.data === "object" && obj.data !== null) {
     children.push(
-      <dl>
-        {Object.entries(obj.data).map(([p, val]) => (
-          <>
-            {Array.isArray(obj.data) ? null : <dt>{p}</dt>}
-            <dd>
-              <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
-              {isSDJ(val) ? null : <LabelType val={val} />}
-            </dd>
-          </>
-        ))}
-      </dl>,
+      ...Object.entries(obj.data).map(([p, val]) => (
+        <tr>
+          {Array.isArray(obj.data) ? null : <th>{p}</th>}
+          <td>
+            <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
+            {isSDJ(val) ? null : <LabelType val={val} />}
+          </td>
+        </tr>
+      )),
     );
   }
 
   const { validity, errorText, schema } = schemaValidity;
 
   const tabs = {
-    Data: () => <>{children}</>,
+    Data: () => <table>{children}</table>,
     JSON: () => <JsonViewer data={obj} />,
     Schema: () => {
       const resolved =
@@ -288,12 +285,18 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
     ),
   };
 
+  const [vendor, name, format, version] = obj.schema
+    .replace(/^iglu:/i, "")
+    .split("/");
+
   return (
     <details class={["iglu", "iglu--" + validity.toLowerCase()].join(" ")} open>
       <summary>
-        <div class="schema__name">{obj.schema}</div>
+        <span class="schema__name" data-schema-vendor={vendor}>
+          {format == "jsonschema" ? `${name}/${version}` : obj.schema}
+        </span>
         <LabelType val={obj.data} />
-        <div class="iglu__status">
+        <span class="iglu__status">
           <span
             class="iglu__validation"
             title={errorText}
@@ -305,7 +308,7 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
           >
             {validity}
           </span>
-        </div>
+        </span>
       </summary>
       <div class="iglu__content">
         <Tabs defaultTab="Data" options={tabs} name="format" />
@@ -339,17 +342,17 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
     }
   } else if (!isSDJ(obj)) {
     return (
-      <dl class={Array.isArray(obj) ? "array" : "object"}>
+      <table class={Array.isArray(obj) ? "array" : "object"}>
         {Object.entries(obj).map(([p, val]) => (
-          <>
-            {Array.isArray(obj) ? null : <dt>{p}</dt>}
-            <dd>
+          <tr>
+            {Array.isArray(obj) ? null : <th>{p}</th>}
+            <td>
               <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
               <LabelType val={val} />
-            </dd>
-          </>
+            </td>
+          </tr>
         ))}
-      </dl>
+      </table>
     );
   } else return <SDJValue obj={obj} resolver={resolver} />;
 };
@@ -359,7 +362,7 @@ const FieldGroup: FunctionComponent<IRowSet> = ({ setName, children }) => (
     <summary class="title">
       <span>{setName}</span>
     </summary>
-    <div>{children}</div>
+    <table>{children}</table>
   </details>
 );
 
@@ -426,36 +429,41 @@ const EventSummary: FunctionComponent<
           Method: <span>{method}</span>
         </span>
       </header>
-      <main>
-        <div>
-          <dl class="event-generic-summary">
-            <dt>Collector:</dt>
-            <dd>{collector}</dd>
-            <dt>Time:</dt>
-            <dd>
-              <time dateTime={dt.toISOString()} title={dt.toUTCString()}>
-                {dt.toLocaleString(undefined, {
-                  dateStyle: "medium",
-                  timeStyle: "medium",
-                })}
-              </time>
-            </dd>
-            <dt>App:</dt>
-            <dd>
-              <BeaconValue obj={appId} resolver={resolver} />
-              {/* Commented for now as it seems to clutter the UI */}
-              {/* <LabelType val={appId} /> */}
-            </dd>
-            {serverAnonymous && [
-              <dt title={anonDesc}>Server Anonymization</dt>,
-              <dd>
-                <BeaconValue obj={serverAnonymous} resolver={resolver} />
-              </dd>,
-            ]}
-          </dl>
-        </div>
-        <ul>{children}</ul>
-      </main>
+      <table>
+        <tr>
+          <th>Collector</th>
+          <td>
+            <span>{collector}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>Time</th>
+          <td>
+            <time dateTime={dt.toISOString()} title={dt.toUTCString()}>
+              {dt.toLocaleString(undefined, {
+                dateStyle: "medium",
+                timeStyle: "medium",
+              })}
+            </time>
+          </td>
+        </tr>
+        <tr>
+          <th>App</th>
+          <td>
+            <BeaconValue obj={appId} resolver={resolver} />
+            <LabelType val={appId} />
+          </td>
+        </tr>
+        {serverAnonymous && (
+          <tr>
+            <th title={anonDesc}>Server Anonymization</th>
+            <td>
+              <BeaconValue obj={serverAnonymous} resolver={resolver} />
+            </td>
+          </tr>
+        )}
+      </table>
+      <ul>{children}</ul>
     </article>
   );
 };
@@ -573,17 +581,21 @@ export const EventPayload: FunctionComponent<IBeacon> = ({
               !/Custom Entity|(Unstructured|Self-Describing|SD) Event/.test(
                 name,
               ) ? (
-                <>
-                  <dt class={classes}>
+                <tr>
+                  <th class={classes}>
                     {name} <FieldPin {...{ field, pinned, setPinned }} />
-                  </dt>
-                  <dd>
+                  </th>
+                  <td>
                     <BeaconValue obj={val} {...{ resolver, setModal }} />
-                    {/* <LabelType val={val} /> */}
-                  </dd>
-                </>
+                    <LabelType val={val} />
+                  </td>
+                </tr>
               ) : (
-                <BeaconValue obj={val} {...{ resolver, setModal }} />
+                <tr>
+                  <td>
+                    <BeaconValue obj={val} {...{ resolver, setModal }} />
+                  </td>
+                </tr>
               ),
             )}
           </FieldGroup>
