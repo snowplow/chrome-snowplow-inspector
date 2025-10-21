@@ -11,13 +11,7 @@ import type {
   FieldDetail,
   PipelineInfo,
 } from "../../../ts/types";
-import {
-  b64d,
-  colorOf,
-  copyToClipboard,
-  nameType,
-  capitalizeFirst,
-} from "../../../ts/util";
+import { b64d, colorOf, copyToClipboard, nameType } from "../../../ts/util";
 import {
   type IgluUri,
   IgluSchema,

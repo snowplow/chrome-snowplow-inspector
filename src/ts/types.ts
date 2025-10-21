@@ -35,6 +35,7 @@ export type SignalsInstall = {
 };
 
 export interface IConsoleStatus {
+  forceCollapsed: boolean;
   login?: OAuthResult;
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
 }

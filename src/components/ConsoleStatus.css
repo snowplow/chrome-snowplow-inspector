@@ -12,6 +12,16 @@
     margin: 0.5rem 0;
   }
 
+  &.collapsed {
+    margin: 0.5rem 0;
+
+    button.console {
+      gap: 0;
+      font-size: 0;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+
   .profile {
     line-height: 0;
 
