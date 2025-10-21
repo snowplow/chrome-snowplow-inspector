@@ -308,12 +308,38 @@ const AttributesUI: FunctionComponent<{
   signalsDefs: ResourceDefinitions[];
   signalsInfo: Record<string, SignalsInstall[]>;
 }> = ({ attributeKeyIds, eventCount, signalsDefs, signalsInfo }) => {
-  const [filter, setFilter] = useState<string>();
-  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("All");
-  const [orgFilter, setOrgFilter] = useState("All");
-  const [labelFilter, setLabelFilter] = useState<Record<string, boolean>>({});
+  const stateKey = "signals-attribute-filters";
+  const storedFilters = sessionStorage.getItem(stateKey);
 
-  let pattern: undefined | string | RegExp = filter;
+  const stored: {
+    filter: string;
+    labelFilter: Record<string, boolean>;
+    orgFilter: string;
+    sourceFilter: SourceFilter;
+  } = storedFilters
+    ? JSON.parse(storedFilters)
+    : {
+        filter: "",
+        labelFilter: {},
+        orgFilter: "All",
+        sourceFilter: "All",
+      };
+
+  const [filter, setFilter] = useState(stored.filter);
+  const [labelFilter, setLabelFilter] = useState(stored.labelFilter);
+  const [orgFilter, setOrgFilter] = useState(stored.orgFilter);
+  const [sourceFilter, setSourceFilter] = useState(stored.sourceFilter);
+
+  useEffect(
+    () =>
+      sessionStorage.setItem(
+        stateKey,
+        JSON.stringify({ filter, sourceFilter, labelFilter, orgFilter }),
+      ),
+    [filter, sourceFilter, labelFilter, orgFilter],
+  );
+
+  let pattern: string | RegExp = filter;
   try {
     pattern = pattern && new RegExp(pattern, "i");
   } catch (_) {}

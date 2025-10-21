@@ -1,5 +1,5 @@
 import { h, type FunctionComponent } from "preact";
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { endpointAnalytics, trackerAnalytics } from "../../../ts/analytics";
 import { GA_REQUIRED_FIELDS } from "../../../ts/extractBatchContents";
@@ -169,7 +169,12 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   addRequests,
   clearRequests,
 }) => {
-  const [filterStr, setFilterStr] = useState<string>("");
+  const stateKey = "snowplow-event-filters";
+  const [filterStr, setFilterStr] = useState<string>(
+    sessionStorage.getItem(stateKey) ?? "",
+  );
+
+  useEffect(() => sessionStorage.setItem(stateKey, filterStr), [filterStr]);
 
   const summariesRef = useRef<IBeaconSummary[][]>([]);
 
