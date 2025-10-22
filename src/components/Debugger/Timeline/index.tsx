@@ -161,7 +161,6 @@ export const Timeline: FunctionComponent<ITimeline> = ({
   active,
   batches,
   destinationManager,
-  requestsRef,
   resolver,
   setActive,
   setApp,
@@ -235,7 +234,7 @@ export const Timeline: FunctionComponent<ITimeline> = ({
     <TimelineChrome
       active={active}
       addRequests={addRequests}
-      requestsRef={requestsRef}
+      requests={batches.map((b) => b.entry)}
       summariesRef={summariesRef}
       clearRequests={clearRequests}
       destinationManager={destinationManager}

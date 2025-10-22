@@ -18,12 +18,11 @@ export const Debugger: FunctionComponent<IDebugger> = ({
   destinationManager,
   batches,
   listenerStatus,
-  requestsRef,
   resolver,
   setApp,
+  setBatches,
   setModal,
   addRequests,
-  setRequests,
 }) => {
   useErrorBoundary(errorAnalytics);
   const [active, setActive] = useState<IBeaconSummary>();
@@ -46,7 +45,7 @@ export const Debugger: FunctionComponent<IDebugger> = ({
     chrome.storage.local.set({ pinned: JSON.stringify(pinned) });
   }, [pinned]);
 
-  const clearRequests = useCallback(() => setRequests([]), []);
+  const clearRequests = useCallback(() => setBatches([]), []);
 
   return (
     <main class="app app--debugger debugger">
@@ -54,7 +53,6 @@ export const Debugger: FunctionComponent<IDebugger> = ({
         active={active}
         setActive={setActive}
         batches={batches}
-        requestsRef={requestsRef}
         resolver={resolver}
         destinationManager={destinationManager}
         setApp={setApp}

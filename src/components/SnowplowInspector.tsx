@@ -13,7 +13,7 @@ import { errorAnalytics } from "../ts/analytics";
 import { extractBatchContents } from "../ts/extractBatchContents";
 import { doOAuthFlow } from "../ts/oauth";
 import { esMap } from "../ts/protocol";
-import type { Application, OAuthResult } from "../ts/types";
+import type { Application, BatchContents, OAuthResult } from "../ts/types";
 import { isSnowplow } from "../ts/util";
 import { useSignals } from "../ts/useSignals";
 import { Resolver } from "../ts/iglu/Resolver";
@@ -81,13 +81,71 @@ export const SnowplowInspector: FunctionComponent = () => {
   );
 
   const [requests, setRequests] = useState<Entry[]>([]);
+  const [batches, setBatches] = useState<BatchContents[]>([]);
   const [eventCount, setEventCount] = useState<number>();
   const [interventionCount, setInterventionCount] = useState<number>();
 
-  const requestsRef = useRef<Entry[]>([]);
-  requestsRef.current = requests;
+  useEffect(() => {
+    setRequests((requests) => {
+      if (!requests.length) return requests;
+      setBatches((batches) => {
+        const newest = requests.map(extractBatchContents);
+        if (!batches.length) return newest;
 
-  const batches = useMemo(() => requests.map(extractBatchContents), [requests]);
+        const merged = new Array<BatchContents>(
+          batches.length + requests.length,
+        );
+
+        let acur = 0,
+          bcur = 0,
+          mcur = 0;
+
+        while (true) {
+          const a = batches[acur];
+          const b = newest[bcur];
+
+          if (!a && !b) break;
+
+          if (!b || a?.entry?.startedDateTime < b.entry.startedDateTime) {
+            merged[mcur++] = a;
+            acur++;
+          } else if (
+            !a ||
+            a.entry.startedDateTime > b?.entry?.startedDateTime
+          ) {
+            merged[mcur++] = b;
+            bcur++;
+          } else {
+            const keyA = "".concat(
+              a.entry.startedDateTime,
+              a.entry.time as any,
+              a.entry.request.url,
+              a.entry._request_id as any,
+            );
+            const keyB = "".concat(
+              b.entry.startedDateTime,
+              b.entry.time as any,
+              b.entry.request.url,
+              b.entry._request_id as any,
+            );
+
+            if (keyA === keyB) {
+              merged[mcur++] = a;
+              merged.length--;
+              acur++;
+              bcur++;
+            } else {
+              merged[mcur++] = a;
+              acur++;
+            }
+          }
+        }
+
+        return merged;
+      });
+      return [];
+    });
+  }, [requests]);
 
   setInterventionCount(interventions.length || undefined);
 
@@ -138,31 +196,17 @@ export const SnowplowInspector: FunctionComponent = () => {
 
     setListenerStatus("active");
 
-    setRequests((current) => {
-      const seen: Set<string> = new Set();
-      const merged = current.concat(requests).filter((e) => {
-        const key = "".concat(
-          e.startedDateTime,
-          e.time as any,
-          e.request.url,
-          e._request_id as any,
-        );
-
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-
-      merged.sort((a, b) =>
-        a.startedDateTime === b.startedDateTime
-          ? 0
-          : a.startedDateTime < b.startedDateTime
-            ? -1
-            : 1,
-      );
-
-      return merged;
-    });
+    setRequests((current) =>
+      current
+        .concat(requests)
+        .sort((a, b) =>
+          a.startedDateTime === b.startedDateTime
+            ? 0
+            : a.startedDateTime < b.startedDateTime
+              ? -1
+              : 1,
+        ),
+    );
   }, []);
 
   useEffect(() => {
@@ -213,12 +257,11 @@ export const SnowplowInspector: FunctionComponent = () => {
           destinationManager={destinationManager}
           batches={batches}
           listenerStatus={listenerStatus}
-          requestsRef={requestsRef}
           resolver={resolver}
           setApp={setApplication}
+          setBatches={setBatches}
           setModal={setModal}
           addRequests={addRequests}
-          setRequests={setRequests}
         />
       )}
       {application === "schemaManager" && (

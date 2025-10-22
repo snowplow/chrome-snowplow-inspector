@@ -344,7 +344,7 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
     return (
       <table class={Array.isArray(obj) ? "array" : "object"}>
         {Object.entries(obj).map(([p, val]) => (
-          <tr>
+          <tr key={p}>
             {Array.isArray(obj) ? null : <th>{p}</th>}
             <td>
               <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
