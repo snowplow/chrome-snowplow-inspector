@@ -25,11 +25,7 @@ const Options = () => {
   });
   const [status, setStatus] = useState("");
 
-  useEffect(() => {
-    chrome.storage.sync.get(options, (opts) =>
-      setOptions(opts as StoredOptions),
-    );
-  }, []);
+  useEffect(() => chrome.storage.sync.get(options, setOptions), []);
 
   useEffect(() => {
     const tid = setTimeout(() => setStatus(""), 1800);
@@ -135,7 +131,7 @@ const Options = () => {
                       pattern={UUID_PATTERN}
                       placeholder={SAMPLE_UUID}
                       value={org}
-                      required={!!(org || apiKey || apiKeyId)}
+                      required
                     />
                   </label>
                   {/^[0-9a-f-]{36}$/i.test(org) && !(apiKey && apiKeyId) ? (
@@ -155,7 +151,7 @@ const Options = () => {
                       pattern={UUID_PATTERN}
                       placeholder={SAMPLE_UUID}
                       value={apiKeyId}
-                      required={!!(org || apiKey || apiKeyId)}
+                      required
                     />
                   </label>
                   <label>
@@ -167,9 +163,22 @@ const Options = () => {
                       pattern={UUID_PATTERN}
                       placeholder={SAMPLE_UUID}
                       value={apiKey}
-                      required={!!(org || apiKey || apiKeyId)}
+                      required
                     />
                   </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOptions(({ signalsApiKeys, ...opts }) => ({
+                        ...opts,
+                        signalsApiKeys: signalsApiKeys.filter(
+                          (_, index) => index !== i,
+                        ),
+                      }))
+                    }
+                  >
+                    Remove organization
+                  </button>
                 </fieldset>
               ))}
             </div>

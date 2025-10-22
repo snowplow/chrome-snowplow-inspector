@@ -1,5 +1,12 @@
 import { h, type FunctionComponent } from "preact";
-import { DatabaseZap, GitBranchPlus, ListTree } from "lucide-preact";
+import { useEffect, useState } from "preact/hooks";
+import {
+  ArrowLeftToLine,
+  ArrowRightFromLine,
+  DatabaseZap,
+  GitBranchPlus,
+  ListTree,
+} from "lucide-preact";
 
 import type { Application, IToolbar } from "../ts/types";
 import { ConsoleStatus } from "./ConsoleStatus";
@@ -14,6 +21,17 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
   setApp,
   setLogin,
 }) => {
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(
+    () =>
+      chrome.storage.local.get(
+        { collapseToolbar: false },
+        ({ collapseToolbar }) => setCollapsed(collapseToolbar),
+      ),
+    [],
+  );
+
   const eventStatus =
     typeof eventCount == "number"
       ? eventCount > 0
@@ -29,8 +47,24 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
 
   return (
     <header class="toolbar">
+      <label
+        title={collapsed ? "Expand toolbar" : "Collapse toolbar"}
+        class="collapser"
+      >
+        <input
+          type="checkbox"
+          checked={collapsed}
+          onChange={({ currentTarget }) => {
+            setCollapsed(currentTarget.checked);
+            chrome.storage.local.set({
+              collapseToolbar: currentTarget.checked,
+            });
+          }}
+        />
+        {collapsed ? <ArrowRightFromLine /> : <ArrowLeftToLine />}
+      </label>
       <nav
-        class="toolbar__tabs"
+        class={`toolbar__tabs ${collapsed ? "collapsed" : ""}`}
         onChange={(e) => {
           if (e.target instanceof HTMLInputElement) {
             e.stopPropagation();
@@ -77,7 +111,11 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
           {interventionCount ? <span>{interventionCount}</span> : null}
         </label>
       </nav>
-      <ConsoleStatus login={login} setLogin={setLogin} />
+      <ConsoleStatus
+        forceCollapsed={collapsed}
+        login={login}
+        setLogin={setLogin}
+      />
     </header>
   );
 };

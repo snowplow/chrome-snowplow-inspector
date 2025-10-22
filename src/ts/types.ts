@@ -35,6 +35,7 @@ export type SignalsInstall = {
 };
 
 export interface IConsoleStatus {
+  forceCollapsed: boolean;
   login?: OAuthResult;
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
 }
@@ -76,6 +77,7 @@ export type BatchContents = {
   status: number;
   statusText: string;
   sendingPage?: string;
+  entry: Entry;
 };
 
 export type OAuthResult = {
@@ -102,12 +104,11 @@ export interface IDebugger {
   destinationManager: DestinationManager;
   batches: BatchContents[];
   listenerStatus: "waiting" | "importing" | "active";
-  requestsRef: RefObject<Entry[]>;
   resolver: Resolver;
   setApp: Dispatch<StateUpdater<Application>>;
   setModal: ModalSetter;
   addRequests: (requests: Entry[]) => void;
-  setRequests: Dispatch<StateUpdater<Entry[]>>;
+  setBatches: Dispatch<StateUpdater<BatchContents[]>>;
 }
 
 export interface IPageRequests {
@@ -182,7 +183,6 @@ export interface ITimeline {
   addRequests: (requests: Entry[]) => void;
   clearRequests: () => void;
   batches: BatchContents[];
-  requestsRef: RefObject<Entry[]>;
   destinationManager: DestinationManager;
   resolver: Resolver;
   setActive: Dispatch<StateUpdater<IBeaconSummary | undefined>>;

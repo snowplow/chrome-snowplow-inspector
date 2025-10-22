@@ -15,9 +15,10 @@ const extractNetworkUserId = (cookies: Cookie[]): Cookie | undefined => {
 };
 
 export const extractBatchContents = (
-  { request, response, pageref, startedDateTime }: Entry,
+  entry: Entry,
   index: number,
 ): BatchContents => {
+  const { request, response, pageref, startedDateTime } = entry;
   const { headers, method, postData, url } = request;
   const id =
     (pageref ?? "beacon") +
@@ -145,5 +146,6 @@ export const extractBatchContents = (
     status: response.status,
     statusText: (response as any)._error || response.statusText,
     sendingPage: headers.find(({ name }) => /referr?er/i.test(name))?.value,
+    entry,
   };
 };

@@ -39,6 +39,7 @@ const Profile: FunctionComponent<{ identity: OAuthIdentity }> = ({
   </span>
 );
 export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
+  forceCollapsed,
   login,
   setLogin,
 }) => {
@@ -65,7 +66,7 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
   const { "https://snowplowanalytics.com/roles": { user } = {} } = access ?? {};
 
   return (
-    <div class="console_info">
+    <div class={`console_info ${forceCollapsed ? "collapsed" : ""}`}>
       {identity ? (
         [
           <ul id="consolestatus-po" popover="auto">

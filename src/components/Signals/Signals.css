@@ -209,7 +209,7 @@
       }
 
       td > span {
-        color: white;
+        color: var(--foreground);
         background-color: var(--secondary);
         border: 1px solid var(--border);
         border-radius: 0.25rem;

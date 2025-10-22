@@ -1,13 +1,6 @@
 details.iglu {
   &[open] > summary .schema__name::before {
-    display: inline-block;
-    content: "";
-    height: 1rem;
-    width: 1rem;
-    mask: url("lucide-static/icons/chevron-up.svg") no-repeat center;
-    mask-size: cover;
-    background-color: currentColor;
-    margin-right: 0.25rem;
+    mask-image: url("lucide-static/icons/chevron-up.svg");
   }
 
   > .iglu__content {
@@ -18,15 +11,43 @@ details.iglu {
   }
 
   summary {
-    align-items: baseline;
+    align-items: center;
     padding-bottom: 0px;
     display: flex;
     gap: 1rem;
     cursor: pointer;
 
     .schema__name {
+      &::before {
+        display: inline-block;
+        content: "";
+        height: 1rem;
+        width: 1rem;
+        mask: url("lucide-static/icons/chevron-down.svg") no-repeat center;
+        mask-size: cover;
+        background-color: currentColor;
+        margin-right: 0.25rem;
+        vertical-align: middle;
+      }
+
+      &[data-schema-vendor]::after {
+        content: attr(data-schema-vendor);
+        display: block;
+
+        padding-left: 0.75rem;
+        border-left: 1px solid var(--border-darker);
+        margin-left: 0.5rem;
+
+        font-family: "Roboto", sans-serif;
+        font-size: 0.75rem;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 1rem;
+        opacity: 70%;
+      }
+
       margin-right: auto;
-      color: var(--muted-foreground);
+      color: var(--foreground);
       font-size: 1rem;
       white-space: nowrap;
     }
@@ -41,6 +62,7 @@ details.iglu {
 
 .iglu {
   flex: 1;
+  margin: 0 -0.5rem;
 
   summary > span {
     font-size: 0.75rem;
@@ -54,7 +76,7 @@ details.iglu {
     border-radius: 5rem;
     line-height: 1.25rem;
     font-size: 0.875rem;
-    font-family: "Roboto";
+    font-family: "Roboto", sans-serif;
     order: 1;
     user-select: none;
   }
@@ -68,6 +90,7 @@ details.iglu {
 
   .iglu--unrecognised {
     .iglu__validation {
+      color: var(--information-foreground);
       background-color: var(--information);
     }
   }
@@ -157,63 +180,99 @@ details.iglu {
     background-color: #ddd;
   }
 
-  main {
-    margin: 0 2.5rem;
-    padding-bottom: 4rem;
+  table {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 0.5rem;
+    margin: 0 0.5rem;
 
-    dl.event-generic-summary,
-    .event-fieldgroup dl,
-    .event-fieldgroup > div {
-      dt {
-        font-weight: 400;
-        font-size: 0.875rem;
-        color: var(--muted-foreground);
-        display: flex;
-        align-items: center;
-
-        svg {
-          cursor: pointer;
-          height: 0.75rem;
-          opacity: 0.3;
-        }
-
-        &.pinned svg,
-        &:hover svg {
-          opacity: 1;
-        }
-      }
-
-      dd {
-        margin-bottom: 1rem;
-        display: flex;
-        justify-content: space-between;
-      }
-
-      > detail {
-        padding-left: 1rem;
-        border-left: 1px solid var(--color-highlight);
-      }
+    tr {
+      display: flex;
+      align-items: start;
+      gap: 0.25rem;
     }
 
-    ul {
+    th {
+      font-weight: 400;
+      font-size: 0.875rem;
+      text-align: left;
+      word-break: break-all;
+
+      position: sticky;
+      top: 0;
+
+      padding: calc(0.25rem + 1px) 0;
+
+      display: flex;
       flex: 1;
-      list-style: none;
-      padding: 0;
+      align-items: center;
+
+      svg {
+        cursor: pointer;
+        height: 0.75rem;
+        opacity: 0;
+      }
+
+      &.pinned svg {
+        color: #c2ade6;
+        opacity: 1;
+      }
+
+      &:not(.pinned):hover svg {
+        opacity: 0.3;
+      }
     }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      flex: 3;
+
+      line-height: 1.25rem;
+
+      > span,
+      > time {
+        font-size: 0.875rem;
+        word-break: break-all;
+        color: var(--secondary-foreground);
+        background-color: var(--secondary);
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 0.25rem;
+      }
+    }
+
+    > detail {
+      padding-left: 1rem;
+      border-left: 1px solid var(--color-highlight);
+    }
+  }
+
+  > table {
+    margin: 0 2.5rem 1rem;
+  }
+
+  > ul {
+    flex: 1;
+    list-style: none;
+    padding: 0;
   }
 }
 
-dl.array,
-dl.object {
+table.array,
+table.object {
   padding-left: 1rem;
   padding-top: 0.5rem;
   border-left: 1px solid var(--border-darker);
-  margin-left: 0.5rem;
+  margin: 0;
   flex: 1;
 }
 
 .event-fieldgroup {
+  padding: 0 1rem;
   border-bottom: 1px solid var(--border);
+  border-radius: 0.5rem;
+  margin: 0 1.5rem;
 
   summary.title span {
     font-size: 1rem;
@@ -234,15 +293,10 @@ dl.object {
     margin-right: 0.25rem;
   }
 
-  summary .schema__name::before {
-    display: inline-block;
-    content: "";
-    height: 1rem;
-    width: 1rem;
-    mask: url("lucide-static/icons/chevron-down.svg") no-repeat center;
-    mask-size: cover;
-    background-color: currentColor;
-    margin-right: 0.25rem;
+  &[open] {
+    background: var(--accent);
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
   &[open] span {
@@ -259,11 +313,16 @@ dl.object {
     justify-content: space-between;
   }
 
+  > summary {
+    padding: 0.75rem 0;
+  }
+
   summary {
     display: flex;
     align-items: center;
+    cursor: pointer;
+
     color: var(--muted-foreground);
-    padding: 0.75rem 0;
 
     font-family: "Roboto", sans-serif;
     font-size: 1rem;
@@ -327,7 +386,7 @@ dl.object {
   font-size: 0.75rem;
   font-family: "Roboto";
   margin-left: 0.375rem;
-  padding: 0 0.75rem;
+  padding: 0 0.25rem;
   opacity: 75%;
 
   &:enabled:hover {

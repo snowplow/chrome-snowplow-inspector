@@ -136,6 +136,8 @@
   }
 
   ol {
+    display: flex;
+    flex-flow: column-reverse nowrap;
     list-style: none;
     padding: 0.5rem 0;
     margin: 0;
@@ -170,6 +172,11 @@
         font-size: 0.75rem;
         color: var(--muted-foreground);
         line-height: 1rem;
+      }
+
+      svg {
+        height: 1rem;
+        margin-left: auto;
       }
 
       &.event--uncollected {
