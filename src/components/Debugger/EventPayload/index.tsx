@@ -138,6 +138,7 @@ type ValidityState = {
   validity: "Unrecognised" | "Valid" | "Invalid";
   errorText?: string;
   schema?: IgluSchema;
+  registryName?: string;
 };
 
 type BeaconValueAttrs = {
@@ -218,11 +219,13 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
             return validation.valid
               ? {
                   validity: "Valid",
+                  registryName: schema.registry.spec.name,
                   schema,
                 }
               : {
                   validity: "Invalid",
                   errorText: validation.errors.join("\n"),
+                  registryName: schema.registry.spec.name,
                   schema,
                 };
           },
@@ -266,7 +269,7 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
     );
   }
 
-  const { validity, errorText, schema } = schemaValidity;
+  const { validity, errorText, registryName, schema } = schemaValidity;
 
   const tabs = {
     Data: () => <table>{children}</table>,
@@ -306,7 +309,9 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
               }
             }}
           >
-            {validity}
+            {registryName
+              ? `${validity === "Valid" ? "✅" : "❌"} ${registryName}`
+              : validity}
           </span>
         </span>
       </summary>
