@@ -298,7 +298,6 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
         <span class="schema__name" data-schema-vendor={vendor}>
           {format == "jsonschema" ? `${name}/${version}` : obj.schema}
         </span>
-        <LabelType val={obj.data} />
         <span class="iglu__status">
           <span
             class="iglu__validation"
@@ -310,10 +309,11 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
             }}
           >
             {registryName
-              ? `${validity === "Valid" ? "✅" : "❌"} ${registryName}`
+              ? `${validity === "Valid" ? "✔️" : "❌"} ${registryName}`
               : validity}
           </span>
         </span>
+        <LabelType val={obj.data} />
       </summary>
       <div class="iglu__content">
         <Tabs defaultTab="Data" options={tabs} name="format" />

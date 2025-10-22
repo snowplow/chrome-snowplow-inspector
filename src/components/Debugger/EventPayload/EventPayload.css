@@ -90,6 +90,7 @@ details.iglu {
 
   .iglu--unrecognised {
     .iglu__validation {
+      color: var(--information-foreground);
       background-color: var(--information);
     }
   }
