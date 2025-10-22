@@ -1,6 +1,6 @@
 import { h, type FunctionComponent, Fragment, type VNode } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
-import { Pin, PinOff } from "lucide-preact";
+import { Pin } from "lucide-preact";
 
 import { protocol } from "../../../ts/protocol";
 import type {
@@ -535,9 +535,7 @@ const FieldPin: FunctionComponent<
   { field: string } & Pick<IBeacon, "pinned" | "setPinned">
 > = ({ field, pinned, setPinned }) =>
   pinned.includes(field) ? (
-    <PinOff
-      onClick={() => setPinned((old) => old.filter((e) => e !== field))}
-    />
+    <Pin onClick={() => setPinned((old) => old.filter((e) => e !== field))} />
   ) : (
     <Pin
       onClick={() =>

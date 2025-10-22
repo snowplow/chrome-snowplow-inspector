@@ -186,12 +186,16 @@ details.iglu {
       svg {
         cursor: pointer;
         height: 0.75rem;
-        opacity: 0.3;
+        opacity: 0;
       }
 
-      &.pinned svg,
-      &:hover svg {
+      &.pinned svg {
+        color: #c2ade6;
         opacity: 1;
+      }
+
+      &:not(.pinned):hover svg {
+        opacity: 0.3;
       }
     }
 
