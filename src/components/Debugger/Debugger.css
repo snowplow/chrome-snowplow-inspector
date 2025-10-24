@@ -4,7 +4,7 @@
   padding-right: 0;
 
   .debugger__display {
-    flex: 84;
+    flex: 1;
     margin: 1.5rem 0.5rem;
     display: flex;
     flex-flow: column nowrap;

@@ -2,6 +2,7 @@
   display: flex;
   flex-flow: column nowrap;
   gap: 0.5rem;
+  flex: 0 0 auto;
 
   resize: horizontal;
   overflow-inline: clip;
@@ -9,6 +10,8 @@
 
   position: sticky;
   top: 0;
+
+  min-width: 7rem;
 
   scrollbar-gutter: stable;
   scrollbar-width: thin;
@@ -61,6 +64,7 @@
   }
   > div {
     display: flex;
+    flex-flow: row wrap;
   }
 }
 
