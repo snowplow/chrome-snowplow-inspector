@@ -70,13 +70,17 @@ details.iglu {
 
   .iglu__validation {
     color: var(--success-foreground);
+
     background-color: var(--success);
-    font-weight: 400;
     padding: 0.125rem 0.75rem;
     border-radius: 5rem;
+
     line-height: 1.25rem;
+    font-weight: 400;
     font-size: 0.875rem;
     font-family: "Roboto", sans-serif;
+    white-space: nowrap;
+
     order: 1;
     user-select: none;
   }
