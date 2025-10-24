@@ -232,6 +232,26 @@
   }
 }
 
+#clipboard-po {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50%;
+  opacity: 1;
+
+  color: var(--success-foreground);
+
+  background-color: var(--success);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--success-foreground);
+  border-radius: 0.25rem;
+
+  &.open {
+    opacity: 0;
+    transition: opacity 0.85s;
+  }
+}
+
 #clipboard {
   width: 1px;
   height: 1px;
