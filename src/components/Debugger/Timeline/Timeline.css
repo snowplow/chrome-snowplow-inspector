@@ -201,6 +201,7 @@
         height: 0.5em;
         width: 0.5em;
         margin-right: 0.5em;
+        flex: 0 0 auto;
       }
     }
 
