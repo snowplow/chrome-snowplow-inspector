@@ -8,6 +8,11 @@ details.iglu {
     border-left: 1px solid var(--border-darker);
     margin-left: 0.5rem;
     padding-top: 1rem;
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
   }
 
   summary {
