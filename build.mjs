@@ -26,6 +26,7 @@ const ctx = await context({
     { in: "res/icon-128.png", out: "assets/icon-128" },
     { in: "res/icon.png", out: "assets/icon" },
   ],
+  inject: watch ? ["preact/debug"] : [],
   bundle: true,
   minify: !watch,
   sourcemap: watch && "inline",
