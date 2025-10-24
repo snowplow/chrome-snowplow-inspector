@@ -84,7 +84,7 @@ export const useSignals = (
                 {
                   orgId: "sandbox",
                   orgName: "sandbox",
-                  endpoint: `Bearer:${signalsSandboxToken}@${signalsSandboxUrl}`,
+                  endpoint: `Bearer:${signalsSandboxToken}@${signalsSandboxUrl.replace(/^.*:\/\//, "")}`,
                   label: "sandbox",
                   name: "sandbox",
                 },

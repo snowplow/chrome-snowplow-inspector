@@ -14,6 +14,7 @@ export type StoredOptions = {
 const SAMPLE_UUID = "00000000-0000-0000-0000-000000000000";
 const UUID_PATTERN =
   "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$";
+const UUID_DESCRIPTION = "Must be a valid UUID";
 
 const Options = () => {
   const [options, setOptions] = useState<StoredOptions>({
@@ -128,6 +129,7 @@ const Options = () => {
                       type="text"
                       name="org"
                       data-api-key-index={i}
+                      title={UUID_DESCRIPTION}
                       pattern={UUID_PATTERN}
                       placeholder={SAMPLE_UUID}
                       value={org}
@@ -148,6 +150,7 @@ const Options = () => {
                       type="text"
                       name="apiKeyId"
                       data-api-key-index={i}
+                      title={UUID_DESCRIPTION}
                       pattern={UUID_PATTERN}
                       placeholder={SAMPLE_UUID}
                       value={apiKeyId}
@@ -160,6 +163,7 @@ const Options = () => {
                       type="text"
                       name="apiKey"
                       data-api-key-index={i}
+                      title={UUID_DESCRIPTION}
                       pattern={UUID_PATTERN}
                       placeholder={SAMPLE_UUID}
                       value={apiKey}
@@ -212,25 +216,27 @@ const Options = () => {
           <fieldset>
             <legend>Signals Sandbox</legend>
             <p>
-              If you're still trialing Signals, you can enter details of your
-              sandbox environment here.
+              If you're [trialing Signals](https://try-signals.snowplow.io/),
+              you can enter details of your sandbox environment here.
             </p>
             <label>
-              Signals Sandbox URL
+              Profiles API URL
               <input
                 type="text"
                 name="signalsSandboxUrl"
-                pattern="^[^/:]+(:[0-9]+)?$"
+                title="Profiles API hostname only without path"
+                pattern="(https?:\/\/)?[^\/:]+(:[0-9]+)?"
                 placeholder="00000000-0000-0000-0000-000000000000.svc.snplow.net"
                 value={options.signalsSandboxUrl}
               />
             </label>
 
             <label>
-              Signals Sandbox Token
+              Sandbox Token
               <input
                 type="text"
                 name="signalsSandboxToken"
+                title={UUID_DESCRIPTION}
                 pattern={UUID_PATTERN}
                 placeholder={SAMPLE_UUID}
                 value={options.signalsSandboxToken}
