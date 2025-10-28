@@ -235,33 +235,35 @@ const AttributeGroupData: FunctionComponent<{
 
         return (
           <table key={identifier}>
-            {filtered.map(([attribute, value]) => (
-              <tr
-                key={attribute}
-                onClick={() =>
-                  setDefinitionSelection((current) =>
-                    current === attribute ? undefined : attribute,
-                  )
-                }
-              >
-                <th>{attribute}</th>
-                <td>
-                  {attribute !== "error" ||
-                  !/\[Signals\] 401|required for BDP authentication/.test(
-                    String(value),
-                  ) ? (
-                    <span>{JSON.stringify(value, null, 2)}</span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => chrome.runtime.openOptionsPage()}
-                    >
-                      Click here to set an API key to access attribute values
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+            <tbody>
+              {filtered.map(([attribute, value]) => (
+                <tr
+                  key={attribute}
+                  onClick={() =>
+                    setDefinitionSelection((current) =>
+                      current === attribute ? undefined : attribute,
+                    )
+                  }
+                >
+                  <th>{attribute}</th>
+                  <td>
+                    {attribute !== "error" ||
+                    !/\[Signals\] 401|required for BDP authentication/.test(
+                      String(value),
+                    ) ? (
+                      <span>{JSON.stringify(value, null, 2)}</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => chrome.runtime.openOptionsPage()}
+                      >
+                        Click here to set an API key to access attribute values
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         );
       })}
