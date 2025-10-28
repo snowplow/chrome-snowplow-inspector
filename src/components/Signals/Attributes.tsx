@@ -154,7 +154,16 @@ const AttributeGroupData: FunctionComponent<{
       ids.forEach(fetchForIdentifier);
     };
 
-    let timeout = setTimeout(fetchAllIdentifiers, 3000);
+    let timeout: ReturnType<typeof setTimeout>;
+
+    if (client.sandboxToken) {
+      timeout = setTimeout(function tick() {
+        fetchAllIdentifiers();
+        timeout = setTimeout(tick, 500);
+      }, 500);
+    } else {
+      timeout = setTimeout(fetchAllIdentifiers, 3000);
+    }
 
     return () => {
       cancelled = true;
