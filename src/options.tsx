@@ -66,6 +66,33 @@ const Options = () => {
             const signalsApiKeys = [...options.signalsApiKeys];
             signalsApiKeys[apiKeyIndex] = info;
 
+            if (
+              signalsApiKeys.find(
+                ({ org }, i) => i !== apiKeyIndex && org === info.org,
+              )
+            ) {
+              target.setCustomValidity(
+                "Duplicate API credentials for this organization",
+              );
+            } else {
+              target.setCustomValidity("");
+            }
+
+            if (
+              signalsApiKeys.find(
+                ({ apiKeyId, org }, i) =>
+                  i !== apiKeyIndex &&
+                  apiKeyId === info.apiKeyId &&
+                  org === info.org,
+              )
+            ) {
+              target.setCustomValidity(
+                "Duplicate API Key ID values found for this organization",
+              );
+            } else {
+              target.setCustomValidity("");
+            }
+
             setOptions((options) => ({
               ...options,
               signalsApiKeys,
