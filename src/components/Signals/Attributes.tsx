@@ -33,6 +33,18 @@ type ResourceDefinitions =
 
 type SourceFilter = "All" | "Stream" | "Batch" | "External";
 
+const cache = new Map<
+  string,
+  (
+    | {
+        attributeKey: string;
+        identifier: string;
+        [attribute: string]: unknown;
+      }
+    | undefined
+  )[]
+>();
+
 const AttributeGroupData: FunctionComponent<{
   client: SignalsClient;
   eventCount?: number;
@@ -62,6 +74,13 @@ const AttributeGroupData: FunctionComponent<{
   const { name, attributes, attribute_key, offline, fields } =
     groups[groups.findIndex((ag) => ag.version === version)];
 
+  const cacheKey = [
+    client.baseUrl,
+    name,
+    version,
+    attribute_key.name,
+  ].join(".");
+
   const source: SourceFilter = !offline
     ? "Stream"
     : fields && fields.length
@@ -78,7 +97,13 @@ const AttributeGroupData: FunctionComponent<{
         }
       | undefined
     )[]
-  >([]);
+  >(cache.get(cacheKey) ?? []);
+
+  useEffect(() => {
+    if (values.length) {
+      cache.set(cacheKey, values);
+    }
+  }, [cacheKey, values]);
 
   useEffect(() => {
     let cancelled = false;
