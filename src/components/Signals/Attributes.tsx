@@ -119,8 +119,8 @@ const AttributeGroupData: FunctionComponent<{
       .map(({ name }) => name);
 
     const fetchForIdentifier = (identifier: string, i: number) => {
-      if (!attributeNames.length) return;
-      client
+      if (!attributeNames.length) return Promise.resolve();
+      return client
         .getGroupAttributes({
           name,
           version,
@@ -160,20 +160,26 @@ const AttributeGroupData: FunctionComponent<{
         );
     };
 
-    const fetchAllIdentifiers = () => {
-      ids.forEach(fetchForIdentifier);
-    };
+    const fetchAllIdentifiers = () =>
+      cancelled
+        ? Promise.resolve([])
+        : Promise.all(ids.map(fetchForIdentifier));
 
-    let timeout: ReturnType<typeof setTimeout>;
-
-    if (client.sandboxToken) {
-      timeout = setTimeout(function tick() {
-        fetchAllIdentifiers();
-        timeout = setTimeout(tick, 500);
-      }, 500);
-    } else {
-      timeout = setTimeout(fetchAllIdentifiers, 5000);
-    }
+    let timeout = setTimeout(() => {
+      fetchAllIdentifiers().then(() => {
+        if (client.sandboxToken) {
+          timeout = setTimeout(function tick() {
+            fetchAllIdentifiers().then(() => {
+              if (!cancelled) {
+                timeout = setTimeout(tick, 500);
+              }
+            });
+          }, 500);
+        } else if (!cancelled) {
+          timeout = setTimeout(fetchAllIdentifiers, 5000);
+        }
+      });
+    }, 0);
 
     return () => {
       cancelled = true;
