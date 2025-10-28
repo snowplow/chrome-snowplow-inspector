@@ -20,7 +20,7 @@ import {
 
 import { JsonViewer } from "../JSONViewer";
 
-import { X, Search } from "lucide-preact";
+import { RefreshCw, Search, X } from "lucide-preact";
 
 type ResourceDefinitions =
   | {
@@ -55,6 +55,7 @@ const AttributeGroupData: FunctionComponent<{
   includeInstance: boolean;
   orgName: string;
   label: string;
+  refresh: number;
 }> = ({
   client,
   eventCount,
@@ -65,6 +66,7 @@ const AttributeGroupData: FunctionComponent<{
   includeInstance,
   orgName,
   label,
+  refresh,
 }) => {
   useErrorBoundary(errorAnalytics);
   const [version, setVersion] = useState(
@@ -74,12 +76,9 @@ const AttributeGroupData: FunctionComponent<{
   const { name, attributes, attribute_key, offline, fields } =
     groups[groups.findIndex((ag) => ag.version === version)];
 
-  const cacheKey = [
-    client.baseUrl,
-    name,
-    version,
-    attribute_key.name,
-  ].join(".");
+  const cacheKey = [client.baseUrl, name, version, attribute_key.name].join(
+    ".",
+  );
 
   const source: SourceFilter = !offline
     ? "Stream"
@@ -106,15 +105,26 @@ const AttributeGroupData: FunctionComponent<{
   }, [cacheKey, values]);
 
   useEffect(() => {
+    if (refresh) {
+      setValues([]);
+    }
+  }, [refresh]);
+
+  useEffect(() => {
     let cancelled = false;
     const ids = [...(identifiers[attribute_key.name] ?? [])];
 
+    const attributeNames = ([] as { name: string }[])
+      .concat(...attributes, ...(fields ?? []))
+      .map(({ name }) => name);
+
     const fetchForIdentifier = (identifier: string, i: number) => {
+      if (!attributeNames.length) return;
       client
         .getGroupAttributes({
           name,
           version,
-          attributes: attributes.map((attr) => attr.name) as any,
+          attributes: attributeNames as [string, ...string[]],
           attribute_key: attribute_key.name,
           identifier,
         })
@@ -162,14 +172,14 @@ const AttributeGroupData: FunctionComponent<{
         timeout = setTimeout(tick, 500);
       }, 500);
     } else {
-      timeout = setTimeout(fetchAllIdentifiers, 3000);
+      timeout = setTimeout(fetchAllIdentifiers, 5000);
     }
 
     return () => {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [identifiers, version, eventCount]);
+  }, [identifiers, version, eventCount, refresh]);
 
   if (!values.some(Boolean)) return null;
 
@@ -182,7 +192,7 @@ const AttributeGroupData: FunctionComponent<{
 
   return (
     <details open>
-      <summary>
+      <summary key="summary">
         <span class="groupname">{name}</span>
         {includeInstance && <span class="groupinstance">{orgName}</span>}
         <span class="grouplabel">{label}</span>
@@ -206,7 +216,7 @@ const AttributeGroupData: FunctionComponent<{
         <span class="groupsource">{source}</span>
       </summary>
       {showDef ? (
-        <figure class="attrdef">
+        <figure class="attrdef" key="definition">
           <figcaption onClick={() => setDefinitionSelection(undefined)}>
             Attribute Definition: {showDef.name} <X />
           </figcaption>
@@ -288,6 +298,7 @@ const MultiInstanceData: FunctionComponent<{
   labelFilter: Record<string, boolean>;
   orgFilter: string;
   sourceFilter: SourceFilter;
+  refresh: number;
 }> = ({
   attributeKeyIds,
   definitions,
@@ -296,6 +307,7 @@ const MultiInstanceData: FunctionComponent<{
   labelFilter,
   orgFilter,
   sourceFilter,
+  refresh,
 }) =>
   definitions.map((resources) => {
     if (!resources) return null;
@@ -334,6 +346,7 @@ const MultiInstanceData: FunctionComponent<{
         orgName={orgName}
         label={label}
         includeInstance={definitions.length > 1}
+        refresh={refresh}
       />
     ));
   });
@@ -365,6 +378,8 @@ const AttributesUI: FunctionComponent<{
   const [labelFilter, setLabelFilter] = useState(stored.labelFilter);
   const [orgFilter, setOrgFilter] = useState(stored.orgFilter);
   const [sourceFilter, setSourceFilter] = useState(stored.sourceFilter);
+
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(
     () =>
@@ -407,6 +422,17 @@ const AttributesUI: FunctionComponent<{
             }}
             value={filter}
           />
+        </label>
+        <label key="refresh" title="Refresh attributes">
+          <button
+            type="button"
+            onClick={() => {
+              cache.clear();
+              setRefresh((r) => r + 1);
+            }}
+          >
+            <RefreshCw />
+          </button>
         </label>
         {Array.from(labels.values(), (l) => (
           <label key={`lbl-${l}`} class="lbl">
@@ -471,12 +497,15 @@ const AttributesUI: FunctionComponent<{
           labelFilter={labelFilter}
           orgFilter={orgFilter}
           sourceFilter={sourceFilter}
+          refresh={refresh}
         />
-      ) : (
+      ) : orgs.size > (orgs.has("sandbox") ? 1 : 0) ? (
         <p>
           No attribute keys found. Inspect more Events to populate attribute key
           values.
         </p>
+      ) : (
+        <p>Detecting Signals configuration, hold tight!</p>
       )}
     </article>
   );
