@@ -90,21 +90,21 @@ details.iglu {
     user-select: none;
   }
 
-  .iglu--valid {
+  &.iglu--valid {
     .iglu__validation {
       color: var(--success-foreground);
       background-color: var(--success);
     }
   }
 
-  .iglu--unrecognised {
+  &.iglu--unrecognised {
     .iglu__validation {
       color: var(--information-foreground);
       background-color: var(--information);
     }
   }
 
-  .iglu--invalid {
+  &.iglu--invalid {
     .iglu__validation {
       color: var(--error-foreground);
       background-color: var(--error);
