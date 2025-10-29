@@ -190,10 +190,13 @@ details.iglu {
   }
 
   table {
-    display: flex;
-    flex-flow: column nowrap;
-    gap: 0.5rem;
-    margin: 0 0.5rem;
+    &,
+    & > tbody {
+      display: flex;
+      flex-flow: column nowrap;
+      gap: 0.5rem;
+      margin: 0 0.5rem;
+    }
 
     tr {
       display: flex;
