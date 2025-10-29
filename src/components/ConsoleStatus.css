@@ -20,6 +20,14 @@
       font-size: 0;
       padding: 0.25rem 0.5rem;
     }
+
+    .toolbar__logo {
+      font-size: 0;
+
+      img {
+        margin: 0;
+      }
+    }
   }
 
   .profile {
@@ -32,6 +40,26 @@
 
   img {
     max-height: 2rem;
+  }
+
+  .toolbar__logo {
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    font-weight: bold;
+
+    img {
+      margin-right: 0.25rem;
+      height: 1.4rem;
+    }
+
+    @media (width <= 834px) {
+      font-size: 0;
+
+      img {
+        margin: 0;
+      }
+    }
   }
 
   button.console {
