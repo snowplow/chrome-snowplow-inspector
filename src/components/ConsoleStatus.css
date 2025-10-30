@@ -102,11 +102,13 @@
 
 #consolestatus-po {
   position-area: top;
-  translate: 10%;
+  translate: 40%;
 
   li:last-child {
-    padding-top: 0.875rem;
-    padding-bottom: 0.875rem;
+    button {
+      padding-top: 0.875rem;
+      padding-bottom: 0.875rem;
+    }
     border-top: 1px solid var(--border);
     margin-top: 0.25rem;
   }

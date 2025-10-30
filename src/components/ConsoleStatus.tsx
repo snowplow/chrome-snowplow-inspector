@@ -78,22 +78,20 @@ export const ConsoleStatus: FunctionComponent<IConsoleStatus> = ({
               <Building2 />
               {user?.organization.name}
             </li>
-            <li
-              onClick={() => chrome.runtime.openOptionsPage()}
-              role="button"
-              tabIndex={0}
-            >
-              <Settings />
-              Options
+            <li>
+              <button
+                type="button"
+                onClick={() => chrome.runtime.openOptionsPage()}
+              >
+                <Settings />
+                Options
+              </button>
             </li>
-            <li
-              title={`Last Login: ${identity?.updated_at}`}
-              onClick={logoutHandler}
-              role="button"
-              tabIndex={0}
-            >
-              <LogOut />
-              Log Out
+            <li title={`Last Login: ${identity?.updated_at}`}>
+              <button type="button" onClick={logoutHandler}>
+                <LogOut />
+                Log Out
+              </button>
             </li>
           </ul>,
           <button type="button" popovertarget="consolestatus-po">
