@@ -230,49 +230,45 @@ const Options = () => {
             </button>
           </fieldset>
         </fieldset>
-        <details>
-          <summary>Advanced...</summary>
+        <fieldset>
+          <legend>Signals Sandbox</legend>
+          <p>
+            If you're <a href="https://try-signals.snowplow.io/">trialing Signals</a>,
+            you can enter details of your sandbox environment here.
+          </p>
           <label>
-            Ngrok tunnel address
+            Profiles API URL
             <input
               type="text"
-              name="tunnelAddress"
-              value={options.tunnelAddress}
+              name="signalsSandboxUrl"
+              title="Profiles API hostname only without path"
+              pattern="(https?:\/\/)?[^\/:]+(:[0-9]+)?"
+              placeholder="00000000-0000-0000-0000-000000000000.svc.snplow.net"
+              value={options.signalsSandboxUrl}
             />
           </label>
-          <fieldset>
-            <legend>Signals Sandbox</legend>
-            <p>
-              If you're [trialing Signals](https://try-signals.snowplow.io/),
-              you can enter details of your sandbox environment here.
-            </p>
-            <label>
-              Profiles API URL
-              <input
-                type="text"
-                name="signalsSandboxUrl"
-                title="Profiles API hostname only without path"
-                pattern="(https?:\/\/)?[^\/:]+(:[0-9]+)?"
-                placeholder="00000000-0000-0000-0000-000000000000.svc.snplow.net"
-                value={options.signalsSandboxUrl}
-              />
-            </label>
 
-            <label>
-              Sandbox Token
-              <input
-                type="text"
-                name="signalsSandboxToken"
-                title={UUID_DESCRIPTION}
-                pattern={UUID_PATTERN}
-                placeholder={SAMPLE_UUID}
-                value={options.signalsSandboxToken}
-                required={!!options.signalsSandboxUrl}
-              />
-            </label>
-          </fieldset>
-        </details>
-
+          <label>
+            Sandbox Token
+            <input
+              type="text"
+              name="signalsSandboxToken"
+              title={UUID_DESCRIPTION}
+              pattern={UUID_PATTERN}
+              placeholder={SAMPLE_UUID}
+              value={options.signalsSandboxToken}
+              required={!!options.signalsSandboxUrl}
+            />
+          </label>
+        </fieldset>
+        <label>
+          Ngrok tunnel address
+          <input
+            type="text"
+            name="tunnelAddress"
+            value={options.tunnelAddress}
+          />
+        </label>
         {status ? <p class="status">{status}</p> : <button>Save</button>}
       </fieldset>
     </form>
