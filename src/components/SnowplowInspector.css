@@ -169,6 +169,7 @@ a.button:enabled:focus,
 input.button:enabled:focus,
 input[type="file"].button:enabled:focus:before {
   outline: var(--color-interactive) solid 0.25rem;
+  outline-offset: -0.25rem;
 }
 
 button:active,
