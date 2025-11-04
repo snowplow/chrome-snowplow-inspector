@@ -6,7 +6,7 @@ import {
   type StateUpdater,
 } from "preact/hooks";
 
-import { errorAnalytics } from "../../ts/analytics";
+import { errorAnalytics, utmify } from "../../ts/analytics";
 import type { OAuthResult, SignalsInstall } from "../../ts/types";
 
 import { JsonViewer } from "../JSONViewer";
@@ -85,7 +85,9 @@ const InterventionsUI: FunctionComponent<{
           </p>,
           <a
             target="_blank"
-            href="https://docs.snowplow.io/docs/signals/concepts/#interventions"
+            href={utmify(
+              "https://docs.snowplow.io/docs/signals/concepts/#interventions",
+            )}
           >
             Learn more
           </a>,

@@ -177,10 +177,22 @@ export const errorAnalytics = (error: unknown) => {
   }
 };
 
-export const landingUrl =
-  "https://snowplow.io/?" +
-  [
-    "utm_source=debugger%20extension",
-    "utm_medium=software",
-    "utm_campaign=Chrome%20extension%20debugger%20window%20top-left",
-  ].join("&");
+export const utmify = (
+  url: string | URL,
+  params?: Record<string, string>,
+): string => {
+  const parsed = new URL(url);
+
+  parsed.searchParams.set("utm_source", "debugger extension");
+  parsed.searchParams.set("utm_medium", "software");
+
+  Object.entries(params ?? {}).forEach(([k, v]) =>
+    parsed.searchParams.set(k, v),
+  );
+
+  return parsed.href;
+};
+
+export const landingUrl = utmify("https://snowplow.io/", {
+  utm_campaign: "Chrome extension debugger window top-left",
+});

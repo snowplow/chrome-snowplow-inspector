@@ -3,6 +3,8 @@ import { useEffect, useState } from "preact/hooks";
 
 import "./options.css";
 
+import { utmify } from "./ts/analytics";
+
 export type StoredOptions = {
   enableTracking: boolean;
   signalsSandboxToken: string;
@@ -137,11 +139,14 @@ const Options = () => {
             want to access Attributes data for.
           </p>
           <p>
-            <a href="https://snowplow.io/signals" target="_blank">
+            <a href={utmify("https://snowplow.io/signals")} target="_blank">
               Find out more about Signals
             </a>
             , or{" "}
-            <a href="https://docs.snowplow.io/docs/signals" target="_blank">
+            <a
+              href={utmify("https://docs.snowplow.io/docs/signals")}
+              target="_blank"
+            >
               view the documentation.
             </a>
           </p>
@@ -233,8 +238,11 @@ const Options = () => {
         <fieldset>
           <legend>Signals Sandbox</legend>
           <p>
-            If you're <a href="https://try-signals.snowplow.io/">trialing Signals</a>,
-            you can enter details of your sandbox environment here.
+            If you're{" "}
+            <a href={utmify("https://try-signals.snowplow.io/")}>
+              trialing Signals
+            </a>
+            , you can enter details of your sandbox environment here.
           </p>
           <label>
             Profiles API URL
