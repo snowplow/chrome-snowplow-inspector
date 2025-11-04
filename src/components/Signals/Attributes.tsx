@@ -273,7 +273,7 @@ const AttributeGroupData: FunctionComponent<{
                   <th>{attribute}</th>
                   <td>
                     {attribute !== "error" ||
-                    !/\[Signals\] 401|required for BDP authentication/.test(
+                    !/\[Signals\] 401|required for (Console|BDP|CDI) authentication/.test(
                       String(value),
                     ) ? (
                       <span>{JSON.stringify(value, null, 2)}</span>

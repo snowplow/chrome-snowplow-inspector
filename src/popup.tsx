@@ -89,7 +89,7 @@ const Popup = () => (
             utm_campaign: "Chrome extension about page",
           })}
         >
-          Snowplow Behavioral Data Platform
+          Snowplow Customer Data Infrastructure
         </a>
         .
       </p>
