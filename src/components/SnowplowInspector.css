@@ -121,12 +121,17 @@
 
 body {
   display: flex;
+
+  overflow-x: auto;
+
   flex-flow: row nowrap;
   flex: 1;
   align-items: stretch;
+
   background-color: var(--color-background);
-  font-family: "Roboto", sans-serif;
   margin: 0;
+
+  font-family: "Roboto", sans-serif;
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -228,7 +233,6 @@ select:active option[disabled] {
 
 .app {
   overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex: 1;
 
