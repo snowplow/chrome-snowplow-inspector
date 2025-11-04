@@ -305,6 +305,7 @@
     display: flex;
     flex-flow: row nowrap;
     align-items: stretch;
+    gap: 0.25rem;
 
     background-color: inherit;
     border: 0;
@@ -318,11 +319,20 @@
       display: none;
     }
 
+    button {
+      background-color: unset;
+      padding: 0.5rem;
+
+      svg {
+        height: 1.25rem;
+      }
+    }
+
     label.lbl {
       padding: 0.25rem;
       border: 1px solid var(--border);
       border-radius: 0.25rem;
-      margin: 0.5rem 0.25rem;
+      margin: 0.5rem 0;
       cursor: pointer;
       text-transform: uppercase;
       display: flex;

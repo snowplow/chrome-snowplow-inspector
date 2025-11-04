@@ -6,7 +6,7 @@ import {
   type StateUpdater,
 } from "preact/hooks";
 
-import { errorAnalytics } from "../../ts/analytics";
+import { errorAnalytics, utmify } from "../../ts/analytics";
 import type { OAuthResult, SignalsInstall } from "../../ts/types";
 
 import { JsonViewer } from "../JSONViewer";
@@ -85,7 +85,9 @@ const InterventionsUI: FunctionComponent<{
           </p>,
           <a
             target="_blank"
-            href="https://docs.snowplow.io/docs/signals/concepts/#interventions"
+            href={utmify(
+              "https://docs.snowplow.io/docs/signals/concepts/#interventions",
+            )}
           >
             Learn more
           </a>,
@@ -98,49 +100,53 @@ const InterventionsUI: FunctionComponent<{
           <h1>{active.name}</h1>
           <h2>Intervention details</h2>
           <table>
-            <tr>
-              <th>Intervention ID</th>
-              <td>
-                <span>{active.intervention_id}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>Intervention name</th>
-              <td>
-                <span>{active.name}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>Version</th>
-              <td>
-                <span>v{active.version}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>Target attribute key</th>
-              <td>
-                <span>{active.target_attribute_key.name}</span>
-              </td>
-            </tr>
-            <tr>
-              <th>Attribute key value</th>
-              <td>
-                <span>{active.target_attribute_key.id}</span>
-              </td>
-            </tr>
+            <tbody>
+              <tr>
+                <th>Intervention ID</th>
+                <td>
+                  <span>{active.intervention_id}</span>
+                </td>
+              </tr>
+              <tr>
+                <th>Intervention name</th>
+                <td>
+                  <span>{active.name}</span>
+                </td>
+              </tr>
+              <tr>
+                <th>Version</th>
+                <td>
+                  <span>v{active.version}</span>
+                </td>
+              </tr>
+              <tr>
+                <th>Target attribute key</th>
+                <td>
+                  <span>{active.target_attribute_key.name}</span>
+                </td>
+              </tr>
+              <tr>
+                <th>Attribute key value</th>
+                <td>
+                  <span>{active.target_attribute_key.id}</span>
+                </td>
+              </tr>
+            </tbody>
           </table>
           <h2>Associated attributes</h2>
           <table>
-            {Object.entries(active.attributes ?? {}).map(
-              ([attribute, value]) => (
-                <tr key={attribute}>
-                  <th>{attribute}</th>
-                  <td>
-                    <span>{value}</span>
-                  </td>
-                </tr>
-              ),
-            )}
+            <tbody>
+              {Object.entries(active.attributes ?? {}).map(
+                ([attribute, value]) => (
+                  <tr key={attribute}>
+                    <th>{attribute}</th>
+                    <td>
+                      <span>{value}</span>
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
           </table>
 
           <InterventionDefinitionDisplay

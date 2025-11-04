@@ -59,7 +59,13 @@ export type AttributeGroup = {
   description: string | null;
   tags: null;
   owner: string;
-  fields: unknown[] | null;
+  fields:
+    | {
+        name: string;
+        description?: string | null;
+        type: string;
+      }[]
+    | null;
   attributes: {
     name: string;
     description: string | null;

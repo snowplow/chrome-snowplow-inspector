@@ -121,12 +121,17 @@
 
 body {
   display: flex;
+
+  overflow-x: auto;
+
   flex-flow: row nowrap;
   flex: 1;
   align-items: stretch;
+
   background-color: var(--color-background);
-  font-family: "Roboto", sans-serif;
   margin: 0;
+
+  font-family: "Roboto", sans-serif;
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -169,6 +174,7 @@ a.button:enabled:focus,
 input.button:enabled:focus,
 input[type="file"].button:enabled:focus:before {
   outline: var(--color-interactive) solid 0.25rem;
+  outline-offset: -0.25rem;
 }
 
 button:active,
@@ -227,7 +233,6 @@ select:active option[disabled] {
 
 .app {
   overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex: 1;
 
@@ -273,22 +278,52 @@ ul[popover] {
   list-style: none;
   text-align: left;
 
-  li {
+  li,
+  button {
     display: flex;
-    padding: 0.375rem 0.75rem;
+    flex: 1;
     align-items: center;
+    justify-content: start;
     gap: 0.5rem;
   }
 
   li:first-child {
-    padding-top: 0.875rem;
+    & > button,
+    &:not(:has(> button)) {
+      padding-top: 0.875rem;
+    }
   }
-  li[role="button"] {
+  li:last-child {
+    & > button,
+    &:not(:has(> button)) {
+      padding-bottom: 0.875rem;
+    }
+  }
+
+  li:not(:has(> button)) {
+    padding: 0.375rem 0.75rem;
+  }
+
+  li:has(> button) {
     cursor: pointer;
 
     &:hover {
       background-color: var(--border);
     }
+  }
+
+  button {
+    &,
+    &:hover,
+    &:enabled:hover,
+    &:active {
+      background: unset;
+      outline: none;
+    }
+
+    font: inherit;
+    padding: 0.375rem 0.75rem;
+    margin: unset;
   }
 }
 

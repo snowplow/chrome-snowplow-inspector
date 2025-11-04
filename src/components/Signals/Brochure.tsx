@@ -2,7 +2,7 @@ import { h, type FunctionComponent } from "preact";
 import type { Dispatch, StateUpdater } from "preact/hooks";
 import type { OAuthResult } from "../../ts/types";
 
-import { consoleAnalytics } from "../../ts/analytics";
+import { consoleAnalytics, utmify } from "../../ts/analytics";
 import { doOAuthFlow } from "../../ts/oauth";
 
 import logo from "@res/logo.svg";
@@ -47,7 +47,9 @@ export const Brochure: FunctionComponent<{
       <div>
         {login ? (
           <a
-            href="https://snowplow.io/get-started/book-a-demo-of-snowplow-bdp"
+            href={utmify(
+              "https://snowplow.io/get-started/book-a-demo-of-snowplow-bdp",
+            )}
             target="_blank"
           >
             Get a Demo
@@ -55,7 +57,7 @@ export const Brochure: FunctionComponent<{
         ) : (
           <a onClick={loginHandler}>Log in to enable Signals</a>
         )}
-        <a href="https://docs.snowplow.io/tutorials/" target="_blank">
+        <a href={utmify("https://docs.snowplow.io/tutorials/")} target="_blank">
           View a tutorial
         </a>
       </div>

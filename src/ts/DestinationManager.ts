@@ -78,6 +78,8 @@ export class DestinationManager {
 
   sync() {
     const destinations = Object.keys(this.destinations);
+    if (!chrome.declarativeNetRequest) return;
+
     const {
       DomainType,
       HeaderOperation,

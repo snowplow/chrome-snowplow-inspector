@@ -51,7 +51,7 @@ export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
   Object.entries({
     response_type: "id_token token",
     client_id: CONSOLE_OAUTH_CLIENTID,
-    redirect_uri: chrome.identity.getRedirectURL(),
+    redirect_uri: chrome.identity?.getRedirectURL(),
     scope: CONSOLE_OAUTH_SCOPES,
     audience: CONSOLE_OAUTH_AUDIENCE,
     nonce,
@@ -61,6 +61,7 @@ export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
   if (!interactive) flowUrl.searchParams.set("prompt", "none");
 
   return new Promise<OAuthResult>((resolve, reject) => {
+    if (!chrome.identity) return reject();
     chrome.identity.launchWebAuthFlow(
       { interactive, url: flowUrl.toString() },
       (responseUrl) => {

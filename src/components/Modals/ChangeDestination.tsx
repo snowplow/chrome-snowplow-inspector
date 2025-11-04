@@ -4,6 +4,7 @@ import { BaseModal } from "./BaseModal";
 
 import type { ModalOptions } from ".";
 import { DestinationManager } from "../../ts/DestinationManager";
+import { utmify } from "../../ts/analytics";
 import { request } from "../../ts/permissions";
 
 export interface ChangeDestinationOptions extends ModalOptions {
@@ -76,7 +77,11 @@ export const ChangeDestination: FunctionComponent<ChangeDestinationOptions> = ({
           Use these settings to force events sent to certain destination
           pipelines to go to another pipeline. This is useful for sending events
           to test pipelines like{" "}
-          <a href="https://docs.snowplow.io/docs/testing-debugging/snowplow-micro/what-is-micro/">
+          <a
+            href={utmify(
+              "https://docs.snowplow.io/docs/data-product-studio/data-quality/snowplow-micro/",
+            )}
+          >
             Snowplow Micro
           </a>
           , or to prevent internal traffic polluting production pipelines. Enter

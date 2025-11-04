@@ -84,17 +84,20 @@ export const CopyMenu: FunctionComponent<{
       const eligible = !checks[format] || checks[format](beacon);
       return eligible
         ? [
-            <li
-              key={format}
-              title={`Copy current event as ${format}`}
-              onClick={({ currentTarget }) => {
-                copyToClipboard(formatter(beacon));
-                currentTarget.parentElement?.hidePopover();
-              }}
-              role="button"
-              tabindex={0}
-            >
-              <Copy /> {format}
+            <li key={format}>
+              <button
+                type="button"
+                title={`Copy current event as ${format}`}
+                onClick={({ currentTarget }) => {
+                  copyToClipboard(formatter(beacon));
+                  currentTarget.blur();
+                  currentTarget
+                    .closest<HTMLElement>("[popover]")
+                    ?.hidePopover();
+                }}
+              >
+                <Copy /> {format}
+              </button>
             </li>,
           ]
         : [];

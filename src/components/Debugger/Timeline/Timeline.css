@@ -2,6 +2,7 @@
   display: flex;
   flex-flow: column nowrap;
   gap: 0.5rem;
+  flex: 0 0 auto;
 
   resize: horizontal;
   overflow-inline: clip;
@@ -9,6 +10,8 @@
 
   position: sticky;
   top: 0;
+
+  min-width: 7rem;
 
   scrollbar-gutter: stable;
   scrollbar-width: thin;
@@ -19,9 +22,14 @@
   flex-flow: column nowrap;
   gap: 0.5rem;
 
-  border: 0;
+  background-color: var(--surface-1);
   padding: 0;
+  border: 0;
   margin: 0;
+
+  position: sticky;
+  top: 0;
+  z-index: 1;
 
   legend {
     position: absolute;
@@ -61,6 +69,7 @@
   }
   > div {
     display: flex;
+    flex-flow: row wrap;
   }
 }
 
@@ -201,6 +210,7 @@
         height: 0.5em;
         width: 0.5em;
         margin-right: 0.5em;
+        flex: 0 0 auto;
       }
     }
 
@@ -228,6 +238,26 @@
     &.destination-light a::before {
       background-color: #ddd;
     }
+  }
+}
+
+#clipboard-po {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50%;
+  opacity: 1;
+
+  color: var(--success-foreground);
+
+  background-color: var(--success);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--success-foreground);
+  border-radius: 0.25rem;
+
+  &.open {
+    opacity: 0;
+    transition: opacity 0.85s;
   }
 }
 

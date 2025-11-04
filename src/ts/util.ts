@@ -342,15 +342,38 @@ const nameType = (val: unknown) => {
 };
 
 const copyToClipboard = (text: string): void => {
-  let cb = document.getElementById("clipboard") as HTMLTextAreaElement;
+  let cb = document.getElementById("clipboard") as HTMLTextAreaElement | null;
+  let toast = document.getElementById(
+    "clipboard-po",
+  ) as HTMLParagraphElement | null;
   if (cb === null) {
     cb = document.createElement("textarea") as HTMLTextAreaElement;
     cb.id = "clipboard";
     document.body.appendChild(cb);
   }
 
+  if (toast === null) {
+    toast = document.createElement("p");
+    toast.id = "clipboard-po";
+    toast.popover = "manual";
+    toast.textContent = "Copied";
+
+    toast.addEventListener(
+      "transitionend",
+      () => {
+        toast?.hidePopover();
+        toast?.classList.remove("open");
+      },
+      false,
+    );
+
+    document.body.appendChild(toast);
+  }
+
   cb.value = typeof text === "string" ? text : JSON.stringify(text);
   cb.select();
+  toast.showPopover();
+  toast.classList.add("open");
   document.execCommand("copy");
 };
 

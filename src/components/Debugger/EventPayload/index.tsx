@@ -272,7 +272,11 @@ const SDJValue: FunctionComponent<BeaconValueAttrs> = ({
   const { validity, errorText, registryName, schema } = schemaValidity;
 
   const tabs = {
-    Data: () => <table>{children}</table>,
+    Data: () => (
+      <table>
+        <tbody>{children}</tbody>
+      </table>
+    ),
     JSON: () => <JsonViewer data={obj} />,
     Schema: () => {
       const resolved =
@@ -348,15 +352,21 @@ const BeaconValue: FunctionComponent<BeaconValueAttrs> = ({
   } else if (!isSDJ(obj)) {
     return (
       <table class={Array.isArray(obj) ? "array" : "object"}>
-        {Object.entries(obj).map(([p, val]) => (
-          <tr key={p}>
-            {Array.isArray(obj) ? null : <th>{p}</th>}
-            <td>
-              <BeaconValue obj={val} resolver={resolver} setModal={setModal} />
-              <LabelType val={val} />
-            </td>
-          </tr>
-        ))}
+        <tbody>
+          {Object.entries(obj).map(([p, val]) => (
+            <tr key={p}>
+              {Array.isArray(obj) ? null : <th>{p}</th>}
+              <td>
+                <BeaconValue
+                  obj={val}
+                  resolver={resolver}
+                  setModal={setModal}
+                />
+                <LabelType val={val} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     );
   } else return <SDJValue obj={obj} resolver={resolver} />;
@@ -367,7 +377,9 @@ const FieldGroup: FunctionComponent<IRowSet> = ({ setName, children }) => (
     <summary class="title">
       <span>{setName}</span>
     </summary>
-    <table>{children}</table>
+    <table>
+      <tbody>{children}</tbody>
+    </table>
   </details>
 );
 
@@ -435,38 +447,40 @@ const EventSummary: FunctionComponent<
         </span>
       </header>
       <table>
-        <tr>
-          <th>Collector</th>
-          <td>
-            <span>{collector}</span>
-          </td>
-        </tr>
-        <tr>
-          <th>Time</th>
-          <td>
-            <time dateTime={dt.toISOString()} title={dt.toUTCString()}>
-              {dt.toLocaleString(undefined, {
-                dateStyle: "medium",
-                timeStyle: "medium",
-              })}
-            </time>
-          </td>
-        </tr>
-        <tr>
-          <th>App</th>
-          <td>
-            <BeaconValue obj={appId} resolver={resolver} />
-            <LabelType val={appId} />
-          </td>
-        </tr>
-        {serverAnonymous && (
+        <tbody>
           <tr>
-            <th title={anonDesc}>Server Anonymization</th>
+            <th>Collector</th>
             <td>
-              <BeaconValue obj={serverAnonymous} resolver={resolver} />
+              <span>{collector}</span>
             </td>
           </tr>
-        )}
+          <tr>
+            <th>Time</th>
+            <td>
+              <time dateTime={dt.toISOString()} title={dt.toUTCString()}>
+                {dt.toLocaleString(undefined, {
+                  dateStyle: "medium",
+                  timeStyle: "medium",
+                })}
+              </time>
+            </td>
+          </tr>
+          <tr>
+            <th>App</th>
+            <td>
+              <BeaconValue obj={appId} resolver={resolver} />
+              <LabelType val={appId} />
+            </td>
+          </tr>
+          {serverAnonymous && (
+            <tr>
+              <th title={anonDesc}>Server Anonymization</th>
+              <td>
+                <BeaconValue obj={serverAnonymous} resolver={resolver} />
+              </td>
+            </tr>
+          )}
+        </tbody>
       </table>
       <ul>{children}</ul>
     </article>

@@ -202,8 +202,13 @@ export const Timeline: FunctionComponent<ITimeline> = ({
 
     for (const summary of batchSummaries.flat(1)) {
       const { pageref, page } = summary;
-      const pageName =
-        (page ? new URL(page) : fallbackUrl)?.pathname ?? "Unknown page";
+
+      const pageUrl = page ? new URL(page) : fallbackUrl;
+      const pagePath =
+        pageUrl?.pathname === "/"
+          ? pageUrl.host + pageUrl.pathname
+          : pageUrl?.pathname;
+      const pageName = pagePath ?? "Unknown page";
 
       const key = pageref || pageName;
 

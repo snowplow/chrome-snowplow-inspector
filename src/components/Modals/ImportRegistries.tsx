@@ -5,6 +5,7 @@ import type { ModalOptions } from ".";
 import { BaseModal } from "./BaseModal";
 import { buildRegistry, type Registry, Resolver } from "../../ts/iglu";
 import { RegistryDetail } from "../SchemaManager/RegistryDetail";
+import { utmify } from "../../ts/analytics";
 import { objHasProperty, tryb64 } from "../../ts/util";
 import type { RegistrySpec } from "../../ts/types";
 
@@ -112,7 +113,9 @@ export const ImportRegistries: FunctionComponent<ImportRegistriesOptions> = ({
           Enter the{" "}
           <a
             target="_blank"
-            href="https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/iglu/iglu-resolver/"
+            href={utmify(
+              "https://docs.snowplowanalytics.com/docs/pipeline-components-and-applications/iglu/iglu-resolver/",
+            )}
           >
             <code>Resolver-Config</code>
           </a>{" "}

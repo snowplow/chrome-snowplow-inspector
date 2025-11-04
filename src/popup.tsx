@@ -2,6 +2,7 @@ import { render, h } from "preact";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 import { homepage } from "../package.json";
+import { utmify } from "./ts/analytics";
 import { doOAuthFlow } from "./ts/oauth";
 import type { OAuthIdentity } from "./ts/types";
 
@@ -83,8 +84,12 @@ const Popup = () => (
     <div>
       <p>
         The inspector is a debugger for{" "}
-        <a href="https://snowplow.io/?utm_source=debugger%20extension&utm_medium=software&utm_campaign=Chrome%20extension%20about%20page">
-          Snowplow Behavioral Data Platform
+        <a
+          href={utmify("https://snowplow.io/", {
+            utm_campaign: "Chrome extension about page",
+          })}
+        >
+          Snowplow Customer Data Infrastructure
         </a>
         .
       </p>

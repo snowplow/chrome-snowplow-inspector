@@ -20,6 +20,14 @@
       font-size: 0;
       padding: 0.25rem 0.5rem;
     }
+
+    .toolbar__logo {
+      font-size: 0;
+
+      img {
+        margin: 0;
+      }
+    }
   }
 
   .profile {
@@ -32,6 +40,26 @@
 
   img {
     max-height: 2rem;
+  }
+
+  .toolbar__logo {
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    font-weight: bold;
+
+    img {
+      margin-right: 0.25rem;
+      height: 1.4rem;
+    }
+
+    @media (width <= 834px) {
+      font-size: 0;
+
+      img {
+        margin: 0;
+      }
+    }
   }
 
   button.console {
@@ -74,11 +102,13 @@
 
 #consolestatus-po {
   position-area: top;
-  translate: 10%;
+  translate: 40%;
 
   li:last-child {
-    padding-top: 0.875rem;
-    padding-bottom: 0.875rem;
+    button {
+      padding-top: 0.875rem;
+      padding-bottom: 0.875rem;
+    }
     border-top: 1px solid var(--border);
     margin-top: 0.25rem;
   }

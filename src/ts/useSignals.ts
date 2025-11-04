@@ -84,7 +84,7 @@ export const useSignals = (
                 {
                   orgId: "sandbox",
                   orgName: "sandbox",
-                  endpoint: `Bearer:${signalsSandboxToken}@${signalsSandboxUrl}`,
+                  endpoint: `Bearer:${signalsSandboxToken}@${signalsSandboxUrl.replace(/^.*:\/\//, "")}`,
                   label: "sandbox",
                   name: "sandbox",
                 },
@@ -340,10 +340,22 @@ export const useSignals = (
     const eventSources: EventSource[] = [];
 
     const subscriptions: Record<string, string>[] = [];
+    const unsafeSubscriptions: Record<string, string>[] = [];
 
     for (const [key, ids] of Object.entries(attributeKeyIds)) {
       Array.from(ids, (v, i) => {
-        subscriptions[i] = Object.assign(subscriptions[i] ?? {}, { [key]: v });
+        if (/^[a-f0-9\-]{36}$/.test(v)) {
+          subscriptions[i] = Object.assign(subscriptions[i] ?? {}, {
+            [key]: v,
+          });
+        } else {
+          const target = unsafeSubscriptions.findIndex((o) => !(key in o));
+          if (target === -1) {
+            unsafeSubscriptions.push({ [key]: v });
+          } else {
+            unsafeSubscriptions[target][key] = v;
+          }
+        }
       });
     }
 
@@ -354,7 +366,7 @@ export const useSignals = (
 
       const endpoint = new URL(`${client.baseUrl}/api/v1/interventions`);
 
-      for (const sub of subscriptions) {
+      for (const sub of subscriptions.concat(unsafeSubscriptions)) {
         const params = new URLSearchParams(sub);
 
         const es = new EventSource(`${endpoint}?${params.toString()}`);
