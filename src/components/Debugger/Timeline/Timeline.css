@@ -22,9 +22,14 @@
   flex-flow: column nowrap;
   gap: 0.5rem;
 
-  border: 0;
+  background-color: var(--surface-1);
   padding: 0;
+  border: 0;
   margin: 0;
+
+  position: sticky;
+  top: 0;
+  z-index: 1;
 
   legend {
     position: absolute;
