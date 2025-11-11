@@ -2,6 +2,7 @@ import { uuidv4, tryb64 } from "./util";
 import type { OAuthAccess, OAuthIdentity, OAuthResult } from "./types";
 
 const prodExtIds = [
+  "{4166b542-f87d-4dbc-a6b1-34cb31a5b04e}",
   "4166b542-f87d-4dbc-a6b1-34cb31a5b04e",
   "maplkdomeamdlngconidoefjpogkmljm",
 ];

@@ -61,6 +61,8 @@ const ConsoleDetails = () => {
       </ul>
       {identity ? (
         <p>Console account: {identity.name || "Logged In"}</p>
+      ) : "getBrowserInfo" in chrome.runtime ? (
+        <p>Synchronizing with Console is not supported in Firefox.</p>
       ) : (
         <button
           type="button"
