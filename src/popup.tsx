@@ -30,16 +30,68 @@ const Shortcut = () => {
 const ConsoleDetails = () => {
   const [identity, setIdentity] = useState<OAuthIdentity>();
   const [authenticating, setAuthenticating] = useState<boolean>(false);
+  // hack for firefox, we can't request permissions in dev-panel pending: https://bugzilla.mozilla.org/show_bug.cgi?id=1796933
+  const [requestedPermissions, setRequestedPermissions] = useState<string[]>(
+    [],
+  );
 
   useEffect(() => {
-    doOAuthFlow(false).then(({ identity }) => setIdentity(identity));
+    doOAuthFlow(false).then(
+      ({ identity }) => setIdentity(identity),
+      () => {
+        // hack for firefox, we can't request identity in dev-panel pending: https://bugzilla.mozilla.org/show_bug.cgi?id=1796933
+        if ("getBrowserInfo" in chrome.runtime) {
+          chrome.storage.local.set({ firefoxIdentity: "null" });
+        }
+      },
+    );
+
+    // hack for firefox, we can't request permissions in dev-panel pending: https://bugzilla.mozilla.org/show_bug.cgi?id=1796933
+    if ("getBrowserInfo" in chrome.runtime)
+      chrome.storage.local.get(
+        { firefoxPermissions: "[]", firefoxPermissionsGranted: "[]" },
+        ({ firefoxPermissions, firefoxPermissionsGranted }) => {
+          const defaultHostPerms: string[] =
+            chrome.runtime.getManifest().host_permissions ?? [];
+          const pendingPermissions: string[] = JSON.parse(firefoxPermissions);
+          const grantedPermissions: string[] = JSON.parse(
+            firefoxPermissionsGranted,
+          );
+
+          const origins = Array.from(
+            new Set(
+              defaultHostPerms
+                .map((o) => o.replace("/*", "/"))
+                .concat(pendingPermissions),
+            ),
+          ).filter((origin) => !grantedPermissions.includes(origin));
+
+          chrome.permissions.contains({ origins }, (result) => {
+            if (result) {
+              chrome.storage.local.set({
+                firefoxPermissions: "[]",
+                firefoxPermissionsGranted: JSON.stringify(
+                  grantedPermissions.concat(origins),
+                ),
+              });
+            } else if (origins.length) {
+              setRequestedPermissions(origins);
+            }
+          });
+        },
+      );
   }, []);
 
   const startFlow = useCallback(() => {
     setAuthenticating(true);
-    doOAuthFlow(true).then(({ identity }) => {
+    doOAuthFlow(true).then(({ access, authentication, identity }) => {
       setIdentity(identity);
       setAuthenticating(false);
+      // hack for firefox, we can't request identity in dev-panel pending: https://bugzilla.mozilla.org/show_bug.cgi?id=1796933
+      if ("getBrowserInfo" in chrome.runtime)
+        chrome.storage.local.set({
+          firefoxIdentity: JSON.stringify({ access, authentication, identity }),
+        });
     });
   }, []);
 
@@ -61,8 +113,6 @@ const ConsoleDetails = () => {
       </ul>
       {identity ? (
         <p>Console account: {identity.name || "Logged In"}</p>
-      ) : "getBrowserInfo" in chrome.runtime ? (
-        <p>Synchronizing with Console is not supported in Firefox.</p>
       ) : (
         <button
           type="button"
@@ -71,6 +121,21 @@ const ConsoleDetails = () => {
           disabled={authenticating}
         >
           Sign in to Snowplow Console
+        </button>
+      )}
+      {requestedPermissions.length > 0 && (
+        <button
+          type="button"
+          class="cta"
+          onClick={() =>
+            chrome.permissions.request(
+              { origins: requestedPermissions },
+              (granted) =>
+                setRequestedPermissions((orig) => (granted ? [] : orig)),
+            )
+          }
+        >
+          Grant required permissions
         </button>
       )}
     </div>

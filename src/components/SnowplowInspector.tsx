@@ -62,7 +62,34 @@ export const SnowplowInspector: FunctionComponent = () => {
 
   useEffect(() => {
     doOAuthFlow(false)
-      .then(setLogin)
+      .then(setLogin, () => {
+        // hack for firefox, we can't access identity so this will always fail
+        // see if it worked from the popup previously
+        if ("getBrowserInfo" in chrome.runtime)
+          chrome.storage.local.get(
+            { firefoxIdentity: "null" },
+            ({ firefoxIdentity }) => {
+              const result: null | Omit<OAuthResult, "logout"> =
+                JSON.parse(firefoxIdentity);
+
+              if (result)
+                setLogin({
+                  ...result,
+                  logout() {
+                    return new Promise<string>((resolve) => {
+                      chrome.storage.local.set(
+                        { firefoxIdentity: "null" },
+                        () => {
+                          setLogin(undefined);
+                          resolve("");
+                        },
+                      );
+                    });
+                  },
+                });
+            },
+          );
+      })
       .finally(() => resolver.walk());
   }, [resolver]);
 
