@@ -37,7 +37,18 @@ const ConsoleDetails = () => {
 
   useEffect(() => {
     doOAuthFlow(false).then(
-      ({ identity }) => setIdentity(identity),
+      ({ access, authentication, identity }) => {
+        setIdentity(identity);
+        // hack for firefox, we can't request identity in dev-panel pending: https://bugzilla.mozilla.org/show_bug.cgi?id=1796933
+        if ("getBrowserInfo" in chrome.runtime)
+          chrome.storage.local.set({
+            firefoxIdentity: JSON.stringify({
+              access,
+              authentication,
+              identity,
+            }),
+          });
+      },
       () => {
         // hack for firefox, we can't request identity in dev-panel pending: https://bugzilla.mozilla.org/show_bug.cgi?id=1796933
         if ("getBrowserInfo" in chrome.runtime) {

@@ -115,6 +115,7 @@ button {
   background-color: #6638b8;
   border: 1px solid #6638b8;
   color: white;
+  margin-bottom: 1rem;
 }
 
 .cta:hover {
