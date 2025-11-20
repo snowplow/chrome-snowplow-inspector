@@ -65,30 +65,46 @@ export const SnowplowInspector: FunctionComponent = () => {
       .then(setLogin, () => {
         // hack for firefox, we can't access identity so this will always fail
         // see if it worked from the popup previously
-        if ("getBrowserInfo" in chrome.runtime)
+        if ("getBrowserInfo" in chrome.runtime) {
+          const importFirefoxIdentity = ({
+            firefoxIdentity,
+          }: {
+            firefoxIdentity: string;
+          }) => {
+            const result: null | Omit<OAuthResult, "logout"> =
+              JSON.parse(firefoxIdentity);
+
+            if (result)
+              setLogin({
+                ...result,
+                logout() {
+                  return new Promise<string>((resolve) => {
+                    chrome.storage.local.set(
+                      { firefoxIdentity: "null" },
+                      () => {
+                        setLogin(undefined);
+                        resolve("");
+                      },
+                    );
+                  });
+                },
+              });
+          };
+          chrome.storage.local.onChanged.addListener((changes) => {
+            if (
+              "firefoxIdentity" in changes &&
+              changes["firefoxIdentity"].newValue
+            ) {
+              importFirefoxIdentity({
+                firefoxIdentity: changes["firefoxIdentity"].newValue,
+              });
+            }
+          });
           chrome.storage.local.get(
             { firefoxIdentity: "null" },
-            ({ firefoxIdentity }) => {
-              const result: null | Omit<OAuthResult, "logout"> =
-                JSON.parse(firefoxIdentity);
-
-              if (result)
-                setLogin({
-                  ...result,
-                  logout() {
-                    return new Promise<string>((resolve) => {
-                      chrome.storage.local.set(
-                        { firefoxIdentity: "null" },
-                        () => {
-                          setLogin(undefined);
-                          resolve("");
-                        },
-                      );
-                    });
-                  },
-                });
-            },
+            importFirefoxIdentity,
           );
+        }
       })
       .finally(() => resolver.walk());
   }, [resolver]);
