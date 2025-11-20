@@ -22,6 +22,8 @@ dialog[open] {
   border-radius: 0.4rem 0.4rem 0 0;
   border: 0;
 
+  translate: 0 6px; /* where does this gap come from? */
+
   background-color: var(--color-background);
   color: var(--color-text);
 
