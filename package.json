@@ -4,6 +4,7 @@
   "description": "Add a panel to DevTools to show Snowplow analytics beacon information.",
   "scripts": {
     "test": "tsc --noEmit && prettier -c src",
+    "test:integration": "uv run --no-project --with pytest-selenium -- pytest --driver chrome",
     "fmt": "prettier -w src",
     "clean": "rm -r dist snowplow-chrome-extension.zip || true",
     "prestart": "npm run clean",
