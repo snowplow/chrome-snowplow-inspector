@@ -1,6 +1,5 @@
 import type { Entry } from "har-format";
 import type { Schema } from "jsonschema";
-import type { RefObject } from "preact";
 import type { Dispatch, StateUpdater } from "preact/hooks";
 
 import type { Resolver } from "./iglu";
@@ -232,80 +231,6 @@ export interface RegistrySpec {
   name: string;
   [opt: string]: any;
 }
-
-export type TestSuiteCondition = {
-  name?: string;
-  description?: string;
-  type?: "condition";
-} & (
-  | {
-      target: string;
-      operator: "exists";
-    }
-  | {
-      target: string;
-      operator: "not_exists";
-    }
-  | {
-      target: string;
-      operator: "matches";
-      value: string;
-    }
-  | {
-      target: string;
-      operator: "one_of";
-      value: any[];
-    }
-  | {
-      target: string;
-      operator: "equals";
-      value: any;
-    }
-  | {
-      target: string;
-      operator: "validates";
-      value: Schema;
-    }
-);
-
-interface TestSuite {
-  name: string;
-  description?: string;
-  targets?: TestSuiteCondition[];
-  combinator?: "and" | "or" | "not";
-  type?: string;
-}
-
-interface GroupedTestSuiteSpec extends TestSuite {
-  type?: "group";
-  tests: TestSuiteSpec[];
-}
-
-export interface TestSuiteCase extends TestSuite {
-  type?: "case";
-  conditions: TestSuiteCondition[];
-}
-
-export type TestSuiteSpec = GroupedTestSuiteSpec | TestSuiteCase;
-
-type ResultStatus = "pass" | "fail" | "incomplete";
-
-export type TestSuiteResult =
-  | {
-      test: TestSuiteSpec;
-      status: ResultStatus;
-      results: TestSuiteResult[];
-    }
-  | {
-      test: TestSuiteSpec;
-      status: ResultStatus;
-      result: {
-        success: IBeaconSummary[];
-        failure: IBeaconSummary[];
-        passCauses: [TestSuiteCondition, string?][];
-        failCauses: [TestSuiteCondition, string?][];
-      };
-    };
 
 export type NgrokEvent = {
   uri: string;
