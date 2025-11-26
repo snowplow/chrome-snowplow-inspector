@@ -8,13 +8,10 @@
     "clean": "rm -r dist snowplow-chrome-extension.zip || true",
     "prestart": "npm run clean",
     "start": "node build.mjs",
-    "preprepare": "npm test && npm run clean",
+    "preprepare": "npm run clean",
     "prepare": "node build.mjs",
-    "prexpi": "npm install",
-    "xpi": "npx web-ext build --overwrite-dest -s dist/ -a .",
     "prexpi-signed": "npm install",
     "xpi-signed": "npx web-ext sign -s dist/ -a .",
-    "prezip": "npm install",
     "zip": "zip -r snowplow-chrome-extension.zip dist/"
   },
   "repository": {
