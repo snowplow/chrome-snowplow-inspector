@@ -5,4 +5,5 @@ poplin-chrome-extension.zip
 snowplow-chrome-extension.zip
 *.xpi
 metafile.json
-
+.pytest_cache
+**/__pycache__
