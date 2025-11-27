@@ -31,13 +31,13 @@
     "@fontsource/inter": "^5.2.6",
     "@fontsource/roboto": "^5.0.0",
     "@snowplow/browser-tracker": "^4.3.1",
+    "@snowplow/signals-core": "^0.2.0",
     "canonicalize": "^2.0.0",
     "jsonschema": "1.*",
     "preact": "^10.25.4"
   },
   "devDependencies": {
     "@craftamap/esbuild-plugin-html": "^0.9.0",
-    "@snowplow/signals-core": "^0.2.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@testing-library/preact": "^3.2.4",
     "@testing-library/user-event": "^14.6.1",
