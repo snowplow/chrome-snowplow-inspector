@@ -1,0 +1,213 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": {
+      "name": "Firefox",
+      "version": "145.0.1"
+    },
+    "browser": {
+      "name": "Firefox",
+      "version": "145.0.1"
+    },
+    "pages": [
+      {
+        "id": "page_3",
+        "pageTimings": {
+          "onContentLoad": 114,
+          "onLoad": 137
+        },
+        "startedDateTime": "2025-11-26T16:23:05.169+11:00",
+        "title": "http://localhost:8000/?gtm_debug=1764134566168"
+      }
+    ],
+    "entries": [
+      {
+        "startedDateTime": "2025-11-26T16:23:05.169+11:00",
+        "request": {
+          "bodySize": 839,
+          "method": "POST",
+          "url": "http://localhost:9090/custom/endpoint",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Host",
+              "value": "localhost:9090"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-AU,en-GB;q=0.7,en;q=0.3"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, br, zstd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "Content-Length",
+              "value": "839"
+            },
+            {
+              "name": "Origin",
+              "value": "http://localhost:8000"
+            },
+            {
+              "name": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "name": "Referer",
+              "value": "http://localhost:8000/"
+            },
+            {
+              "name": "Cookie",
+              "value": "_sp_id.1fff=6daebe0e-9cf9-47c2-b3fc-1a96ee56fd2d.1753751635.1.1753751635..bf507827-759b-4822-b18c-31d75278ee5b....0; sp=2d6d72ba-c63b-4d69-8595-ca8b02a8771a; cookie-preferences=essential:1|analytics:1; spid.1fff=c482398d-b081-4ffc-81c1-a9ffd0da731c.1759909705.4.1764134585.1763683118.6fb1000b-540f-4f2c-b54f-9863d7b49bfa.e91feaa5-4fd1-4b7a-bdd1-6dd55e3e19e3.e115c7e8-01f1-4d6a-b256-aa6e4067fcf6.1764133039381.3; __sec_tid=n0wkv4; __sec__fid=acc006172697ba64143ffdb853155a10; __sec_crid=8e202f5baf422b544d107097060d11945230d01b7352c6299acc6bb11afcca92; __sec__ghost=5OruAjE; _sp_id.4209=0c86c6de-869d-4a8e-b787-0c344781db8b.1761114404.1.1761114404..945840c3-ae39-4e88-a6e1-f20befc0b2fd....0; __TAG_ASSISTANT=x; spses.1fff=*"
+            },
+            {
+              "name": "Sec-Fetch-Dest",
+              "value": "empty"
+            },
+            {
+              "name": "Sec-Fetch-Mode",
+              "value": "cors"
+            },
+            {
+              "name": "Sec-Fetch-Site",
+              "value": "same-site"
+            },
+            {
+              "name": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "name": "Cache-Control",
+              "value": "no-cache"
+            }
+          ],
+          "cookies": [
+            {
+              "name": "_sp_id.1fff",
+              "value": "6daebe0e-9cf9-47c2-b3fc-1a96ee56fd2d.1753751635.1.1753751635..bf507827-759b-4822-b18c-31d75278ee5b....0"
+            },
+            {
+              "name": "sp",
+              "value": "2d6d72ba-c63b-4d69-8595-ca8b02a8771a"
+            },
+            {
+              "name": "cookie-preferences",
+              "value": "essential:1|analytics:1"
+            },
+            {
+              "name": "spid.1fff",
+              "value": "c482398d-b081-4ffc-81c1-a9ffd0da731c.1759909705.4.1764134585.1763683118.6fb1000b-540f-4f2c-b54f-9863d7b49bfa.e91feaa5-4fd1-4b7a-bdd1-6dd55e3e19e3.e115c7e8-01f1-4d6a-b256-aa6e4067fcf6.1764133039381.3"
+            },
+            {
+              "name": "__sec_tid",
+              "value": "n0wkv4"
+            },
+            {
+              "name": "__sec__fid",
+              "value": "acc006172697ba64143ffdb853155a10"
+            },
+            {
+              "name": "__sec_crid",
+              "value": "8e202f5baf422b544d107097060d11945230d01b7352c6299acc6bb11afcca92"
+            },
+            {
+              "name": "__sec__ghost",
+              "value": "5OruAjE"
+            },
+            {
+              "name": "_sp_id.4209",
+              "value": "0c86c6de-869d-4a8e-b787-0c344781db8b.1761114404.1.1761114404..945840c3-ae39-4e88-a6e1-f20befc0b2fd....0"
+            },
+            {
+              "name": "__TAG_ASSISTANT",
+              "value": "x"
+            },
+            {
+              "name": "spses.1fff",
+              "value": "*"
+            }
+          ],
+          "queryString": [],
+          "headersSize": 1243,
+          "postData": {
+            "mimeType": "application/json; charset=UTF-8",
+            "text": "{\"schema\":\"iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-4\",\"data\":[{\"e\":\"pv\",\"url\":\"http://localhost:8000/?gtm_debug=1764134566168\",\"page\":\"Directory listing for /\",\"refr\":\"https://tagassistant.google.com/\",\"eid\":\"6fd9359b-ad93-4663-9135-dbd7df957cbc\",\"tv\":\"js-3.24.6\",\"tna\":\"spTracker\",\"aid\":\"my-site\",\"p\":\"web\",\"cookie\":\"1\",\"cs\":\"UTF-8\",\"lang\":\"en-AU\",\"res\":\"1920x1080\",\"cd\":\"24\",\"tz\":\"Australia/Sydney\",\"dtm\":\"1764134585136\",\"vp\":\"1920x934\",\"ds\":\"1920x934\",\"vid\":\"4\",\"sid\":\"6fb1000b-540f-4f2c-b54f-9863d7b49bfa\",\"duid\":\"c482398d-b081-4ffc-81c1-a9ffd0da731c\",\"co\":\"{\\\"schema\\\":\\\"iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1-0-0\\\",\\\"data\\\":[{\\\"schema\\\":\\\"iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0\\\",\\\"data\\\":{\\\"id\\\":\\\"d36a0f8a-0530-411b-a379-3546c02bde19\\\"}}]}\",\"stm\":\"1764134585137\"}]}"
+          }
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "HTTP/1.1",
+          "headers": [
+            {
+              "name": "Set-Cookie",
+              "value": "sp=2d6d72ba-c63b-4d69-8595-ca8b02a8771a; Expires=Thu, 26 Nov 2026 05:23:05 GMT; Path=/; SameSite=None; Secure; HttpOnly"
+            },
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "http://localhost:8000"
+            },
+            {
+              "name": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "name": "Content-Type",
+              "value": "text/plain"
+            },
+            {
+              "name": "Date",
+              "value": "Wed, 26 Nov 2025 05:23:05 GMT"
+            },
+            {
+              "name": "Content-Length",
+              "value": "2"
+            }
+          ],
+          "cookies": [
+            {
+              "name": "sp",
+              "value": "2d6d72ba-c63b-4d69-8595-ca8b02a8771a"
+            }
+          ],
+          "content": {
+            "mimeType": "text/plain",
+            "size": 2,
+            "text": "ok"
+          },
+          "redirectURL": "",
+          "headersSize": 326,
+          "bodySize": 328
+        },
+        "cache": {},
+        "timings": {
+          "blocked": -1,
+          "dns": 0,
+          "connect": 0,
+          "ssl": 0,
+          "send": 0,
+          "wait": 310,
+          "receive": 0
+        },
+        "time": 310,
+        "_securityState": "insecure",
+        "serverIPAddress": "127.0.0.1",
+        "connection": "9090",
+        "pageref": "page_3"
+      }
+    ]
+  }
+}
