@@ -1,0 +1,55 @@
+name: Release new version
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_level:
+        description: Release level to increment by
+        required: true
+        default: patch
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - premajor
+          - preminor
+          - prepatch
+
+permissions:
+  contents: write
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    if: ${{github.ref_name == 'main' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: |
+          { echo -n tag= ; npm version ${{ inputs.release_level }} ; } >> "${GITHUB_OUTPUT}"
+        env:
+          EMAIL: "${{ github.actor }}@users.noreply.github.com"
+        id: bump-version
+      - run: npm cit
+      - run: npm run zip
+      - run: npm run xpi-signed
+        if: ${{ github.ref == 'main' && !startsWith(inputs.release_level, 'pre') }}
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+          npm_config_yes: "true"
+      - run: git push --follow-tags
+      - run:
+          gh release create \
+            --generate-notes \
+            --verify-tag \
+            ${{ startsWith(inputs.release_level, 'pre') && '--prerelease' || '--latest' }} \
+            ${{ steps.bump-version.outputs.tag }} \
+            "snowplow-chrome-extension.zip" \
+            "*.xpi"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

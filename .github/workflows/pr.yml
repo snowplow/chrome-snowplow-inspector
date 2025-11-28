@@ -1,0 +1,42 @@
+name: Test new PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - review_requested
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    if: ${{ contains(fromJson('["ready_for_review", "review_requested"]'), github.event_name) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - uses: browser-actions/setup-chrome@5f2f9dae94e061474cbfa44c9901c5faee86f8e9 # v2.1.0
+        with:
+          install-chromedriver: true
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+          cache: pip
+      - run: pip install uv
+      - run: npm run test:e2e

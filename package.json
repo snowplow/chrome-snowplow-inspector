@@ -13,7 +13,6 @@
     "start": "node build.mjs",
     "preprepare": "npm run clean",
     "prepare": "node build.mjs",
-    "prexpi-signed": "npm install",
     "xpi-signed": "npx web-ext sign -s dist/ -a .",
     "zip": "zip -r snowplow-chrome-extension.zip dist/"
   },
