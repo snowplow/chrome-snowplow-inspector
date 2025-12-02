@@ -45,7 +45,7 @@ jobs:
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
           npm_config_yes: "true"
       - run: git push --follow-tags
-      - run:
+      - run: |
           gh release create \
             --generate-notes \
             --verify-tag \
