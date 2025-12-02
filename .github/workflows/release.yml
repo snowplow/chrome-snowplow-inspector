@@ -30,9 +30,10 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: |
-          { echo -n tag= ; npm version ${{ inputs.release_level }} ; } >> "${GITHUB_OUTPUT}"
+          { echo -n tag= ; npm version --preid rc ${{ inputs.release_level }} ; } >> "${GITHUB_OUTPUT}"
         env:
-          EMAIL: "${{ github.actor }}@users.noreply.github.com"
+          EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          GIT_AUTHOR_NAME: GitHub Actions
         id: bump-version
       - run: npm cit
       - run: npm run zip
