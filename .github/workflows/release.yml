@@ -12,9 +12,7 @@ on:
           - major
           - minor
           - patch
-          - premajor
-          - preminor
-          - prepatch
+          - prerelease
 
 permissions:
   contents: write
@@ -51,7 +49,6 @@ jobs:
             --verify-tag \
             ${{ startsWith(inputs.release_level, 'pre') && '--prerelease' || '--latest' }} \
             ${{ steps.bump-version.outputs.tag }} \
-            "snowplow-chrome-extension.zip" \
-            "*.xpi"
+            $(find . -name '*.zip' -or -name '*.xpi')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
