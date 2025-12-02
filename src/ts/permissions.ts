@@ -1,8 +1,19 @@
 const pending = new Map<string, Promise<void>>();
 
-chrome.permissions?.getAll(({ origins }) =>
-  origins?.forEach((origin) => pending.set(origin, Promise.resolve())),
-);
+if (chrome.permissions) {
+  chrome.permissions.getAll(({ origins }) =>
+    origins?.forEach((origin) => pending.set(origin, Promise.resolve())),
+  );
+} else {
+  // hack for firefox, we can't access permissions here so check what was set in the popup
+  chrome.storage.local.get(
+    { firefoxPermissionsGranted: "[]" },
+    ({ firefoxPermissionsGranted }) => {
+      const granted: string[] = JSON.parse(firefoxPermissionsGranted);
+      granted.forEach((origin) => pending.set(origin, Promise.resolve()));
+    },
+  );
+}
 
 const queue: string[] = [];
 let nextClick: Promise<void> | undefined;
@@ -48,23 +59,47 @@ const nextGesture = (missing: string[]) => {
 
 export const request = (...origins: string[]): Promise<void> => {
   const missing = origins.filter(
-    (origin, i, a) => !pending.has(origin) && a.indexOf(origin) === i,
+    (origin, i, a) =>
+      !(
+        pending.has(origin) ||
+        pending.has(origin.replace(/^https?:\/\//i, "*://"))
+      ) && a.indexOf(origin) === i,
   );
 
   if (missing.length) {
-    const p = new Promise<void>((fulfil, fail) =>
-      chrome.permissions
-        ? chrome.permissions.contains({ origins: missing }, (granted) => {
-            if (granted) fulfil();
-            else fail(missing);
-          })
-        : fail(missing),
-    ).catch(nextGesture);
+    const p = new Promise<void>((fulfil, fail) => {
+      if (chrome.permissions) {
+        chrome.permissions.contains({ origins: missing }, (granted) => {
+          if (granted) fulfil();
+          else fail(missing);
+        });
+      } else {
+        // hack for firefox, we can't access permissions here so save them for the popup to request later
+        chrome.storage.local.get(
+          { firefoxPermissions: "[]" },
+          ({ firefoxPermissions }) => {
+            chrome.storage.local.set(
+              {
+                firefoxPermissions: JSON.stringify(
+                  JSON.parse(firefoxPermissions).concat(missing),
+                ),
+              },
+              () => fail(missing),
+            );
+          },
+        );
+      }
+    }).catch(nextGesture);
 
     missing.forEach((origin) => pending.set(origin, p));
   }
 
   return Promise.all(
-    origins.map((origin) => pending.get(origin) || Promise.reject()),
+    origins.map(
+      (origin) =>
+        pending.get(origin) ||
+        pending.get(origin.replace(/^https?:\/\//i, "*://")) ||
+        Promise.reject(),
+    ),
   ).then();
 };

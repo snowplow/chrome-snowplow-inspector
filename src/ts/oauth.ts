@@ -2,6 +2,7 @@ import { uuidv4, tryb64 } from "./util";
 import type { OAuthAccess, OAuthIdentity, OAuthResult } from "./types";
 
 const prodExtIds = [
+  "{4166b542-f87d-4dbc-a6b1-34cb31a5b04e}",
   "4166b542-f87d-4dbc-a6b1-34cb31a5b04e",
   "maplkdomeamdlngconidoefjpogkmljm",
 ];
@@ -81,7 +82,7 @@ export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
           !id_token
         ) {
           console.error("auth failed", access_token, id_token, token_type);
-          throw reject(
+          return reject(
             new Error("OAuth protocol failure failure during authentication"),
           );
         }
@@ -93,7 +94,7 @@ export const doOAuthFlow = (interactive = false): Promise<OAuthResult> => {
         const decAccess = tryb64(encAccess);
         if (decIdentity === encIdentity || decAccess === encAccess) {
           console.error("could not decode identity/access token", encIdentity);
-          throw reject(new Error("Unable to process OAuth user identity"));
+          return reject(new Error("Unable to process OAuth user identity"));
         }
 
         const identity: OAuthIdentity = JSON.parse(decIdentity);

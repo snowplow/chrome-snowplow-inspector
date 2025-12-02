@@ -7,7 +7,6 @@
     }
   },
   "action": {
-    "browser_style": true,
     "default_title": "Snowplow Inspector",
     "default_popup": "popup.html",
     "default_icon": {

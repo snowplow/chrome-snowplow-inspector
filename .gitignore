@@ -1,5 +1,9 @@
 node_modules/
 dist/
+coverage/
 poplin-chrome-extension.zip
 snowplow-chrome-extension.zip
-.parcel-cache/
+*.xpi
+metafile.json
+.pytest_cache
+**/__pycache__

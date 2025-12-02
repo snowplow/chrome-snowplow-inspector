@@ -3,18 +3,17 @@
   "version": "0.4.4",
   "description": "Add a panel to DevTools to show Snowplow analytics beacon information.",
   "scripts": {
-    "test": "tsc --noEmit && prettier -c src",
-    "fmt": "prettier -w src",
+    "pretest": "tsc --noEmit",
+    "test": "jest",
+    "posttest": "prettier -c src",
+    "test:e2e": "uv run --no-project --with pytest-selenium -- pytest --driver chrome",
+    "fmt": "prettier -w src test",
     "clean": "rm -r dist snowplow-chrome-extension.zip || true",
     "prestart": "npm run clean",
     "start": "node build.mjs",
-    "preprepare": "npm test && npm run clean",
+    "preprepare": "npm run clean",
     "prepare": "node build.mjs",
-    "prexpi": "npm install",
-    "xpi": "npx web-ext build --overwrite-dest -s dist/ -a .",
-    "prexpi-signed": "npm install",
     "xpi-signed": "npx web-ext sign -s dist/ -a .",
-    "prezip": "npm install",
     "zip": "zip -r snowplow-chrome-extension.zip dist/"
   },
   "repository": {
@@ -31,14 +30,16 @@
     "@fontsource/inter": "^5.2.6",
     "@fontsource/roboto": "^5.0.0",
     "@snowplow/browser-tracker": "^4.3.1",
+    "@snowplow/signals-core": "^0.2.0",
     "canonicalize": "^2.0.0",
     "jsonschema": "1.*",
     "preact": "^10.25.4"
   },
   "devDependencies": {
     "@craftamap/esbuild-plugin-html": "^0.9.0",
-    "@snowplow/signals-core": "^0.2.0",
     "@tailwindcss/postcss": "^4.1.13",
+    "@testing-library/preact": "^3.2.4",
+    "@testing-library/user-event": "^14.6.1",
     "@types/chrome": "*",
     "@types/elasticsearch": "^5.0.36",
     "@types/har-format": "1.*",
@@ -46,11 +47,16 @@
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.9",
     "esbuild-postcss": "^0.0.4",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "jest-webextension-mock": "^4.0.0",
     "lucide-preact": "^0.*",
     "lucide-static": "^0.*",
     "postcss": "^8.5.6",
     "prettier": "^3.0.2",
     "tailwindcss": "^4.1.13",
-    "typescript": "^5.0.0"
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.0.0",
+    "whatwg-fetch": "^3.6.20"
   }
 }

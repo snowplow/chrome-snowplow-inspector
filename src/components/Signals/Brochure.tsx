@@ -54,7 +54,7 @@ export const Brochure: FunctionComponent<{
           >
             Get a Demo
           </a>
-        ) : (
+        ) : "getBrowserInfo" in chrome.runtime ? null : (
           <a onClick={loginHandler}>Log in to enable Signals</a>
         )}
         <a href={utmify("https://docs.snowplow.io/tutorials/")} target="_blank">

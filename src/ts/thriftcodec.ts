@@ -148,7 +148,7 @@ export const decodeB64Thrift = (
     }
 
     // This should be unreachable
-    return [0, null];
+    return [0, null] as never;
   }
 
   for (;;) {
@@ -219,7 +219,7 @@ export const encodeB64Thrift = (
         for (const i of value) {
           thriftField += toBytes(
             jsTypes[Object.prototype.toString.call(value[0])],
-            value[i],
+            i,
           );
         }
         break;
@@ -244,7 +244,7 @@ export const encodeB64Thrift = (
     }
   }
 
-  return btoa(unescape(result));
+  return btoa(unescape(result + "%00"));
 };
 
 export const schemas = {
