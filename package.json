@@ -7,7 +7,7 @@
     "test": "jest",
     "posttest": "prettier -c src",
     "test:e2e": "uv run --no-project --with pytest-selenium -- pytest --driver chrome",
-    "fmt": "prettier -w src",
+    "fmt": "prettier -w src test",
     "clean": "rm -r dist snowplow-chrome-extension.zip || true",
     "prestart": "npm run clean",
     "start": "node build.mjs",
