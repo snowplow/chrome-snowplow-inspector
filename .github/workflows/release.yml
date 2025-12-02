@@ -29,11 +29,10 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
+      - run: git config set user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+      - run: git config set user.name "GitHub Actions"
       - run: |
           { echo -n tag= ; npm version --preid rc ${{ inputs.release_level }} ; } >> "${GITHUB_OUTPUT}"
-        env:
-          GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-          GIT_AUTHOR_NAME: GitHub Actions
         id: bump-version
       - run: npm cit
       - run: npm run zip
