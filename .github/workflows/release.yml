@@ -12,9 +12,7 @@ on:
           - major
           - minor
           - patch
-          - premajor
-          - preminor
-          - prepatch
+          - prerelease
 
 permissions:
   contents: write
@@ -25,14 +23,16 @@ jobs:
     if: ${{github.ref_name == 'main' }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: npm
+      - run: git config set user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+      - run: git config set user.name "GitHub Actions"
       - run: |
-          { echo -n tag= ; npm version ${{ inputs.release_level }} ; } >> "${GITHUB_OUTPUT}"
-        env:
-          EMAIL: "${{ github.actor }}@users.noreply.github.com"
+          { echo -n tag= ; npm version --preid rc ${{ inputs.release_level }} ; } >> "${GITHUB_OUTPUT}"
         id: bump-version
       - run: npm cit
       - run: npm run zip
@@ -43,13 +43,12 @@ jobs:
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
           npm_config_yes: "true"
       - run: git push --follow-tags
-      - run:
+      - run: |
           gh release create \
             --generate-notes \
             --verify-tag \
             ${{ startsWith(inputs.release_level, 'pre') && '--prerelease' || '--latest' }} \
             ${{ steps.bump-version.outputs.tag }} \
-            "snowplow-chrome-extension.zip" \
-            "*.xpi"
+            $(find . -name '*.zip' -or -name '*.xpi')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
