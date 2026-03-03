@@ -28,6 +28,7 @@ type ResourceDefinitions =
       info: SignalsInstall;
       keys: AttributeKey[];
       groups: AttributeGroup[];
+      hasAuth: boolean;
     }
   | undefined;
 
@@ -45,6 +46,12 @@ const cache = new Map<
   )[]
 >();
 
+const SetAPIKeyButton: FunctionComponent = () => (
+  <button type="button" onClick={() => chrome.runtime.openOptionsPage()}>
+    Click here to set an API key to access attribute values
+  </button>
+);
+
 const AttributeGroupData: FunctionComponent<{
   client: SignalsClient;
   eventCount?: number;
@@ -56,6 +63,7 @@ const AttributeGroupData: FunctionComponent<{
   orgName: string;
   label: string;
   refresh: number;
+  hasAuth: boolean;
 }> = ({
   client,
   eventCount,
@@ -67,6 +75,7 @@ const AttributeGroupData: FunctionComponent<{
   orgName,
   label,
   refresh,
+  hasAuth,
 }) => {
   useErrorBoundary(errorAnalytics);
   const [version, setVersion] = useState(
@@ -120,6 +129,19 @@ const AttributeGroupData: FunctionComponent<{
 
     const fetchForIdentifier = (identifier: string, i: number) => {
       if (!attributeNames.length) return Promise.resolve();
+
+      if (!hasAuth) {
+        setValues((current) => {
+          const updated = [...current];
+          updated[i] = {
+            attributeKey: attribute_key.name,
+            identifier,
+          };
+          return updated;
+        });
+        return Promise.resolve();
+      }
+
       return client
         .getGroupAttributes({
           name,
@@ -185,7 +207,7 @@ const AttributeGroupData: FunctionComponent<{
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [identifiers, version, eventCount, refresh]);
+  }, [identifiers, version, eventCount, refresh, hasAuth]);
 
   if (!values.some(Boolean)) return null;
 
@@ -232,6 +254,21 @@ const AttributeGroupData: FunctionComponent<{
       {values.map((result) => {
         if (!result) return;
         const { attributeKey, identifier, ...attributes } = result;
+
+        if (!hasAuth) {
+          return (
+            <table key={identifier}>
+              <tbody>
+                <tr>
+                  <th colSpan={2}>
+                    <SetAPIKeyButton />
+                  </th>
+                </tr>
+              </tbody>
+            </table>
+          );
+        }
+
         const filtered = Object.entries(attributes).filter(
           ([attribute, value]) => {
             if (!filter) return true;
@@ -278,12 +315,7 @@ const AttributeGroupData: FunctionComponent<{
                     ) ? (
                       <span>{JSON.stringify(value, null, 2)}</span>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => chrome.runtime.openOptionsPage()}
-                      >
-                        Click here to set an API key to access attribute values
-                      </button>
+                      <SetAPIKeyButton />
                     )}
                   </td>
                 </tr>
@@ -321,6 +353,7 @@ const MultiInstanceData: FunctionComponent<{
       client,
       groups,
       info: { orgName, label },
+      hasAuth,
     } = resources;
     if (!client) return null;
     if (orgFilter !== "All" && orgFilter !== orgName) return null;
@@ -353,6 +386,7 @@ const MultiInstanceData: FunctionComponent<{
         label={label}
         includeInstance={definitions.length > 1}
         refresh={refresh}
+        hasAuth={hasAuth}
       />
     ));
   });

@@ -21,6 +21,7 @@ import {
   type InterventionDefinition,
   type InterventionInstance,
 } from "../components/Signals/SignalsClient";
+import { getOrgIdFromJWT } from "./jwtUtils";
 
 export const useSignals = (
   login: OAuthResult | undefined,
@@ -34,6 +35,7 @@ export const useSignals = (
         keys: AttributeKey[];
         groups: AttributeGroup[];
         interventions: InterventionDefinition[];
+        hasAuth: boolean;
       }
     | undefined
   )[],
@@ -61,6 +63,7 @@ export const useSignals = (
           keys: AttributeKey[];
           groups: AttributeGroup[];
           interventions: InterventionDefinition[];
+          hasAuth: boolean;
         }
       | undefined
     )[]
@@ -277,13 +280,23 @@ export const useSignals = (
     setSignalsDefs([]);
     for (const [i, { client, info }] of apiClients.entries()) {
       const opts = client._getFetchOptions({ method: "GET" });
+      let hasAuth = false;
+
       if (client.sandboxToken) {
         Object.assign(opts.headers, {
           Authorization: `Bearer ${client.sandboxToken}`,
         });
+        hasAuth = true;
       } else {
         // TODO: can we force the creds to update if apiKey is defined?
         Object.assign(opts.headers, login?.authentication.headers);
+
+        const hasApiKey = !!client.apiKey;
+
+        const jwtOrgId = getOrgIdFromJWT(login);
+        const hasJWTForOrg = !!jwtOrgId && jwtOrgId === info.orgId;
+
+        hasAuth = hasApiKey || hasJWTForOrg;
       }
       Promise.all([
         client
@@ -329,6 +342,7 @@ export const useSignals = (
             keys,
             groups,
             interventions,
+            hasAuth,
           };
           return updated;
         });
