@@ -32,7 +32,10 @@ export class SignalsClient extends SignalsCore {
     url: string,
     options: SignalsFetchOptions,
   ): Promise<SignalsFetchResponse> {
-    return fetch(url, options);
+    return fetch(url, {
+      ...options,
+      ...{ credentials: "omit" },
+    });
   }
 }
 
