@@ -6,6 +6,7 @@ import {
   type SignalsFetchResponse,
 } from "@snowplow/signals-core";
 import type { OAuthResult } from "../../ts/types";
+import { version } from "../../../package.json";
 
 //@ts-ignore: intentional override of private field
 export class SignalsClient extends SignalsCore {
@@ -32,6 +33,7 @@ export class SignalsClient extends SignalsCore {
     url: string,
     options: SignalsFetchOptions,
   ): Promise<SignalsFetchResponse> {
+    options.headers["X-Signals-Sdk-Name"] = `snowplow-inspector ${version}`;
     return fetch(url, {
       ...options,
       ...{ credentials: "omit" },
