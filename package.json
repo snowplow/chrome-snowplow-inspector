@@ -30,7 +30,7 @@
     "@fontsource/inter": "^5.2.6",
     "@fontsource/roboto": "^5.0.0",
     "@snowplow/browser-tracker": "^4.3.1",
-    "@snowplow/signals-core": "^0.2.0",
+    "@snowplow/signals-core": "^0.3.0",
     "canonicalize": "^2.0.0",
     "jsonschema": "1.*",
     "preact": "^10.25.4"
