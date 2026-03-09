@@ -21,6 +21,7 @@ import {
 import { JsonViewer } from "../JSONViewer";
 
 import { RefreshCw, Search, X } from "lucide-preact";
+import { SignalsAPIError } from "@snowplow/signals-core";
 
 type ResourceDefinitions =
   | {
@@ -44,6 +45,41 @@ const cache = new Map<
     | undefined
   )[]
 >();
+
+export function showAddAPIKeyButton(
+  attribute: string,
+  value: unknown,
+): boolean {
+  if (attribute !== "error") {
+    return false;
+  }
+
+  if (value instanceof SignalsAPIError && value.status === 401) {
+    return true;
+  }
+
+  return false;
+}
+
+export function formatError(value: unknown): string {
+  if (value instanceof SignalsAPIError) {
+    try {
+      const parsed = JSON.parse(value.response);
+      if (parsed.error) {
+        return parsed.error;
+      }
+      return value.response;
+    } catch {
+      return value.response;
+    }
+  }
+
+  if (typeof value === "object" && value !== null) {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
 
 const AttributeGroupData: FunctionComponent<{
   client: SignalsClient;
@@ -152,7 +188,7 @@ const AttributeGroupData: FunctionComponent<{
               updated[i] = {
                 attributeKey: attribute_key.name,
                 identifier,
-                error: String(err),
+                error: err,
               };
               return updated;
             });
@@ -272,18 +308,15 @@ const AttributeGroupData: FunctionComponent<{
                 >
                   <th>{attribute}</th>
                   <td>
-                    {attribute !== "error" ||
-                    !/\[Signals\] 401|required for (Console|BDP|CDI) authentication/.test(
-                      String(value),
-                    ) ? (
-                      <span>{JSON.stringify(value, null, 2)}</span>
-                    ) : (
+                    {showAddAPIKeyButton(attribute, value) ? (
                       <button
                         type="button"
                         onClick={() => chrome.runtime.openOptionsPage()}
                       >
                         Click here to set an API key to access attribute values
                       </button>
+                    ) : (
+                      <span>{formatError(value)}</span>
                     )}
                   </td>
                 </tr>
