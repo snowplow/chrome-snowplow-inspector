@@ -196,10 +196,24 @@ const AttributeGroupData: FunctionComponent<{
         );
     };
 
-    const fetchAllIdentifiers = () =>
-      cancelled
-        ? Promise.resolve([])
-        : Promise.all(ids.map(fetchForIdentifier));
+    const fetchAllIdentifiers = async () => {
+      if (cancelled) return [];
+
+      const batchSize = 10;
+      const results = [];
+
+      for (let i = 0; i < ids.length; i += batchSize) {
+        if (cancelled) break;
+
+        const batch = ids.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map((id, idx) => fetchForIdentifier(id, i + idx)),
+        );
+        results.push(...batchResults);
+      }
+
+      return results;
+    };
 
     let timeout = setTimeout(() => {
       fetchAllIdentifiers().then(() => {
