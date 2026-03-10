@@ -3,6 +3,7 @@ import {
   useEffect,
   useErrorBoundary,
   useMemo,
+  useRef,
   useState,
   type Dispatch,
   type StateUpdater,
@@ -22,6 +23,7 @@ import { JsonViewer } from "../JSONViewer";
 
 import { RefreshCw, Search, X } from "lucide-preact";
 import { SignalsAPIError } from "@snowplow/signals-core";
+import type { MutableRefObject } from "preact/compat";
 
 type ResourceDefinitions =
   | {
@@ -92,6 +94,7 @@ const AttributeGroupData: FunctionComponent<{
   orgName: string;
   label: string;
   refresh: number;
+  unauthorizedClients: MutableRefObject<Set<SignalsClient>>;
 }> = ({
   client,
   eventCount,
@@ -103,6 +106,7 @@ const AttributeGroupData: FunctionComponent<{
   orgName,
   label,
   refresh,
+  unauthorizedClients,
 }) => {
   useErrorBoundary(errorAnalytics);
   const [version, setVersion] = useState(
@@ -150,6 +154,10 @@ const AttributeGroupData: FunctionComponent<{
     let cancelled = false;
     const ids = [...(identifiers[attribute_key.name] ?? [])];
 
+    if (unauthorizedClients.current.has(client)) {
+      return;
+    }
+
     const attributeNames = ([] as { name: string }[])
       .concat(...attributes, ...(fields ?? []))
       .map(({ name }) => name);
@@ -183,6 +191,9 @@ const AttributeGroupData: FunctionComponent<{
               });
           },
           (err) => {
+            if (err instanceof SignalsAPIError && err.status === 401) {
+              unauthorizedClients.current.add(client);
+            }
             setValues((current) => {
               const updated = [...current];
               updated[i] = {
@@ -204,6 +215,10 @@ const AttributeGroupData: FunctionComponent<{
 
       for (let i = 0; i < ids.length; i += batchSize) {
         if (cancelled) break;
+
+        if (unauthorizedClients.current.has(client)) {
+          break;
+        }
 
         const batch = ids.slice(i, i + batchSize);
         const batchResults = await Promise.all(
@@ -352,6 +367,7 @@ const MultiInstanceData: FunctionComponent<{
   orgFilter: string;
   sourceFilter: SourceFilter;
   refresh: number;
+  unauthorizedClients: MutableRefObject<Set<SignalsClient>>;
 }> = ({
   attributeKeyIds,
   definitions,
@@ -361,6 +377,7 @@ const MultiInstanceData: FunctionComponent<{
   orgFilter,
   sourceFilter,
   refresh,
+  unauthorizedClients,
 }) =>
   definitions.map((resources) => {
     if (!resources) return null;
@@ -400,6 +417,7 @@ const MultiInstanceData: FunctionComponent<{
         label={label}
         includeInstance={definitions.length > 1}
         refresh={refresh}
+        unauthorizedClients={unauthorizedClients}
       />
     ));
   });
@@ -410,6 +428,7 @@ const AttributesUI: FunctionComponent<{
   signalsDefs: ResourceDefinitions[];
   signalsInfo: Record<string, SignalsInstall[]>;
 }> = ({ attributeKeyIds, eventCount, signalsDefs, signalsInfo }) => {
+  const unauthorizedClients = useRef(new Set<SignalsClient>());
   const stateKey = "signals-attribute-filters";
   const storedFilters = sessionStorage.getItem(stateKey);
 
@@ -551,6 +570,7 @@ const AttributesUI: FunctionComponent<{
           orgFilter={orgFilter}
           sourceFilter={sourceFilter}
           refresh={refresh}
+          unauthorizedClients={unauthorizedClients}
         />
       ) : orgs.size > (orgs.has("sandbox") ? 1 : 0) ? (
         <p>
