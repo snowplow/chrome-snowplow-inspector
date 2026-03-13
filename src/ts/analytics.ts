@@ -6,7 +6,8 @@ import {
 
 import type { RegistrySpec } from "./iglu/Registries";
 
-const SNOWPLOW_ENDPOINT = "https://snowflake-217500-prod1.collector.snplow.net";
+const SNOWPLOW_ENDPOINT =
+  "https://com-snowplowanalytics-biz1.collector.snplow.net";
 
 const SCHEMA_COLLECTOR_TELEMETRY =
   "iglu:com.snowplowanalytics.telemetry/collector_telemetry/jsonschema/1-0-0" as const;
