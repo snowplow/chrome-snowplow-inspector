@@ -52,13 +52,13 @@ export const SnowplowInspector: FunctionComponent = () => {
   const resolver = useMemo(() => new Resolver(), []);
   const destinationManager = useMemo(() => new DestinationManager(), []);
 
-  const [
-    signalsInfo,
+  const {
+    signalsInstalls: signalsInfo,
     signalsDefs,
     attributeKeyIds,
     setAttributeKeyIds,
     interventions,
-  ] = useSignals(login, resolver);
+  } = useSignals(login, resolver);
 
   useEffect(() => {
     doOAuthFlow(false)

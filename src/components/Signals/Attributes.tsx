@@ -16,7 +16,7 @@ import { Brochure } from "./Brochure";
 import {
   SignalsClient,
   type AttributeGroup,
-  type AttributeKey,
+  type SignalsDefinition,
 } from "./SignalsClient";
 
 import { JsonViewer } from "../JSONViewer";
@@ -25,14 +25,7 @@ import { RefreshCw, Search, X } from "lucide-preact";
 import { SignalsAPIError } from "@snowplow/signals-core";
 import type { MutableRefObject } from "preact/compat";
 
-type ResourceDefinitions =
-  | {
-      client: SignalsClient | null;
-      info: SignalsInstall;
-      keys: AttributeKey[];
-      groups: AttributeGroup[];
-    }
-  | undefined;
+type ResourceDefinitions = SignalsDefinition | undefined;
 
 type SourceFilter = "All" | "Stream" | "Batch" | "External";
 
@@ -386,7 +379,6 @@ const MultiInstanceData: FunctionComponent<{
       groups,
       info: { orgName, label },
     } = resources;
-    if (!client) return null;
     if (orgFilter !== "All" && orgFilter !== orgName) return null;
     if (label in labelFilter && !labelFilter[label]) return null;
 

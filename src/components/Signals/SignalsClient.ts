@@ -5,7 +5,7 @@ import {
   type SignalsFetchOptions,
   type SignalsFetchResponse,
 } from "@snowplow/signals-core";
-import type { OAuthResult } from "../../ts/types";
+import type { OAuthResult, SignalsInstall } from "../../ts/types";
 import { version } from "../../../package.json";
 
 //@ts-ignore: intentional override of private field
@@ -142,3 +142,12 @@ export type InterventionDefinition = {
 };
 
 export type ReceivedIntervention = InterventionInstance & { received: Date };
+
+/** Everything discovered for a single Signals install. */
+export type SignalsDefinition = {
+  client: SignalsClient;
+  info: SignalsInstall;
+  keys: AttributeKey[];
+  groups: AttributeGroup[];
+  interventions: InterventionDefinition[];
+};

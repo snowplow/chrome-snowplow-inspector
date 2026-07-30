@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type Dispatch,
-  type StateUpdater,
-} from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import { consoleAnalytics } from "./analytics";
 import { buildRegistry } from "./iglu";
@@ -19,28 +13,29 @@ import {
   type AttributeGroup,
   type AttributeKey,
   type InterventionDefinition,
-  type InterventionInstance,
+  type ReceivedIntervention,
+  type SignalsDefinition,
 } from "../components/Signals/SignalsClient";
+
+const fetchRegistry = <T>(
+  client: SignalsClient,
+  path: string,
+  authHeaders: HeadersInit | undefined,
+): Promise<T[]> => {
+  // build options per request: client.fetch mutates the headers it is handed
+  const opts = client._getFetchOptions({ method: "GET" });
+  Object.assign(opts.headers, authHeaders);
+
+  return client.fetch(`${client.baseUrl}/api/v1/registry/${path}`, opts).then(
+    (resp): Promise<T[]> => resp.json(),
+    () => [],
+  );
+};
 
 export const useSignals = (
   login: OAuthResult | undefined,
   resolver: Resolver,
-): [
-  Record<string, SignalsInstall[]>,
-  (
-    | {
-        client: SignalsClient;
-        info: SignalsInstall;
-        keys: AttributeKey[];
-        groups: AttributeGroup[];
-        interventions: InterventionDefinition[];
-      }
-    | undefined
-  )[],
-  Record<string, Set<string>>,
-  Dispatch<StateUpdater<Record<string, Set<string>>>>,
-  (InterventionInstance & { received: Date })[],
-] => {
+) => {
   const [signalsInstalls, setSignalsInstalls] = useState<
     Record<string, SignalsInstall[]>
   >({});
@@ -50,20 +45,11 @@ export const useSignals = (
   const [attributeKeyIds, setAttributeKeyIds] = useState<
     Record<string, Set<string>>
   >({});
-  const [interventions, setInterventions] = useState<
-    (InterventionInstance & { received: Date })[]
-  >([]);
+  const [interventions, setInterventions] = useState<ReceivedIntervention[]>(
+    [],
+  );
   const [signalsDefs, setSignalsDefs] = useState<
-    (
-      | {
-          client: SignalsClient;
-          info: SignalsInstall;
-          keys: AttributeKey[];
-          groups: AttributeGroup[];
-          interventions: InterventionDefinition[];
-        }
-      | undefined
-    )[]
+    (SignalsDefinition | undefined)[]
   >([]);
   const badSignals = useRef(new Set<SignalsClient>());
 
@@ -141,17 +127,7 @@ export const useSignals = (
         );
 
         Promise.all(
-          organizations.map<
-            Promise<
-              {
-                orgId: string;
-                orgName: string;
-                endpoint: string;
-                name: string;
-                label: string;
-              }[]
-            >
-          >((org) =>
+          organizations.map<Promise<SignalsInstall[]>>((org) =>
             apiFetch("signals/v1", login.authentication, org.id).then(
               (
                 configured: {
@@ -207,7 +183,7 @@ export const useSignals = (
         // TODO: display error?
       },
     );
-  }, [login, resolver, setSignalsInstalls]);
+  }, [login, resolver]);
 
   const [apiClients, setApiClients] = useState<
     { info: SignalsInstall; client: SignalsClient }[]
@@ -271,43 +247,34 @@ export const useSignals = (
         },
         () => consoleAnalytics("Signals Permissions", "Rejected"),
       );
-  }, [signalsInstalls, signalsApiKeys]);
+  }, [signalsInstalls, signalsApiKeys, login]);
 
   useEffect(() => {
-    setSignalsDefs([]);
+    let cancelled = false;
+    setSignalsDefs(apiClients.map(() => undefined));
+
     for (const [i, { client, info }] of apiClients.entries()) {
-      const opts = client._getFetchOptions({ method: "GET" });
-      if (client.sandboxToken) {
-        Object.assign(opts.headers, {
-          Authorization: `Bearer ${client.sandboxToken}`,
-        });
-      } else {
-        // TODO: can we force the creds to update if apiKey is defined?
-        Object.assign(opts.headers, login?.authentication.headers);
-      }
+      // TODO: can we force the creds to update if apiKey is defined?
+      const authHeaders = client.sandboxToken
+        ? { Authorization: `Bearer ${client.sandboxToken}` }
+        : login?.authentication.headers;
+
       Promise.all([
-        client
-          .fetch(`${client.baseUrl}/api/v1/registry/attribute_keys/`, opts)
-          .then(
-            (resp): Promise<AttributeKey[]> => resp.json(),
-            () => [],
-          ),
-        client
-          .fetch(
-            `${client.baseUrl}/api/v1/registry/attribute_groups/?applied=true`,
-            opts,
-          )
-          .then(
-            (resp): Promise<AttributeGroup[]> => resp.json(),
-            () => [],
-          ),
-        client
-          .fetch(`${client.baseUrl}/api/v1/registry/interventions/`, opts)
-          .then(
-            (resp): Promise<InterventionDefinition[]> => resp.json(),
-            () => [],
-          ),
+        fetchRegistry<AttributeKey>(client, "attribute_keys/", authHeaders),
+        fetchRegistry<AttributeGroup>(
+          client,
+          "attribute_groups/?applied=true",
+          authHeaders,
+        ),
+        fetchRegistry<InterventionDefinition>(
+          client,
+          "interventions/",
+          authHeaders,
+        ),
       ]).then(([keys, groups, interventions]) => {
+        // a newer run owns the state now; its results replace ours
+        if (cancelled) return;
+
         setAttributeKeyIds((existing) => {
           const updated = { ...existing };
           let dirty = false;
@@ -334,42 +301,42 @@ export const useSignals = (
         });
       });
     }
-  }, [apiClients]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiClients, login]);
 
   useEffect(() => {
     const eventSources: EventSource[] = [];
 
     const subscriptions: Record<string, string>[] = [];
-    const unsafeSubscriptions: Record<string, string>[] = [];
 
     for (const [key, ids] of Object.entries(attributeKeyIds)) {
-      Array.from(ids, (v, i) => {
-        if (/^[a-f0-9\-]{36}$/.test(v)) {
-          subscriptions[i] = Object.assign(subscriptions[i] ?? {}, {
-            [key]: v,
-          });
-        } else {
-          const target = unsafeSubscriptions.findIndex((o) => !(key in o));
-          if (target === -1) {
-            unsafeSubscriptions.push({ [key]: v });
-          } else {
-            unsafeSubscriptions[target][key] = v;
-          }
-        }
-      });
+      // the API rejects identifiers that aren't UUIDs, so don't subscribe to them
+      let i = 0;
+      for (const id of ids) {
+        if (!/^[a-f0-9\-]{36}$/.test(id)) continue;
+        subscriptions[i] = Object.assign(subscriptions[i] ?? {}, {
+          [key]: id,
+        });
+        i++;
+      }
     }
 
     for (const { client } of apiClients) {
       // skip listening for clients we've had trouble with in the past
       // give them a small chance to recover though
-      if (badSignals.current.has(client) && Math.random() < 0.3) continue;
+      if (badSignals.current.has(client) && Math.random() > 0.3) continue;
 
       const endpoint = new URL(`${client.baseUrl}/api/v1/interventions`);
 
-      for (const sub of subscriptions.concat(unsafeSubscriptions)) {
+      for (const sub of subscriptions) {
         const params = new URLSearchParams(sub);
 
         const es = new EventSource(`${endpoint}?${params.toString()}`);
+        // track immediately: cleanup has to close streams that never opened too
+        eventSources.push(es);
 
         es.addEventListener("error", () => {
           badSignals.current.add(client);
@@ -386,7 +353,6 @@ export const useSignals = (
 
         es.addEventListener("open", () => {
           badSignals.current.delete(client);
-          eventSources.push(es);
         });
       }
     }
@@ -398,11 +364,11 @@ export const useSignals = (
     };
   }, [apiClients, attributeKeyIds]);
 
-  return [
+  return {
     signalsInstalls,
     signalsDefs,
     attributeKeyIds,
     setAttributeKeyIds,
     interventions,
-  ];
+  };
 };
