@@ -1,8 +1,8 @@
 import { describe, expect, test } from "@jest/globals";
-import { showAddAPIKeyButton, formatError } from "./Attributes";
+import { showAddAPIKeyButton, formatError } from "./errors";
 import { SignalsAPIError } from "@snowplow/signals-core";
 
-describe("Attributes - Error Parsing", () => {
+describe("Signals - Error Parsing", () => {
   describe("showAddAPIKeyButton", () => {
     test("returns true for SignalsAPIError with 401 status", () => {
       const error = new SignalsAPIError(401, "Unauthorized");
@@ -36,17 +36,37 @@ describe("Attributes - Error Parsing", () => {
         401,
         '{"error": "Invalid or expired JWT"}',
       );
-      expect(formatError(error)).toBe("Invalid or expired JWT");
+      expect(formatError(error)).toBe("401: Invalid or expired JWT");
     });
 
     test("returns raw response from SignalsAPIError when not JSON", () => {
       const error = new SignalsAPIError(500, "Internal Server Error");
-      expect(formatError(error)).toBe("Internal Server Error");
+      expect(formatError(error)).toBe("500: Internal Server Error");
     });
 
     test("returns SignalsAPIError response when JSON has no error field", () => {
       const error = new SignalsAPIError(403, '{"message": "Forbidden"}');
-      expect(formatError(error)).toBe('{"message": "Forbidden"}');
+      expect(formatError(error)).toBe('403: {"message": "Forbidden"}');
+    });
+
+    test("reports the status when the body is empty", () => {
+      expect(formatError(new SignalsAPIError(404, ""))).toBe("HTTP 404");
+    });
+
+    test("still reports the status for an empty JSON body", () => {
+      expect(formatError(new SignalsAPIError(404, "{}"))).toBe("404: {}");
+    });
+
+    test("uses the message of a plain Error rather than stringifying it", () => {
+      expect(formatError(new Error("Token invalid: no expiry date"))).toBe(
+        "Token invalid: no expiry date",
+      );
+    });
+
+    test("uses the message of a failed fetch rather than stringifying it", () => {
+      expect(formatError(new TypeError("Failed to fetch"))).toBe(
+        "Failed to fetch",
+      );
     });
 
     test("converts string values to string", () => {

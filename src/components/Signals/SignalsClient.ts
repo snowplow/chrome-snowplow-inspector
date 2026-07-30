@@ -11,6 +11,8 @@ import { version } from "../../../package.json";
 //@ts-ignore: intentional override of private field
 export class SignalsClient extends SignalsCore {
   private override accessToken: string | undefined;
+  /** credentials the registry endpoints accept, fixed for this client's lifetime */
+  private readonly registryAuth: HeadersInit | undefined;
 
   constructor({
     login,
@@ -27,6 +29,38 @@ export class SignalsClient extends SignalsCore {
       const [_bearer, token] = authHeader?.split(" ") ?? ["", ""];
       this.accessToken = token;
     }
+
+    // TODO: can we force the creds to update if apiKey is defined?
+    this.registryAuth = this.sandboxToken
+      ? { Authorization: `Bearer ${this.sandboxToken}` }
+      : login?.authentication.headers;
+  }
+
+  /**
+   * Lists a registry resource. Always resolves to an array: `fetch` below
+   * resolves for error statuses too, and those bodies parse as an object, which
+   * would otherwise strand every caller that iterates the result.
+   */
+  getRegistry<T>(
+    resource: string,
+    params?: Record<string, string | number | boolean>,
+  ): Promise<T[]> {
+    const url = new URL(`${this.baseUrl}/api/v1/registry/${resource}/`);
+    for (const [key, value] of Object.entries(params ?? {}))
+      url.searchParams.set(key, String(value));
+
+    // build options per request: fetch below mutates the headers it is handed
+    const opts = this._getFetchOptions({ method: "GET" });
+    Object.assign(opts.headers, this.registryAuth);
+
+    return this.fetch(url.toString(), opts)
+      .then((resp) =>
+        resp.status >= 200 && resp.status < 300 ? resp.json() : [],
+      )
+      .then(
+        (body) => (Array.isArray(body) ? (body as T[]) : []),
+        () => [],
+      );
   }
 
   fetch(
@@ -143,6 +177,29 @@ export type InterventionDefinition = {
 
 export type ReceivedIntervention = InterventionInstance & { received: Date };
 
+/**
+ * An agentic context definition; `event_log` in the Signals API.
+ * Retrieved values come back via SignalsClient.getAgenticContext.
+ */
+export type AgenticContextDefinition = {
+  name: string;
+  version: number;
+  description: string | null;
+  owner: string | null;
+  /** free-text agent instructions, returned alongside the buffer on read */
+  prompt: string | null;
+  /** for v1 the API requires this to be `domain_sessionid` */
+  attribute_key: { name: string };
+  events: {
+    event: Record<string, unknown>;
+    properties: Record<string, unknown>[];
+  }[];
+  max_events: number;
+  max_age_seconds: number;
+  is_published: boolean;
+  has_published_version: boolean;
+};
+
 /** Everything discovered for a single Signals install. */
 export type SignalsDefinition = {
   client: SignalsClient;
@@ -150,4 +207,5 @@ export type SignalsDefinition = {
   keys: AttributeKey[];
   groups: AttributeGroup[];
   interventions: InterventionDefinition[];
+  agenticContexts: AgenticContextDefinition[];
 };

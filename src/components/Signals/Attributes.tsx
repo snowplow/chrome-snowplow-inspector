@@ -13,6 +13,7 @@ import { errorAnalytics } from "../../ts/analytics";
 import type { OAuthResult, SignalsInstall } from "../../ts/types";
 
 import { Brochure } from "./Brochure";
+import { formatError, isUnauthorized, showAddAPIKeyButton } from "./errors";
 import {
   SignalsClient,
   type AttributeGroup,
@@ -22,10 +23,7 @@ import {
 import { JsonViewer } from "../JSONViewer";
 
 import { RefreshCw, Search, X } from "lucide-preact";
-import { SignalsAPIError } from "@snowplow/signals-core";
 import type { MutableRefObject } from "preact/compat";
-
-type ResourceDefinitions = SignalsDefinition | undefined;
 
 type SourceFilter = "All" | "Stream" | "Batch" | "External";
 
@@ -40,41 +38,6 @@ const cache = new Map<
     | undefined
   )[]
 >();
-
-export function showAddAPIKeyButton(
-  attribute: string,
-  value: unknown,
-): boolean {
-  if (attribute !== "error") {
-    return false;
-  }
-
-  if (value instanceof SignalsAPIError && value.status === 401) {
-    return true;
-  }
-
-  return false;
-}
-
-export function formatError(value: unknown): string {
-  if (value instanceof SignalsAPIError) {
-    try {
-      const parsed = JSON.parse(value.response);
-      if (parsed.error) {
-        return parsed.error;
-      }
-      return value.response;
-    } catch {
-      return value.response;
-    }
-  }
-
-  if (typeof value === "object" && value !== null) {
-    return JSON.stringify(value);
-  }
-
-  return String(value);
-}
 
 const AttributeGroupData: FunctionComponent<{
   client: SignalsClient;
@@ -184,7 +147,7 @@ const AttributeGroupData: FunctionComponent<{
               });
           },
           (err) => {
-            if (err instanceof SignalsAPIError && err.status === 401) {
+            if (isUnauthorized(err)) {
               unauthorizedClients.current.add(client);
             }
             setValues((current) => {
@@ -353,7 +316,7 @@ const AttributeGroupData: FunctionComponent<{
 
 const MultiInstanceData: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
-  definitions: ResourceDefinitions[];
+  definitions: (SignalsDefinition | undefined)[];
   eventCount?: number;
   filter?: string | RegExp;
   labelFilter: Record<string, boolean>;
@@ -417,7 +380,7 @@ const MultiInstanceData: FunctionComponent<{
 const AttributesUI: FunctionComponent<{
   attributeKeyIds: Record<string, Set<string>>;
   eventCount?: number;
-  signalsDefs: ResourceDefinitions[];
+  signalsDefs: (SignalsDefinition | undefined)[];
   signalsInfo: Record<string, SignalsInstall[]>;
 }> = ({ attributeKeyIds, eventCount, signalsDefs, signalsInfo }) => {
   const unauthorizedClients = useRef(new Set<SignalsClient>());
@@ -580,7 +543,7 @@ export const Attributes: FunctionComponent<{
   login?: OAuthResult;
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   attributeKeyIds: Record<string, Set<string>>;
-  signalsDefs: ResourceDefinitions[];
+  signalsDefs: (SignalsDefinition | undefined)[];
   signalsInfo: Record<string, SignalsInstall[]>;
   eventCount?: number;
 }> = ({

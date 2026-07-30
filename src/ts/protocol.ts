@@ -364,6 +364,16 @@ export const esMap: Record<
   TrackingProtocol.Field | ""
 > = enrichedMap;
 
+/**
+ * Display name for an enriched field, e.g. `domain_sessionid` reads as
+ * "Domain Session ID". Falls back to the raw name for anything unrecognised.
+ */
+export const enrichedFieldLabel = (field: string): string => {
+  const param = esMap[field as TrackingProtocol.EnrichedField];
+
+  return (param && paramMap[param]?.name) || field;
+};
+
 export const gaMap = {
   t: {
     name: "hitType",

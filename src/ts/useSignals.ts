@@ -10,27 +10,13 @@ import { request as requestPerms } from "./permissions";
 import type { Resolver } from "./iglu";
 import {
   SignalsClient,
+  type AgenticContextDefinition,
   type AttributeGroup,
   type AttributeKey,
   type InterventionDefinition,
   type ReceivedIntervention,
   type SignalsDefinition,
 } from "../components/Signals/SignalsClient";
-
-const fetchRegistry = <T>(
-  client: SignalsClient,
-  path: string,
-  authHeaders: HeadersInit | undefined,
-): Promise<T[]> => {
-  // build options per request: client.fetch mutates the headers it is handed
-  const opts = client._getFetchOptions({ method: "GET" });
-  Object.assign(opts.headers, authHeaders);
-
-  return client.fetch(`${client.baseUrl}/api/v1/registry/${path}`, opts).then(
-    (resp): Promise<T[]> => resp.json(),
-    () => [],
-  );
-};
 
 export const useSignals = (
   login: OAuthResult | undefined,
@@ -254,24 +240,16 @@ export const useSignals = (
     setSignalsDefs(apiClients.map(() => undefined));
 
     for (const [i, { client, info }] of apiClients.entries()) {
-      // TODO: can we force the creds to update if apiKey is defined?
-      const authHeaders = client.sandboxToken
-        ? { Authorization: `Bearer ${client.sandboxToken}` }
-        : login?.authentication.headers;
-
       Promise.all([
-        fetchRegistry<AttributeKey>(client, "attribute_keys/", authHeaders),
-        fetchRegistry<AttributeGroup>(
-          client,
-          "attribute_groups/?applied=true",
-          authHeaders,
-        ),
-        fetchRegistry<InterventionDefinition>(
-          client,
-          "interventions/",
-          authHeaders,
-        ),
-      ]).then(([keys, groups, interventions]) => {
+        client.getRegistry<AttributeKey>("attribute_keys"),
+        client.getRegistry<AttributeGroup>("attribute_groups", {
+          applied: true,
+        }),
+        client.getRegistry<InterventionDefinition>("interventions"),
+        client.getRegistry<AgenticContextDefinition>("event_logs", {
+          published: true,
+        }),
+      ]).then(([keys, groups, interventions, agenticContexts]) => {
         // a newer run owns the state now; its results replace ours
         if (cancelled) return;
 
@@ -296,6 +274,7 @@ export const useSignals = (
             keys,
             groups,
             interventions,
+            agenticContexts,
           };
           return updated;
         });
@@ -305,7 +284,9 @@ export const useSignals = (
     return () => {
       cancelled = true;
     };
-  }, [apiClients, login]);
+    // clients carry their own registry credentials, and are rebuilt when login
+    // changes, so depending on login here would only refetch everything twice
+  }, [apiClients]);
 
   useEffect(() => {
     const eventSources: EventSource[] = [];
