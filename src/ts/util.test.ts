@@ -1,6 +1,6 @@
 import { describe, expect, test } from "@jest/globals";
 
-import { isSnowplow, nameType } from "./util";
+import { formatDuration, isSnowplow, nameType } from "./util";
 
 import { micro } from "../../test/data" with { type: "json" };
 
@@ -38,5 +38,24 @@ describe("nameType", () => {
     [Promise.resolve(), "Promise"],
   ])("name of %j", (val, expected) => {
     expect(nameType(val)).toBe(expected);
+  });
+});
+
+describe("formatDuration", () => {
+  test("reports seconds below a minute", () => {
+    expect(formatDuration(30)).toBe("30s");
+  });
+
+  test("reports whole minutes", () => {
+    expect(formatDuration(60)).toBe("1m");
+    expect(formatDuration(1800)).toBe("30m");
+  });
+
+  test("reports hours, dropping a trailing zero", () => {
+    expect(formatDuration(3600)).toBe("1h");
+  });
+
+  test("reports fractional hours", () => {
+    expect(formatDuration(5400)).toBe("1.5h");
   });
 });

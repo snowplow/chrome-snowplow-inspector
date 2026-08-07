@@ -27,7 +27,7 @@ import {
 } from "./Modals";
 import { Debugger } from "./Debugger";
 import { SchemaManager } from "./SchemaManager";
-import { Attributes, Interventions } from "./Signals";
+import { AgenticContexts, Attributes, Interventions } from "./Signals";
 import { Toolbar } from "./Toolbar";
 
 import "./SnowplowInspector.css";
@@ -52,13 +52,13 @@ export const SnowplowInspector: FunctionComponent = () => {
   const resolver = useMemo(() => new Resolver(), []);
   const destinationManager = useMemo(() => new DestinationManager(), []);
 
-  const [
-    signalsInfo,
+  const {
+    signalsInstalls: signalsInfo,
     signalsDefs,
     attributeKeyIds,
     setAttributeKeyIds,
     interventions,
-  ] = useSignals(login, resolver);
+  } = useSignals(login, resolver);
 
   useEffect(() => {
     doOAuthFlow(false)
@@ -330,6 +330,16 @@ export const SnowplowInspector: FunctionComponent = () => {
           signalsDefs={signalsDefs}
           signalsInfo={signalsInfo}
           interventions={interventions}
+        />
+      )}
+      {application === "agenticContexts" && (
+        <AgenticContexts
+          key="app"
+          login={login}
+          setLogin={setLogin}
+          attributeKeyIds={attributeKeyIds}
+          signalsDefs={signalsDefs}
+          signalsInfo={signalsInfo}
         />
       )}
       {Modal && <Modal key="modal" {...(modalOpts.current as any)} />}

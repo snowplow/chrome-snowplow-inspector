@@ -15,6 +15,7 @@ import { Brochure } from "./Brochure";
 import type {
   InterventionDefinition,
   ReceivedIntervention,
+  SignalsDefinition,
 } from "./SignalsClient";
 
 import logo from "@res/logo.svg";
@@ -166,7 +167,7 @@ export const Interventions: FunctionComponent<{
   interventions: ReceivedIntervention[];
   setLogin: Dispatch<StateUpdater<OAuthResult | undefined>>;
   setInterventionCount: Dispatch<StateUpdater<number | undefined>>;
-  signalsDefs: ({ interventions: InterventionDefinition[] } | undefined)[];
+  signalsDefs: (SignalsDefinition | undefined)[];
   signalsInfo: Record<string, SignalsInstall[]>;
 }> = ({ interventions, login, setLogin, signalsDefs, signalsInfo }) => {
   useErrorBoundary(errorAnalytics);
@@ -176,9 +177,7 @@ export const Interventions: FunctionComponent<{
       {signalsAvailable ? (
         <InterventionsUI
           interventions={interventions}
-          definitions={signalsDefs.flatMap(
-            ({ interventions } = { interventions: [] }) => interventions,
-          )}
+          definitions={signalsDefs.flatMap((def) => def?.interventions ?? [])}
         />
       ) : (
         <Brochure login={login} setLogin={setLogin} />

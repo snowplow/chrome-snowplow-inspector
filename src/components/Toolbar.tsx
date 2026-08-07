@@ -3,6 +3,7 @@ import { useEffect, useState } from "preact/hooks";
 import {
   ArrowLeftToLine,
   ArrowRightFromLine,
+  Bot,
   DatabaseZap,
   GitBranchPlus,
   ListTree,
@@ -96,6 +97,18 @@ export const Toolbar: FunctionComponent<IToolbar> = ({
             <DatabaseZap />
           </span>
           <span>Attributes</span>
+        </label>
+        <label title="Agentic Contexts">
+          <input
+            type="radio"
+            name="application"
+            value="agenticContexts"
+            checked={application === "agenticContexts"}
+          />
+          <span>
+            <Bot />
+          </span>
+          <span>Agentic Contexts</span>
         </label>
         <label title="Interventions">
           <input

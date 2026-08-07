@@ -86,6 +86,14 @@ const b64d = (s: string): string => {
   }
 };
 
+/** a duration in seconds as the coarsest sensible unit, e.g. 5400 -> "1.5h" */
+const formatDuration = (seconds: number) => {
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+
+  return `${+(seconds / 3600).toFixed(1)}h`;
+};
+
 const nameType = (val: unknown) => {
   if (val === null) {
     return "null";
@@ -701,6 +709,7 @@ export {
   chunkEach,
   colorOf,
   esToRequests,
+  formatDuration,
   hash,
   isSnowplow,
   objHasProperty,

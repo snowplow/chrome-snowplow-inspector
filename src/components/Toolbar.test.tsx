@@ -16,11 +16,14 @@ describe("Toolbar", () => {
     setLogin: jest.fn(),
   };
 
-  test.each(["Events", "Attributes", "Interventions"])("has %j tab", (name) => {
-    render(<Toolbar {...props} />);
+  test.each(["Events", "Attributes", "Agentic Contexts", "Interventions"])(
+    "has %j tab",
+    (name) => {
+      render(<Toolbar {...props} />);
 
-    expect(screen.getByRole("radio", { name })).toBeDefined();
-  });
+      expect(screen.getByRole("radio", { name })).toBeDefined();
+    },
+  );
 
   test("changes tabs", async () => {
     render(<Toolbar {...props} />);
@@ -28,6 +31,7 @@ describe("Toolbar", () => {
     const tabs: Record<Exclude<Application, "schemaManager">, string> = {
       // note: reverse order since clicking current tab is a no-op
       interventions: "Interventions",
+      agenticContexts: "Agentic Contexts",
       attributes: "Attributes",
       debugger: "Events",
     };

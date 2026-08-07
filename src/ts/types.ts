@@ -10,7 +10,8 @@ export type Application =
   | "debugger"
   | "schemaManager"
   | "attributes"
-  | "interventions";
+  | "interventions"
+  | "agenticContexts";
 
 export type RegistryStatus = "OK" | "UNHEALTHY";
 
